@@ -35,4 +35,4 @@ if(morse is not null){
 }
 ```
 ## License
-[MIT License](Liecnes.md)
+[MIT License](LICENSE.md)
