@@ -1,4 +1,5 @@
 ﻿using MorseSharp.MorseRepo;
+using Serilog.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,15 +19,15 @@ namespace MorseSharp.MorseConverter
         /// Loads the morse characters.
         /// </summary>
         private Lazy<Dictionary<char, string>> morse;
-
         public MorseTextConverter()
         {
             morse = new Lazy<Dictionary<char, string>>(MorseCharacters.GetMorseCharactersEnglish);
+         
         }
         public Task<string> ConvertToMorse(string text)
         {
             strBuilder = new StringBuilder();
-            text.ToUpper();
+            text = text.ToUpper();
 
             if(text is not null)
             {
@@ -35,9 +36,11 @@ namespace MorseSharp.MorseConverter
                     if (morse.Value.ContainsKey(text[i]))
                         strBuilder.Append(morse.Value[text[i]].AsSpan());
                     else
+                    {
                         throw new Exception($"The {text[i]} character is not presented.");
+                    }
+                        
                 }
-
                 return Task.Run(() => strBuilder.ToString());
             }
             
