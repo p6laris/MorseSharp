@@ -20,7 +20,7 @@ using MorseSharp;
 var morse = await converter.ConvertToMorse;
 ```
 ## Example 
-This piece of code convert a simple text to morse code and the show it to the console:
+This piece of code convert a simple text to morse code and then show it to the console:
 ```C#
 using System;
 using MorseSharp;
