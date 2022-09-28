@@ -26,11 +26,16 @@ using System;
 using MorseSharp;
 
 MorseTextConverter converter = new();
-var morse = await converter.ConvertToMorse();
-
-if(morse is not null){
+try
+{
+   var morse = await converter.ConvertToMorse();
    Console.WriteLine(morse);
 }
+catch(Exception ex)
+{
+   Console.WriteLine(ex.Message);
+}
+
 ```
 ## License
 [MIT License](LICENSE)
