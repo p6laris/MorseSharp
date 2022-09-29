@@ -30,7 +30,7 @@ namespace MorseSharp.MorseConverter
         /// <returns><see cref="Task{string}"></see> of the morse result.</returns>
         /// <exception cref="Exception">Throws if a character doesn't presented.</exception>
         /// <exception cref="ArgumentNullException">Throws if the string text was null.</exception>
-        public Task<string> ConvertToMorse(string text)
+        public Task<string> ConvertToMorseEnglish(string text)
         {
             strBuilder = new StringBuilder();
             text = text.ToUpper();
