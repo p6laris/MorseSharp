@@ -1,13 +1,10 @@
-![Nuget](https://img.shields.io/nuget/v/MorseSharp?color=green&logo=Nuget)
-![GitHub repo size](https://img.shields.io/github/repo-size/p6laris/MorseSharp?color=purple&label=MorseSharp%20Size&logo=Github&logoColor=balck)
-![GitHub issues](https://img.shields.io/github/issues/p6laris/MorseSharp)
 # MorseSharp
 MorseSharp is a simple lightweight .NET library to convert **english** and **kurdish** sentences to morse code.
 
 ## Installation
 Use nuget package manager to install [MorseSharp](https://www.nuget.org/packages/MorseSharp) using CLI.
 ```bash
-dotnet tool install --global MorseSharp --version 1.0.0
+dotnet add package MorseSharp --version 1.0.1
 ```
 ## Usage
 1.You can use MorseSharp easily just by instantiating `MorseTextConverter` class
@@ -29,11 +26,16 @@ using System;
 using MorseSharp;
 
 MorseTextConverter converter = new();
-var morse = await converter.ConvertToMorse();
-
-if(morse is not null){
+try
+{
+   var morse = await converter.ConvertToMorse();
    Console.WriteLine(morse);
 }
+catch(Exception ex)
+{
+   Console.WriteLine(ex.Message);
+}
+
 ```
 ## License
 [MIT License](LICENSE)
