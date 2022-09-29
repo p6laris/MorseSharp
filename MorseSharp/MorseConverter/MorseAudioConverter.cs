@@ -45,7 +45,7 @@ namespace MorseSharp.MorseConverter
         /// <param name="text"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public async Task<byte[]> GetBytes(string text)
+        public async Task<byte[]> ConvertMorseToAudio(string text)
         {
             if(text is not null)
             {
