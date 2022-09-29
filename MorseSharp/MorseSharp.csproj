@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -12,17 +12,14 @@
     <RepositoryUrl>https://github.com/p6laris/MorseSharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>MorseCode Morse Converter </PackageTags>
-    <PackAsTool>True</PackAsTool>
+    <PackAsTool>False</PackAsTool>
     <NeutralLanguage>en-GB</NeutralLanguage>
     <Copyright>2022</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <IncludeSymbols>False</IncludeSymbols>
+    <Version>1.0.1$(VersionPrefix)</Version>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Serilog" Version="2.12.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-  </ItemGroup>
 
 </Project>

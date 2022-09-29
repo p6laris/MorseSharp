@@ -1,5 +1,4 @@
 ﻿using MorseSharp.MorseRepo;
-using Serilog.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +23,13 @@ namespace MorseSharp.MorseConverter
             morse = new Lazy<Dictionary<char, string>>(MorseCharacters.GetMorseCharactersEnglish);
          
         }
+        /// <summary>
+        /// Converts the given string sentence to morse code.
+        /// </summary>
+        /// <param name="text">The <see cref="System.String"></see>/> to convert to morse code.</param>
+        /// <returns><see cref="Task{string}"></see> of the morse result.</returns>
+        /// <exception cref="Exception">Throws if a character doesn't presented.</exception>
+        /// <exception cref="ArgumentNullException">Throws if the string text was null.</exception>
         public Task<string> ConvertToMorse(string text)
         {
             strBuilder = new StringBuilder();
@@ -34,7 +40,12 @@ namespace MorseSharp.MorseConverter
                 for (int i = 0; i < text.Length; i++)
                 {
                     if (morse.Value.ContainsKey(text[i]))
+                    {
+                        strBuilder.Append(" ");
                         strBuilder.Append(morse.Value[text[i]].AsSpan());
+
+                    }
+                        
                     else
                     {
                         throw new Exception($"The {text[i]} character is not presented.");

@@ -22,7 +22,7 @@ namespace MorseTest
         public void ConvertMorseWithInvalidCharacter()
         {
             var converter = new MorseTextConverter();
-            Assert.ThrowsAsync<Exception>(async () => await converter.ConvertToMorse("@#"));
+            Assert.ThrowsAsync<Exception>(async () => await converter.ConvertToMorse("@"));
         }
     }
 }
