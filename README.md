@@ -42,7 +42,7 @@ Console.WriteLine(morse);
 ### Generating audio
 1.To generate audio first you need to instantiate ``MorseAudioConverter``, there are four overloaded constructor
 To configure audio options like characters speed, word speed and frequency. this WinForm example demonstrate the purpose:
-> MorseAudioConverter is just wrapper of [jstoddard]("https://github.com/jstoddard)'s [CWLibrary](https://github.com/jstoddard/CWLibrary).
+> MorseAudioConverter is just wrapper of [jstoddard](https://github.com/jstoddard)'s [CWLibrary](https://github.com/jstoddard/CWLibrary).
 ```C#
 using MorseSharp;
 
