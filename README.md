@@ -58,6 +58,7 @@ catch(Exception ex)
    MessageBox.Show(ex.Message);
 }
 ```
+> MorseAudioConverter is just wrapper of ![jstoddard]("https://github.com/jstoddard)'s ![CWLibrary](https://github.com/jstoddard/CWLibrary).
 3.After getting the bytes you can stream the bytes and play the sound, in this example we are using SoundPlayer object to play the sound:
 ```C#
 SoundPlayer player = new();
