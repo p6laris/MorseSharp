@@ -43,7 +43,6 @@ namespace MorseSharp.MorseConverter
                     {
                         strBuilder.Append(" ");
                         strBuilder.Append(morse.Value[text[i]].AsSpan());
-
                     }
                         
                     else
