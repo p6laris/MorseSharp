@@ -5,7 +5,9 @@ VisualStudioVersion = 17.3.32819.101
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MorseSharp", "MorseSharp\MorseSharp.csproj", "{920EEF40-90BB-4B30-B11F-0ABA4F6D9E47}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MorseTest", "MorseTest\MorseTest.csproj", "{2C868438-917E-4216-A29B-73470E2AC31F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MorseTest", "MorseTest\MorseTest.csproj", "{2C868438-917E-4216-A29B-73470E2AC31F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example", "Example\Example.csproj", "{5209A0AB-CB2B-4E0E-8A53-5193607516C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{2C868438-917E-4216-A29B-73470E2AC31F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C868438-917E-4216-A29B-73470E2AC31F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C868438-917E-4216-A29B-73470E2AC31F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5209A0AB-CB2B-4E0E-8A53-5193607516C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5209A0AB-CB2B-4E0E-8A53-5193607516C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5209A0AB-CB2B-4E0E-8A53-5193607516C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5209A0AB-CB2B-4E0E-8A53-5193607516C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
