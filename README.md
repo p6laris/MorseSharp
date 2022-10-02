@@ -30,7 +30,7 @@ using MorseSharp;
 MorseTextConverter converter = new();
 try
 {
-   var morse = await converter.ConvertToMorse();
+   var morse = await converter.ConvertToMorse("Hello Morse");
    Console.WriteLine(morse);
 }
 catch(Exception ex)
