@@ -40,8 +40,9 @@ namespace MorseSharp.MorseConverter
                 {
                     if (morse.Value.ContainsKey(text[i]))
                     {
-                        strBuilder.Append(" ");
+                        
                         strBuilder.Append(morse.Value[text[i]].AsSpan());
+                        strBuilder.Append(" ");
                     }
                         
                     else
