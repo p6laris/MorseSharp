@@ -3,18 +3,25 @@ using MorseSharp.MorseConverter;
 using System.IO;
 using System.Windows;
 
+//Create an instance of type MorseTextConverter
 MorseTextConverter converter = new MorseTextConverter();
 
-string message = "Hello Morse";
-string morse = string.Empty;
+string englishMessage = "Hello Morse";
+string kurdishMessage = "تاهر";
+string morseEnglish = string.Empty;
+string morseKurdish = string.Empty;
 
 try
 {
-    morse = await converter.ConvertToMorseEnglish(message);
+    //Convert english to morse
+    morseEnglish = await converter.ConvertToMorseEnglish(englishMessage);
+    //Convert kurdish to morse
+    morseKurdish = await converter.ConvertToMorseKurdish(kurdishMessage);
 }
 catch (Exception ex)
 {
     Console.WriteLine(ex.Message);
 }
 
-Console.WriteLine(morse);
+Console.WriteLine(morseEnglish);
+Console.WriteLine(morseKurdish);

@@ -17,10 +17,13 @@ namespace MorseSharp.MorseConverter
         /// <summary>
         /// Loads the morse characters.
         /// </summary>
-        private Lazy<Dictionary<char, string>> morse;
+        private Lazy<Dictionary<char, string>> morseEnglish;
+        private Lazy<Dictionary<char, string>> morseKurdish;
         public MorseTextConverter()
         {
-            morse = new Lazy<Dictionary<char, string>>(MorseCharacters.GetMorseCharactersEnglish);
+            morseEnglish = new Lazy<Dictionary<char, string>>(MorseCharacters.GetMorseCharactersEnglish);
+            morseKurdish = new Lazy<Dictionary<char, string>>(MorseCharacters.GetMorseCharactersKurdish);
+
          
         }
         /// <summary>
@@ -33,15 +36,15 @@ namespace MorseSharp.MorseConverter
         public Task<string> ConvertToMorseEnglish(string text)
         {
             strBuilder = new StringBuilder();
-            
+            text = text.ToUpper();
+
             if(text is not null)
             {
                 for (int i = 0; i < text.Length; i++)
                 {
-                    if (morse.Value.ContainsKey(text[i]))
-                    {
-                        
-                        strBuilder.Append(morse.Value[text[i]].AsSpan());
+                    if (morseEnglish.Value.ContainsKey(text[i]))
+                    {  
+                        strBuilder.Append(morseEnglish.Value[text[i]].AsSpan());
                         strBuilder.Append(" ");
                     }
                         
@@ -54,6 +57,32 @@ namespace MorseSharp.MorseConverter
                 return Task.Run(() => strBuilder.ToString());
             }
             
+            throw new ArgumentNullException(nameof(text));
+        }
+
+        public Task<string> ConvertToMorseKurdish(string text)
+        {
+            strBuilder = new StringBuilder();
+            text = text.ToUpper();
+
+            if (text is not null)
+            {
+                for (int i = 0; i < text.Length; i++)
+                {
+                    if (morseKurdish.Value.ContainsKey(text[i]))
+                    {
+                        strBuilder.Append(morseKurdish.Value[text[i]].AsSpan());
+                        strBuilder.Append(" ");
+                    }
+
+                    else
+                    {
+                        throw new Exception($"The {text[i]} character is not presented.");
+                    }
+
+                }
+                return Task.Run(() => strBuilder.ToString());
+            }
             throw new ArgumentNullException(nameof(text));
         }
     }
