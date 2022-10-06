@@ -21,30 +21,6 @@ using MorseSharp;
 var morse = await converter.ConvertToMorse;
 ```
 3. You can also convert __kurdish__ sentences to morse code by calling asynchronous method `ConvertToMorseKurdish`
-
-## Example 
-### Text to morse
-This piece of code convert a simple text to morse code and then show it to the console:
-```C#
-using System;
-using MorseSharp;
-
-MorseTextConverter converter = new();
-string morseEng = string.Empty;
-string morseKrd = string.Empty;
-try
-{
-   morseEng = await converter.ConvertToMorseEnglish("Hello Morse");
-   morseKrd = await converter.ConvertToMorseEnglish(سڵاو مۆرس);
-}
-catch(Exception ex)
-{
-   Console.WriteLine(ex.Message);
-}
-Console.WriteLine(morseEng);
-Console.WriteLine("--------------------------");
-Console.WriteLine(morseKrd);
-```
 ### 2. Generating audio
 1. To generate audio first you need to instantiate ``MorseAudioConverter``, there are five overloaded constructor
 To configure audio options like language and characters speed, word speed ,frequency. this WinForm example demonstrate the purpose:
@@ -77,5 +53,29 @@ using(Stream stream = new MemoryStream(morse.ToArray())
    player.PlayAsync();
 }
 ```
+## Example 
+### Text to morse
+This piece of code convert a simple text to morse code and then show it to the console:
+```C#
+using System;
+using MorseSharp;
+
+MorseTextConverter converter = new();
+string morseEng = string.Empty;
+string morseKrd = string.Empty;
+try
+{
+   morseEng = await converter.ConvertToMorseEnglish("Hello Morse");
+   morseKrd = await converter.ConvertToMorseEnglish(سڵاو مۆرس);
+}
+catch(Exception ex)
+{
+   Console.WriteLine(ex.Message);
+}
+Console.WriteLine(morseEng);
+Console.WriteLine("--------------------------");
+Console.WriteLine(morseKrd);
+```
+
 ## License
 [MIT License](LICENSE)
