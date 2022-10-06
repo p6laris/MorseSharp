@@ -1,4 +1,4 @@
-﻿using MorseSharp.MorseConverter;
+﻿using MorseSharp.Converter;
 
 namespace MorseTest
 {

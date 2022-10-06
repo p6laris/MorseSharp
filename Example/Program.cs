@@ -1,5 +1,5 @@
 ﻿using MorseSharp;
-using MorseSharp.MorseConverter;
+using MorseSharp.Converter;
 using System.IO;
 using System.Windows;
 
@@ -7,7 +7,7 @@ using System.Windows;
 MorseTextConverter converter = new MorseTextConverter();
 
 string englishMessage = "Hello Morse";
-string kurdishMessage = "تاهر";
+string kurdishMessage = "زانا";
 string morseEnglish = string.Empty;
 string morseKurdish = string.Empty;
 

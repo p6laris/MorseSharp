@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MorseSharp.MorseConverter
+namespace MorseSharp.Converter
 {
     public class MorseTextConverter : IMorseConverter
     {

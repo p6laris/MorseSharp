@@ -1,5 +1,6 @@
 using MorseSharp;
-using MorseSharp.MorseConverter;
+using MorseSharp.Audio.Languages;
+using MorseSharp.Converter;
 using System.IO;
 using System.Media;
 namespace AudioExample
@@ -23,7 +24,7 @@ namespace AudioExample
         private async void ToAudioBtn_Click(object sender, EventArgs e)
         {
             //Delcare and init MorseSharp MorseAudioConverter object to convert morse to audio of dash and dots.
-            MorseAudioConverter converter = new MorseAudioConverter(25,25);
+            MorseAudioConverter converter = new MorseAudioConverter(Language.English);
 
             //Delcare and init MorseSharp MorseTextConverter object to convert sentence to morse dash and dots.
             MorseTextConverter textConverter = new MorseTextConverter();
@@ -31,7 +32,7 @@ namespace AudioExample
             try
             {
                 //Check if the message length is greater than zero.
-                if(MessageMorseTxt.Text.Length > 0)
+                if (MessageMorseTxt.Text.Length > 0)
                 {
                     //Get wav bytes from the ConvertMorseAudio method and then assigned to memory of bytes
                     bytes = await converter.ConvertMorseToAudio(MessageMorseTxt.Text);
@@ -43,17 +44,17 @@ namespace AudioExample
                     PlayBtn.Enabled = true;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
-            
+
         }
 
         private void PlayBtn_Click(object sender, EventArgs e)
         {
             //Read the memory stream from the memory of bytes
-            using(Stream stream = new MemoryStream(bytes.ToArray()))
+            using (Stream stream = new MemoryStream(bytes.ToArray()))
             {
                 //Assign the stream to soundPlayer Stream
                 soundPlayer.Stream = stream;
@@ -61,6 +62,36 @@ namespace AudioExample
                 //Play the sound
                 soundPlayer.PlaySync();
             }
+        }
+
+        private async void ToMorseKurdish_Click(object sender, EventArgs e)
+        {
+            //Delcare and init MorseSharp MorseAudioConverter object to convert morse to audio of dash and dots.
+            MorseAudioConverter converter = new MorseAudioConverter(Language.Kurdish);
+
+            //Delcare and init MorseSharp MorseTextConverter object to convert sentence to morse dash and dots.
+            MorseTextConverter textConverter = new MorseTextConverter();
+
+            try
+            {
+                //Check if the message length is greater than zero.
+                if (MessageMorseTxt.Text.Length > 0)
+                {
+                    //Get wav bytes from the ConvertMorseAudio method and then assigned to memory of bytes
+                    bytes = await converter.ConvertMorseToAudio(MessageMorseTxt.Text);
+
+                    //Update the richtextbox text to morse dash and dots.
+                    MorseTxt.Text = await textConverter.ConvertToMorseKurdish(MessageMorseTxt.Text);
+
+                    //Enable the play button to play
+                    PlayBtn.Enabled = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
         }
     }
 }

@@ -21,9 +21,5 @@
     <Version>1.2.2$(VersionPrefix)</Version>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MorseCodeToAudio" Version="1.0.1" />
-  </ItemGroup>
-
 
 </Project>
