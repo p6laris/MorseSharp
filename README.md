@@ -7,46 +7,31 @@ Use nuget package manager to install [MorseSharp](https://www.nuget.org/packages
 dotnet add package MorseSharp --version 1.0.1
 ```
 ## Usage
+### 1. Text
 1. You can use MorseSharp just by instantiating `MorseTextConverter` class
 
 ```C#
 using MorseSharp;
 MorseTextConverter converter = new MorseTextConverter();
 ```
-2.Sentences can be converte to morse code by just calling asynchronous method `ConvertToMorse`
+2.__English__ sentences can be converted to morse code by just calling asynchronous method `ConvertToMorseEnglish`
 
 ```C#
 using MorseSharp;
 var morse = await converter.ConvertToMorse;
 ```
-## Example 
-### Text to morse
-This piece of code convert a simple text to morse code and then show it to the console:
-```C#
-
-using System;
-using MorseSharp;
-
-MorseTextConverter converter = new();
-try
-{
-   var morse = await converter.ConvertToMorse("Hello Morse");
-   Console.WriteLine(morse);
-}
-catch(Exception ex)
-{
-   Console.WriteLine(ex.Message);
-}
-Console.WriteLine(morse);
-```
-### Generating audio
-1. To generate audio first you need to instantiate ``MorseAudioConverter``, there are four overloaded constructor
-To configure audio options like characters speed, word speed and frequency. this WinForm example demonstrate the purpose:
-> MorseAudioConverter is just wrapper of [jstoddard](https://github.com/jstoddard)'s [CWLibrary](https://github.com/jstoddard/CWLibrary) Library.
+3. You can also convert __kurdish__ sentences to morse code by calling asynchronous method `ConvertToMorseKurdish`
+### 2. Generating audio
+1. To generate audio first you need to instantiate ``MorseAudioConverter``, there are five overloaded constructor
+To configure audio options like language and characters speed, word speed ,frequency. this WinForm example demonstrate the purpose:
+> MorseAudioConverter is just optimized wrapper of [jstoddard](https://github.com/jstoddard)'s [CWLibrary](https://github.com/jstoddard/CWLibrary) Library.
 ```C#
 using MorseSharp;
 
-MorseAudioConverter converter = new(25,20,600);
+MorseAudioConverter converter = new(Language.English,25,20,600);
+//Or for kurdish language
+//MorseAudioConverter converter = new(Language.Kurdish,25,20,600);
+
 ```
 2. Bytes for the generated wav audio can be recived by calling ``MorseAudioConverter``'s asynchronous ``ConvertMorseToAudio`` method:
 ```C#
@@ -68,5 +53,29 @@ using(Stream stream = new MemoryStream(morse.ToArray())
    player.PlayAsync();
 }
 ```
+## Example 
+### Text to morse
+This piece of code convert a simple text to morse code and then show it to the console:
+```C#
+using System;
+using MorseSharp;
+
+MorseTextConverter converter = new();
+string morseEng = string.Empty;
+string morseKrd = string.Empty;
+try
+{
+   morseEng = await converter.ConvertToMorseEnglish("Hello Morse");
+   morseKrd = await converter.ConvertToMorseKurdish(سڵاو مۆرس);
+}
+catch(Exception ex)
+{
+   Console.WriteLine(ex.Message);
+}
+Console.WriteLine(morseEng);
+Console.WriteLine("--------------------------");
+Console.WriteLine(morseKrd);
+```
+
 ## License
 [MIT License](LICENSE)
