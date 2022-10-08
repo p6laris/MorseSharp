@@ -1,6 +1,8 @@
 # MorseSharp
 MorseSharp is a simple lightweight .NET library to convert **english** and **kurdish** sentences to morse code.
 
+![alt text](https://github.com/p6laris/MorseSharp/blob/master/MorseSharp.png?raw=true)
+
 ## Installation
 Use nuget package manager to install [MorseSharp](https://www.nuget.org/packages/MorseSharp) using CLI.
 ```bash
