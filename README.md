@@ -11,7 +11,7 @@ MorseSharp is a simple lightweight .NET library to convert **english** and **kur
 ## Installation
 Use nuget package manager to install [MorseSharp](https://www.nuget.org/packages/MorseSharp) using CLI.
 ```bash
-dotnet add package MorseSharp --version 1.0.1
+Install-Package MorseSharp
 ```
 ## Usage
 ### 1. Text
