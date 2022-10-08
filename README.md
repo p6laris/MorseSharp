@@ -1,4 +1,9 @@
 # MorseSharp
+![Nuget](https://img.shields.io/nuget/dt/MorseSharp?logo=nuget)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/p6laris/MorseSharp)
+
+
 MorseSharp is a simple lightweight .NET library to convert **english** and **kurdish** sentences to morse code.
 
 ![alt text](https://github.com/p6laris/MorseSharp/blob/master/MorseSharp.png?raw=true)
