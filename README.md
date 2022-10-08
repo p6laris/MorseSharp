@@ -66,7 +66,7 @@ string morseKrd = string.Empty;
 try
 {
    morseEng = await converter.ConvertToMorseEnglish("Hello Morse");
-   morseKrd = await converter.ConvertToMorseEnglish(سڵاو مۆرس);
+   morseKrd = await converter.ConvertToMorseKurdish(سڵاو مۆرس);
 }
 catch(Exception ex)
 {
