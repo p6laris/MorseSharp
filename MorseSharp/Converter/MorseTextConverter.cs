@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace MorseSharp.Converter
 {
-    public class MorseTextConverter : IMorseConverter
+    public class MorseTextConverter : IMorseTextConverter
     {
         /// <summary>
         /// <see cref="System.Text.StringBuilder"></see> object to append converted morse codes./>
         /// </summary>
-        private StringBuilder? strBuilder;
+        private StringBuilder strBuilder;
 
         /// <summary>
         /// Loads the morse characters.
@@ -23,67 +23,74 @@ namespace MorseSharp.Converter
         {
             morseEnglish = new Lazy<Dictionary<char, string>>(MorseCharacters.GetMorseCharactersEnglish);
             morseKurdish = new Lazy<Dictionary<char, string>>(MorseCharacters.GetMorseCharactersKurdish);
+        }
+       /// <summary>
+       /// Converts a morse message to english sentence
+       /// </summary>
+       /// <param name="Morse">The <see cref="string"/> of the morse message.</param>
+       /// <returns><see cref="string"/>of the converted morse.</returns>
+       /// <exception cref="Exception">Throws if the morse letter was not presented.</exception>
+       /// <exception cref="ArgumentNullException">Throw if Morse param was null.</exception>
+        public Task<string> ConvertMorseToEnglish(string Morse)
+        {
+            strBuilder = new StringBuilder();
 
-         
+            if (Morse is not null)
+            {
+                var words = Morse.Split(' ');
+                for (int i = 0; i < words.Length; i++)
+                {
+                    if (words[i] != "/")
+                    {
+                        if (morseEnglish.Value.Values.Contains(words[i]))
+                        {
+                            var word = morseEnglish.Value.FirstOrDefault(x => x.Value == words[i]).Key;
+                            strBuilder.Append(word);
+                        }
+                        else
+                            throw new Exception($"The {Morse[i]} is not presented.");
+                    }
+                    else
+                        strBuilder.Append(' ');
+                }
+
+                return Task.Run(() => strBuilder.ToString());
+            }
+            throw new ArgumentNullException(nameof(Morse));
         }
         /// <summary>
-        /// Converts the given string sentence to morse code.
+        /// Converts a morse message to kurdish sentence
         /// </summary>
-        /// <param name="text">The <see cref="System.String"></see> to convert to morse code.</param>
-        /// <returns><see cref="Task{string}"></see> of the morse result.</returns>
-        /// <exception cref="Exception">Throws if a character doesn't presented.</exception>
-        /// <exception cref="ArgumentNullException">Throws if the string text was null.</exception>
-        public Task<string> ConvertToMorseEnglish(string text)
+        /// <param name="Morse">The <see cref="string"/> of the morse message.</param>
+        /// <returns><see cref="string"/>of the converted morse.</returns>
+        /// <exception cref="Exception">Throws if the morse letter was not presented.</exception>
+        /// <exception cref="ArgumentNullException">Throw if Morse param was null.</exception>
+        public Task<string> ConvertMorseToKurdish(string Morse)
         {
             strBuilder = new StringBuilder();
-            text = text.ToUpper();
 
-            if(text is not null)
+            if (Morse is not null)
             {
-                for (int i = 0; i < text.Length; i++)
+                var words = Morse.Split(' ');
+                for (int i = 0; i < words.Length; i++)
                 {
-                    if (morseEnglish.Value.ContainsKey(text[i]))
-                    {  
-                        strBuilder.Append(morseEnglish.Value[text[i]].AsSpan());
-                        strBuilder.Append(" ");
-                    }
-                        
-                    else
+                    if (words[i] != "/")
                     {
-                        throw new Exception($"The {text[i]} character is not presented.");
+                        if (morseKurdish.Value.Values.Contains(words[i]))
+                        {
+                            var word = morseKurdish.Value.FirstOrDefault(x => x.Value == words[i]).Key;
+                            strBuilder.Append(word);
+                        }
+                        else
+                            throw new Exception($"The {Morse[i]} is not presented.");
                     }
-                        
+                    else
+                        strBuilder.Append(' ');
                 }
+
                 return Task.Run(() => strBuilder.ToString());
             }
-            
-            throw new ArgumentNullException(nameof(text));
-        }
-
-        public Task<string> ConvertToMorseKurdish(string text)
-        {
-            strBuilder = new StringBuilder();
-            text = text.ToUpper();
-
-            if (text is not null)
-            {
-                for (int i = 0; i < text.Length; i++)
-                {
-                    if (morseKurdish.Value.ContainsKey(text[i]))
-                    {
-                        strBuilder.Append(morseKurdish.Value[text[i]].AsSpan());
-                        strBuilder.Append(" ");
-                    }
-
-                    else
-                    {
-                        throw new Exception($"The {text[i]} character is not presented.");
-                    }
-
-                }
-                return Task.Run(() => strBuilder.ToString());
-            }
-            throw new ArgumentNullException(nameof(text));
+            throw new ArgumentNullException(nameof(Morse));
         }
     }
 }

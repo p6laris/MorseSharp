@@ -25,9 +25,9 @@ namespace AudioExample
         {
             //Delcare and init MorseSharp MorseAudioConverter object to convert morse to audio of dash and dots.
             MorseAudioConverter converter = new MorseAudioConverter(Language.English);
-
             //Delcare and init MorseSharp MorseTextConverter object to convert sentence to morse dash and dots.
-            MorseTextConverter textConverter = new MorseTextConverter();
+            TextMorseConverter textConverter = new TextMorseConverter();
+
 
             try
             {
@@ -36,6 +36,7 @@ namespace AudioExample
                 {
                     //Get wav bytes from the ConvertMorseAudio method and then assigned to memory of bytes
                     bytes = await converter.ConvertMorseToAudio(MessageMorseTxt.Text);
+
 
                     //Update the richtextbox text to morse dash and dots.
                     MorseTxt.Text = await textConverter.ConvertToMorseEnglish(MessageMorseTxt.Text);
@@ -70,7 +71,7 @@ namespace AudioExample
             MorseAudioConverter converter = new MorseAudioConverter(Language.Kurdish);
 
             //Delcare and init MorseSharp MorseTextConverter object to convert sentence to morse dash and dots.
-            MorseTextConverter textConverter = new MorseTextConverter();
+            TextMorseConverter textConverter = new TextMorseConverter();
 
             try
             {
@@ -79,6 +80,7 @@ namespace AudioExample
                 {
                     //Get wav bytes from the ConvertMorseAudio method and then assigned to memory of bytes
                     bytes = await converter.ConvertMorseToAudio(MessageMorseTxt.Text);
+
 
                     //Update the richtextbox text to morse dash and dots.
                     MorseTxt.Text = await textConverter.ConvertToMorseKurdish(MessageMorseTxt.Text);
