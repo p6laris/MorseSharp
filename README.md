@@ -2,8 +2,7 @@
 ![Nuget](https://img.shields.io/nuget/dt/MorseSharp?logo=nuget)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/p6laris/MorseSharp)
 
-
-MorseSharp is a simple lightweight .NET library to convert **english** and **kurdish** sentences to morse code.
+MorseSharp is a simple lightweight .NET library to Encoding/decoding  **english** and **kurdish** sentences to morse code and vice versa.
 
 ![alt text](https://github.com/p6laris/MorseSharp/blob/master/MorseSharp.png?raw=true)
 
