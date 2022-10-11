@@ -7,25 +7,36 @@ MorseSharp is a simple lightweight .NET library to Encoding/decoding  **english*
 ![alt text](https://github.com/p6laris/MorseSharp/blob/master/MorseSharp.png?raw=true)
 
 ## Installation
-Use nuget package manager to install [MorseSharp](https://www.nuget.org/packages/MorseSharp) using CLI.
+Use nuget package manager to install [MorseSharp](https://www.nuget.org/packages/MorseSharp).
 ```bash
 Install-Package MorseSharp
 ```
 ## Usage
 ### 1. Text
-1. You can use MorseSharp just by instantiating `MorseTextConverter` class
+1. You can use MorseSharp just by instantiating `TextMorseConverter` class
 
 ```C#
 using MorseSharp;
-MorseTextConverter converter = new MorseTextConverter();
+TextMorseConverter converter = new TextMorseConverter();
 ```
 2.__English__ sentences can be converted to morse code by just calling asynchronous method `ConvertToMorseEnglish`
 
 ```C#
 using MorseSharp;
-var morse = await converter.ConvertToMorse;
+var morse = await converter.ConvertToMorseEnglish("Hi Morse");
 ```
 3. You can also convert __kurdish__ sentences to morse code by calling asynchronous method `ConvertToMorseKurdish`
+
+#### Decoding
+You can decode morse messages by instantiating `MorseTextConverter` class, then calling asynchronous methods `ConvertKurdishToMorse` or `ConvertMorseToEnglish`:
+
+```C#
+using MorseSharp;
+var converter = new MorseTextConverter();
+
+var sentence = await converter.ConvertEnglishToMorse(".... ...");
+```
+
 ### 2. Generating audio
 1. To generate audio first you need to instantiate ``MorseAudioConverter``, there are five overloaded constructor
 To configure audio options like language and characters speed, word speed ,frequency. this WinForm example demonstrate the purpose:
@@ -62,24 +73,40 @@ using(Stream stream = new MemoryStream(morse.ToArray())
 ### Text to morse
 This piece of code convert a simple text to morse code and then show it to the console:
 ```C#
-using System;
-using MorseSharp;
+TextMorseConverter converter = new TextMorseConverter();
+MorseTextConverter converter1 = new MorseTextConverter();
 
-MorseTextConverter converter = new();
-string morseEng = string.Empty;
-string morseKrd = string.Empty;
+string englishMessage = "Hello Morse";
+string kurdishMessage = "زانا";
+string morseMessageEnglish = ".... ..";
+string morseMessageKurdish = "_.... .__ ..";
+
+string morseEnglish = string.Empty;
+string morseKurdish = string.Empty;
+string englishMorse = string.Empty;
+string kurdishMorse =string.Empty;
+
 try
 {
-   morseEng = await converter.ConvertToMorseEnglish("Hello Morse");
-   morseKrd = await converter.ConvertToMorseKurdish(سڵاو مۆرس);
+   
+    //Convert english to morse
+    morseEnglish = await converter.ConvertToMorseEnglish(englishMessage);
+    //Convert kurdish to morse
+    morseKurdish = await converter.ConvertToMorseKurdish(kurdishMessage);
+    //Convert morse to english sentence
+    englishMorse = await converter1.ConvertMorseToEnglish(morseMessageEnglish);
+    //Converts morse to kurdish sentence
+    kurdishMorse = await converter1.ConvertMorseToKurdish(morseMessageKurdish);
 }
-catch(Exception ex)
+catch (Exception ex)
 {
-   Console.WriteLine(ex.Message);
+    Console.WriteLine(ex.Message);
 }
-Console.WriteLine(morseEng);
-Console.WriteLine("--------------------------");
-Console.WriteLine(morseKrd);
+
+Console.WriteLine(morseEnglish);
+Console.WriteLine(morseKurdish);
+Console.WriteLine(englishMorse);
+Console.WriteLine(kurdishMorse);
 ```
 
 ## License
