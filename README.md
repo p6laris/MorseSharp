@@ -29,6 +29,7 @@ var morse = await converter.ConvertToMorseEnglish("Hi Morse");
 
 #### Decoding
 You can decode morse messages by instantiating `MorseTextConverter` class, then calling asynchronous methods `ConvertKurdishToMorse` or `ConvertMorseToEnglish`:
+ > :exclamation: Letters must be separated by spaces, words by ( / ).
 
 ```C#
 using MorseSharp;
