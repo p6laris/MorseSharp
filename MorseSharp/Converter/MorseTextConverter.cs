@@ -40,18 +40,21 @@ namespace MorseSharp.Converter
                 var words = Morse.Split(' ');
                 for (int i = 0; i < words.Length; i++)
                 {
-                    if (words[i] != "/")
+                    if (!String.IsNullOrEmpty(words[i]))
                     {
-                        if (morseEnglish.Value.Values.Contains(words[i]))
+                        if (words[i] != "/")
                         {
-                            var word = morseEnglish.Value.FirstOrDefault(x => x.Value == words[i]).Key;
-                            strBuilder.Append(word);
+                            if (morseEnglish.Value.Values.Contains(words[i]))
+                            {
+                                var word = morseEnglish.Value.FirstOrDefault(x => x.Value == words[i]).Key;
+                                strBuilder.Append(word);
+                            }
+                            else
+                                throw new Exception($"The {Morse[i]} is not presented.");
                         }
                         else
-                            throw new Exception($"The {Morse[i]} is not presented.");
+                            strBuilder.Append(' ');
                     }
-                    else
-                        strBuilder.Append(' ');
                 }
 
                 return Task.Run(() => strBuilder.ToString());
@@ -67,6 +70,7 @@ namespace MorseSharp.Converter
         /// <exception cref="ArgumentNullException">Throw if Morse param was null.</exception>
         public Task<string> ConvertMorseToKurdish(string Morse)
         {
+            
             strBuilder = new StringBuilder();
 
             if (Morse is not null)

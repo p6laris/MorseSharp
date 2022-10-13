@@ -5,7 +5,7 @@ using System.IO;
 using System.Windows;
 
 
-//Create an instance of type MorseTextConverter
+
 TextMorseConverter converter = new TextMorseConverter();
 MorseTextConverter converter1 = new MorseTextConverter();
 
