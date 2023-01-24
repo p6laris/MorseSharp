@@ -2,7 +2,7 @@
 ![Nuget](https://img.shields.io/nuget/dt/MorseSharp?logo=nuget)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/p6laris/MorseSharp)
 
-MorseSharp is a simple lightweight .NET library to Encoding/decoding  **up to 8 languages** including kurdish sentences to morse code and vice versa.
+MorseSharp is a simple lightweight .NET library to Encoding/decoding  **up to 8 languages** including kurdish to morse.
 
 ![alt text](https://github.com/p6laris/MorseSharp/blob/master/MorseSharp.png?raw=true)
 
