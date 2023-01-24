@@ -1,5 +1,4 @@
 using MorseSharp;
-using MorseSharp.Audio.Languages;
 using MorseSharp.Converter;
 using System.IO;
 using System.Media;
@@ -24,9 +23,9 @@ namespace AudioExample
         private async void ToAudioBtn_Click(object sender, EventArgs e)
         {
             //Delcare and init MorseSharp MorseAudioConverter object to convert morse to audio of dash and dots.
-            MorseAudioConverter converter = new MorseAudioConverter(Language.English);
+            MorseAudioConverter converter = new MorseAudioConverter(Language.Kurdish);
             //Delcare and init MorseSharp MorseTextConverter object to convert sentence to morse dash and dots.
-            TextMorseConverter textConverter = new TextMorseConverter();
+            TextMorseConverter textConverter = new TextMorseConverter(Language.Kurdish);
 
 
             try
@@ -39,7 +38,7 @@ namespace AudioExample
 
 
                     //Update the richtextbox text to morse dash and dots.
-                    MorseTxt.Text = await textConverter.ConvertToMorseEnglish(MessageMorseTxt.Text);
+                    MorseTxt.Text = await textConverter.ConvertTextToMorse(MessageMorseTxt.Text);
 
                     //Enable the play button to play
                     PlayBtn.Enabled = true;
@@ -71,7 +70,7 @@ namespace AudioExample
             MorseAudioConverter converter = new MorseAudioConverter(Language.Kurdish);
 
             //Delcare and init MorseSharp MorseTextConverter object to convert sentence to morse dash and dots.
-            TextMorseConverter textConverter = new TextMorseConverter();
+            TextMorseConverter textConverter = new TextMorseConverter(Language.Kurdish);
 
             try
             {
@@ -83,7 +82,7 @@ namespace AudioExample
 
 
                     //Update the richtextbox text to morse dash and dots.
-                    MorseTxt.Text = await textConverter.ConvertToMorseKurdish(MessageMorseTxt.Text);
+                    MorseTxt.Text = await textConverter.ConvertTextToMorse(MessageMorseTxt.Text);
 
                     //Enable the play button to play
                     PlayBtn.Enabled = true;

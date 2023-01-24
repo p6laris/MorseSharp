@@ -3,13 +3,33 @@
     /// <summary>
     /// Defines all morse characters.
     /// </summary>
-    internal static class MorseCharacters
+    public static class MorseCharacters
     {
+
         /// <summary>
-        /// Defines all morse characters in english language.
+        /// Gets a collection of a morse code characters for the given language.
         /// </summary>
-        /// <returns><see cref="System.Collections.Generic.Dictionary{TKey, TValue}"></see> of morse characters./></returns>
-        public static Dictionary<char, string> GetMorseCharactersEnglish()
+        /// <param name="Language">The <see cref="MorseSharp.Language"/> </param>
+        /// <returns><see cref="System.Collections.Generic.Dictionary{Char, String}"></see> of morse characters.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public static Dictionary<char, string> GetLanguageCharacter(Language Language) => Language switch
+        {
+            Language.English => GetMorseCharactersEnglish(),
+            Language.Kurdish => GetMorseCharactersKurdish(),
+            Language.Arabic => GetMorseCharactersArabic(),
+            Language.Deutsch => GetMorseCharactersDeutsch(),
+            Language.Espanol => GetMorseCharactersEspanol(),
+            Language.Francais => GetMorseCharactersFrancais(),
+            Language.Italiano => GetMorseCharactersItaliano(),
+            Language.Japanese => GetMorseCharactersJapanese(),
+            Language.Portugues => GetMorseCharactersPortugues(),
+            _ => throw new ArgumentOutOfRangeException(nameof(Language))
+        };
+        /// <summary>
+        /// Defines all morse characters in English.
+        /// </summary>
+        /// <returns><see cref="System.Collections.Generic.Dictionary{char, string}"></see> of morse characters.</returns>
+        private static Dictionary<char, string> GetMorseCharactersEnglish()
         {
             return new Dictionary<char, string>()
             {
@@ -42,7 +62,7 @@
                 { 'Z', "__.." },
                 //Numerics
                 { '1', ".____" },
-                { '2', "..__" },
+                { '2', "..___" },
                 { '3', "...__" },
                 { '4', "...._" },
                 { '5', "....." },
@@ -69,15 +89,20 @@
                 {'*',"_.._" },
                 {'=',"_..._" },
                 {')',"_.__._" },
-                {'(',"_.__." }
+                {'(',"_.__." },
+                {'$',"..._.._" },
+                {'¿',".._._" },
+                {'¡',"__..._" },
+                {'&',"._..." },
+                {'@',".__._." }
         };
         }
 
         /// <summary>
-        /// Defines all morse characters in kurdish language.
+        /// Defines all morse characters in Kurdish.
         /// </summary>
-        /// <returns><see cref="System.Collections.Generic.Dictionary{TKey, TValue}"></see> of morse characters./></returns>
-        public static Dictionary<char, string> GetMorseCharactersKurdish()
+        /// <returns><see cref="System.Collections.Generic.Dictionary{Char, String}"></see> of morse characters.</returns>
+        private static Dictionary<char, string> GetMorseCharactersKurdish()
         {
             return new Dictionary<char, string>()
             {
@@ -147,8 +172,629 @@
                 {'=',"_..._" },
                 {')',"_.__._" },
                 {'(',"_.__." },
+                {'$',"..._.._" },
+                {'¿',".._._" },
+                {'¡',"__..._" },
+                {'&',"._..." },
+                {'@',".__._." }
 
         };
+        }
+
+        /// <summary>
+        /// Defines all morse characters in Arabic.
+        /// </summary>
+        /// <returns><see cref="System.Collections.Generic.Dictionary{TKey, TValue}"></see> of morse characters.</returns>
+        private static Dictionary<char, string> GetMorseCharactersArabic()
+        {
+            return new Dictionary<char, string>
+            {
+                //Alphabe
+                { 'ا', "._" },
+                { 'ب', "_..." },
+                { 'ت', "_" },
+                { 'ث', "_._." },
+                { 'ج', ".___" },
+                { 'ح', "...." },
+                { 'خ', "___" },
+                { 'د', "_.." },
+                { 'ذ', "__.." },
+                { 'ر', "._." },
+                { 'ز', "___." },
+                { 'س', "..." },
+                { 'ش', "____" },
+                { 'ص', "_.._" },
+                { 'ض', "..._" },
+                { 'ط', ".._" },
+                { 'ظ', "_.__" },
+                { 'ع', "._._" },
+                { 'غ', "__." },
+                { 'ف', ".._." },
+                { 'ق', "__._" },
+                { 'ك', "_._" },
+                { 'ل', "._.." },
+                { 'م', "__" },
+                { 'ن', "_." },
+                { 'ه', ".._.." },
+                { 'و', ".__" },
+                { 'ي', ".." },
+                { 'ء', "." },
+                //Numerics
+                { '1', ".____" },
+                { '2', "..___" },
+                { '3', "...__" },
+                { '4', "...._" },
+                { '5', "....." },
+                { '6', "_...." },
+                { '7', "__..." },
+                { '8', "___.." },
+                { '9', "____." },
+                { '0', "_____" },
+                //Space
+                { ' ', "/" },
+                //Punctuation
+                { '.', "._._._" },
+                { '،', "__..__" },
+                { '؟', "..__.." },
+                { '؛', "_._._." },
+                { ':', "___..." },
+                { '/', "_.._." },
+                { '‘', ".____." },
+                { '\"', "._.._." },
+                //Special Characters
+                { '_', "..__._" },
+                { '+', "._._." },
+                { '-', "_...._" },
+                { '*', "_.._" },
+                { '=', "_..._" },
+                { ')', "_.__._" },
+                { '(', "_.__." },
+                {'$',"..._.._" },
+                {'¿',".._._" },
+                {'¡',"__..._" },
+                {'&',"._..." },
+                {'@',".__._." }
+            };
+        }
+        /// <summary>
+        /// Defines all morse characters in Deutsch.
+        /// </summary>
+        /// <returns><see cref="System.Collections.Generic.Dictionary{TKey, TValue}"></see> of morse characters.</returns>
+        private static Dictionary<char, string> GetMorseCharactersDeutsch()
+        {
+            return new Dictionary<char, string>
+            {
+                //Alphabets
+                {'A',"._" },
+                {'B',"_..." },
+                {'C',"_._." },
+                {'D',"_.." },
+                {'E',"." },
+                {'F',".._." },
+                {'G',"__." },
+                {'H',"...." },
+                {'I',".." },
+                {'J',".___" },
+                {'K',"_._" },
+                {'L',"._.." },
+                {'M',"__" },
+                {'N',"_." },
+                {'O',"___" },
+                {'P',".__." },
+                {'Q',"__._" },
+                {'R',"_._" },
+                {'S',"..." },
+                {'T',"_" },
+                {'U',".._" },
+                {'V',"..._" },
+                {'W',".__" },
+                {'X',"_.._" },
+                {'Y',"_.__" },
+                {'Z',"__.." },
+                {'Ä',"._._" },
+                {'Ö',"___." },
+                {'ẞ',"......" },
+                {'Ü',"..__" },
+                //Numerics
+                { '1', ".____" },
+                { '2', "..___" },
+                { '3', "...__" },
+                { '4', "...._" },
+                { '5', "....." },
+                { '6', "_...." },
+                { '7', "__..." },
+                { '8', "___.." },
+                { '9', "____." },
+                { '0', "_____" },
+                //Punctuation
+                {'.',"._._._" },
+                {',',"__..__" },
+                {'?',"..__.." },
+                {';',"_._._." },
+                {':',"___..." },
+                {'/',"_.._."},
+                {'\'',".____." },
+                {'\"',"._.._." },
+                //Special Characters
+                {'_',"..__._"},
+                {'+',"._._." },
+                {'-',"_...._" },
+                {'*',"_.._" },
+                {'=',"_..._" },
+                {'(',"_.__._" },
+                {')',"_.__." },
+                {'$',"..._.._" },
+                {'¿',".._._" },
+                {'¡',"__..._" },
+                {'&',"._..." },
+                {'@',".__._." },
+            };
+        }
+
+        /// <summary>
+        /// Defines all morse characters in Espanol.
+        /// </summary>
+        /// <returns><see cref="System.Collections.Generic.Dictionary{TKey, TValue}"></see> of morse characters.</returns>
+        private static Dictionary<char, string> GetMorseCharactersEspanol()
+        {
+
+            return new Dictionary<char, string>()
+            {
+                //Alphabets
+                {'A',"._"},
+                {'B',"_..." },
+                {'C',"_._."},
+                {'D',"_.." },
+                {'E',"." },
+                {'F',".._." },
+                {'G',"__." },
+                {'H',"...." },
+                {'I',".." },
+                {'J',".___" },
+                {'K',"_._" },
+                {'L',"._.." },
+                {'M',"__" },
+                {'N',"_." },
+                {'O',"___" },
+                {'P',".__." },
+                {'Q',"__._" },
+                {'R',"._." },
+                {'S',"..." },
+                {'T',"_" },
+                {'U',".._" },
+                {'V',"..._" },
+                {'W',".__" },
+                {'X',"_.._" },
+                {'Y',"_.__" },
+                {'Z',"__.." },
+                {'Á',".__._" },
+                {'É',".._.." },
+                {'Ñ',"__.__" },
+                {'Ó',"___." },
+
+
+
+                //Numerics
+                { '1', ".____" },
+                { '2', "..__" },
+                { '3', "...__" },
+                { '4', "...._" },
+                { '5', "....." },
+                { '6', "_...." },
+                { '7', "__..." },
+                { '8', "___.." },
+                { '9', "____." },
+                { '0', "_____" },
+                //Space
+                {' ', "/" },
+                //Punctuation
+                {'.',"._._._" },
+                {',',"__..__" },
+                {'?',"..__.." },
+                {';',"_._._." },
+                {':',"___..." },
+                {'/',"_.._."},
+                {'\'',".____." },
+                {'\"',"._.._." },
+
+                {'&',"._..." },
+                {'$',"..._.._" },
+                {'@',".__._." },
+                {'¿',".._._" },
+                {'¡',"__..._" },
+                {'!',"_._.__" },
+
+
+                //Special Characters
+                {'_',"..__._"},
+                {'+',"._._." },
+                {'-',"_...._" },
+                {'*',"_.._" },
+                {'=',"_..._" },
+                {')',"_.__._" },
+                {'(',"_.__." }
+            };
+        }
+
+        /// <summary>
+        /// Defines all morse characters in Francais.
+        /// </summary>
+        /// <returns><see cref="System.Collections.Generic.Dictionary{TKey, TValue}"></see> of morse characters.</returns>
+        private static Dictionary<char, string> GetMorseCharactersFrancais()
+        {
+
+            return new Dictionary<char, string>()
+            {
+                //Alphabets
+                {'A',"._"},
+                {'B',"_..." },
+                {'C',"_._."},
+                {'D',"_.." },
+                {'E',"." },
+                {'F',".._." },
+                {'G',"__." },
+                {'H',"...." },
+                {'I',".." },
+                {'J',".___" },
+                {'K',"_._" },
+                {'L',"._.." },
+                {'M',"__" },
+                {'N',"_." },
+                {'O',"___" },
+                {'P',".__." },
+                {'Q',"__._" },
+                {'R',"._." },
+                {'S',"..." },
+                {'T',"_" },
+                {'U',".._" },
+                {'V',"..._" },
+                {'W',".__" },
+                {'X',"_.._" },
+                {'Y',"_.__" },
+                {'Z',"__.." },
+
+                {'À',".__._" },
+                {'Â',".__._" },
+                {'Æ',"._._" },
+                {'Ç',"_._.." },
+                {'È',"._.._" },
+                {'Ë',".._.." },
+                {'É',".._.." },
+                {'Ê',"_.._." },
+                {'Ï',"_..__" },
+                {'Ô',"___." },
+                {'Ü',"..__" },
+                {'Ù',"..__" },
+
+
+                //Numerics
+                { '1', ".____" },
+                { '2', "..__" },
+                { '3', "...__" },
+                { '4', "...._" },
+                { '5', "....." },
+                { '6', "_...." },
+                { '7', "__..." },
+                { '8', "___.." },
+                { '9', "____." },
+                { '0', "_____" },
+                //Space
+                {' ', "/" },
+                //Punctuation
+                {'.',"._._._" },
+                {',',"__..__" },
+                {'?',"..__.." },
+                {';',"_._._." },
+                {':',"___..." },
+                {'/',"_.._."},
+                {'\'',".____." },
+                {'\"',"._.._." },
+
+                {'&',"._..." },
+                {'$',"..._.._" },
+                {'@',".__._." },
+                {'¿',".._._" },
+                {'¡',"__..._" },
+                {'!',"_._.__" },
+
+                //Special Characters
+                {'_',"..__._"},
+                {'+',"._._." },
+                {'-',"_...._" },
+                {'*',"_.._" },
+                {'=',"_..._" },
+                {')',"_.__._" },
+                {'(',"_.__." }
+            };
+        }
+
+        /// <summary>
+        /// Defines all morse characters in Italiano.
+        /// </summary>
+        /// <returns><see cref="System.Collections.Generic.Dictionary{TKey, TValue}"></see> of morse characters.</returns>
+        private static Dictionary<char, string> GetMorseCharactersItaliano()
+        {
+
+            return new Dictionary<char, string>()
+            {
+                //Alphabets
+                {'A',"._"},
+                {'B',"_..." },
+                {'C',"_._."},
+                {'D',"_.." },
+                {'E',"." },
+                {'F',".._." },
+                {'G',"__." },
+                {'H',"...." },
+                {'I',".." },
+                {'J',".___" },
+                {'K',"_._" },
+                {'L',"._.." },
+                {'M',"__" },
+                {'N',"_." },
+                {'O',"___" },
+                {'P',".__." },
+                {'Q',"__._" },
+                {'R',"._." },
+                {'S',"..." },
+                {'T',"_" },
+                {'U',".._" },
+                {'V',"..._" },
+                {'W',".__" },
+                {'X',"_.._" },
+                {'Y',"_.__" },
+                {'Z',"__.." },
+               {'À',".__._" },
+                {'É',".._.." },
+                {'È',"._.._" },
+                {'Ì',".___." },
+                {'Ó',"___." },
+                {'Ò',"___." },
+                {'Ù',"..__" },
+
+
+                //Numerics
+                { '1', ".____" },
+                { '2', "..__" },
+                { '3', "...__" },
+                { '4', "...._" },
+                { '5', "....." },
+                { '6', "_...." },
+                { '7', "__..." },
+                { '8', "___.." },
+                { '9', "____." },
+                { '0', "_____" },
+                //Space
+                {' ', "/" },
+                //Punctuation
+                {'.',"._._._" },
+                {',',"__..__" },
+                {'?',"..__.." },
+                {';',"_._._." },
+                {':',"___..." },
+                {'/',"_.._."},
+                {'\'',".____." },
+                {'\"',"._.._." },
+
+                {'&',"._..." },
+                {'$',"..._.._" },
+                {'@',".__._." },
+                {'¿',".._._" },
+                {'¡',"__..._" },
+                {'!',"_._.__" },
+
+
+                //Special Characters
+                {'_',"..__._"},
+                {'+',"._._." },
+                {'-',"_...._" },
+                {'*',"_.._" },
+                {'=',"_..._" },
+                {')',"_.__._" },
+                {'(',"_.__." }
+            };
+        }
+
+        /// <summary>
+        /// Defines all morse characters in Japanese.
+        /// </summary>
+        /// <returns><see cref="System.Collections.Generic.Dictionary{TKey, TValue}"></see> of morse characters.</returns>
+        private static Dictionary<char, string> GetMorseCharactersJapanese()
+        {
+
+            return new Dictionary<char, string>()
+            {
+                //Alphabets
+                {'ア',"__.__"},
+                {'カ',"._.."},
+                {'サ',"_._._"},
+                {'タ',"_."},
+                {'ナ',"._."},
+                {'ハ',"_..." },
+                {'マ',"_.._"},
+                {'ヤ',".__"},
+                {'ラ',"..."},
+                {'ワ',"_._"},
+                {'イ',"._"},
+                {'キ',"_._.."},
+                {'シ',"__._."},
+                {'チ',".._."},
+                {'ニ',"_._."},
+                {'ヒ',"__.._"},
+                {'ミ',".._._"},
+                {'リ',"__."},
+                {'ヰ',"._.._"},
+                {'ウ',".._"},
+                {'ク',"..._"},
+                {'ス',"___._"},
+                {'ツ',".__." },
+                {'ヌ',"...." },
+                {'フ',"__.." },
+                {'ム',"_" },
+                {'ユ',"_..__" },
+                {'ル',"_.__." },
+                {'ン',"._._." },
+                {'エ',"_.___" },
+                {'ケ',"_.__" },
+                {'セ',".___." },
+                {'テ',"._.__" },
+                {'ネ',"__._" },
+                {'ヘ',"." },
+                {'メ',"_..._" },
+                {'レ',"___" },
+                {'ヱ',".__.." },
+                {'オ',"._..." },
+                {'コ',"____" },
+                {'ソ',"___." },
+                {'ト',".._.." },
+                {'ノ',"..__" },
+                {'ホ',"_.." },
+                {'モ',"_.._." },
+                {'ヨ',"__" },
+                {'ロ',"._._" },
+                {'ヲ',".___" },
+                {'゛',".." },
+                {'゜',"..__." },
+                {'。',"._._.." },
+                {'ー',".__._" },
+                {'、',"._._._" },
+                {'（',"_.__._" },
+                {'）',"._.._." },
+               
+
+
+                //Numerics
+                { '1', ".____" },
+                { '2', "..__" },
+                { '3', "...__" },
+                { '4', "...._" },
+                { '5', "....." },
+                { '6', "_...." },
+                { '7', "__..." },
+                { '8', "___.." },
+                { '9', "____." },
+                { '0', "_____" },
+                //Space
+                {' ', "/" },
+                //Punctuation
+                {'.',"._._._" },
+                {',',"__..__" },
+                {'?',"..__.." },
+                {';',"_._._." },
+                {':',"___..." },
+                {'/',"_.._."},
+                {'\'',".____." },
+                {'\"',"._.._." },
+
+                {'&',"._..." },
+                {'$',"..._.._" },
+                {'@',".__._." },
+                {'¿',".._._" },
+                {'¡',"__..._" },
+                {'!',"_._.__" },
+
+
+                //Special Characters
+                {'_',"..__._"},
+                {'+',"._._." },
+                {'-',"_...._" },
+                {'*',"_.._" },
+                {'=',"_..._" },
+                {')',"_.__._" },
+                {'(',"_.__." }
+            };
+        }
+
+        /// <summary>
+        /// Defines all morse characters in Portugues.
+        /// </summary>
+        /// <returns></returns>
+        private static Dictionary<char, string> GetMorseCharactersPortugues()
+        {
+
+            return new Dictionary<char, string>()
+            {
+               //Alphabets
+                {'A',"._"},
+                {'B',"_..." },
+                {'C',"_._."},
+                {'D',"_.." },
+                {'E',"." },
+                {'F',".._." },
+                {'G',"__." },
+                {'H',"...." },
+                {'I',".." },
+                {'J',".___" },
+                {'K',"_._" },
+                {'L',"._.." },
+                {'M',"__" },
+                {'N',"_." },
+                {'O',"___" },
+                {'P',".__." },
+                {'Q',"__._" },
+                {'R',"._." },
+                {'S',"..." },
+                {'T',"_" },
+                {'U',".._" },
+                {'V',"..._" },
+                {'W',".__" },
+                {'X',"_.._" },
+                {'Y',"_.__" },
+                {'Z',"__.." },
+
+                {'Ã',".__._" },
+                {'Á',".__._" },
+                {'À',".__._" },
+                {'Â',".__._" },
+                {'Ç',"_._.." },
+                {'É',".._.." },
+                {'Ê',"_.._." },
+                {'Ó',"___." },
+                {'Ô',"___." },
+                
+               
+
+
+                //Numerics
+                { '1', ".____" },
+                { '2', "..__" },
+                { '3', "...__" },
+                { '4', "...._" },
+                { '5', "....." },
+                { '6', "_...." },
+                { '7', "__..." },
+                { '8', "___.." },
+                { '9', "____." },
+                { '0', "_____" },
+                //Space
+                {' ', "/" },
+                //Punctuation
+                {'.',"._._._" },
+                {',',"__..__" },
+                {'?',"..__.." },
+                {';',"_._._." },
+                {':',"___..." },
+                {'/',"_.._."},
+                {'\'',".____." },
+                {'\"',"._.._." },
+
+                {'&',"._..." },
+                {'$',"..._.._" },
+                {'@',".__._." },
+                {'¿',".._._" },
+                {'¡',"__..._" },
+                {'!',"_._.__" },
+
+
+                //Special Characters
+                {'_',"..__._"},
+                {'+',"._._." },
+                {'-',"_...._" },
+                {'*',"_.._" },
+                {'=',"_..._" },
+                {')',"_.__._" },
+                {'(',"_.__." }
+            };
         }
     }
 }

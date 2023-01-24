@@ -1,11 +1,4 @@
 ﻿using MorseSharp.Audio.Chunks;
-using MorseSharp.Audio.Languages;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.SymbolStore;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MorseSharp.Audio
 {
@@ -20,6 +13,9 @@ namespace MorseSharp.Audio
 
         //Language
         private Language Language { get; set; }
+
+        // NonLatin Languages.
+        Language NonLatin = Language.Kurdish | Language.Arabic;
         public AudioConverter(Language language, int charSpeed, int wordSpeed, double frequency)
         {
             CharacterSpeed = charSpeed;
@@ -28,9 +24,9 @@ namespace MorseSharp.Audio
             Language = language;
         }
 
-        public AudioConverter(Language language, int charSpeed, int wordSpeed) : this(language,charSpeed, wordSpeed, 600.0) { }
-        public AudioConverter(Language language, int wpm) : this(language,wpm, wpm) { }
-        public AudioConverter(Language language) : this(language,20) { }
+        public AudioConverter(Language language, int charSpeed, int wordSpeed) : this(language, charSpeed, wordSpeed, 600.0) { }
+        public AudioConverter(Language language, int wpm) : this(language, wpm, wpm) { }
+        public AudioConverter(Language language) : this(language, 20) { }
         public AudioConverter() : this(Language.English) { }
 
         // Return given number of seconds of sine wave
@@ -113,24 +109,13 @@ namespace MorseSharp.Audio
 
             string morseSymbol = string.Empty;
 
-            if (Language == Language.English)
-            {
-                if (MorseCharacters.GetMorseCharactersEnglish().ContainsKey(character[0]))
-                    morseSymbol = MorseCharacters.GetMorseCharactersEnglish()[character[0]];
-                else
-                    throw new KeyNotFoundException($"{character} is not presented in english language.");
-                
-            }
-
+            if (MorseCharacters.GetLanguageCharacter(Language).ContainsKey(character[0]))
+                morseSymbol = MorseCharacters.GetLanguageCharacter(Language)[character[0]];
             else
-            {
-                if (MorseCharacters.GetMorseCharactersKurdish().ContainsKey(character[0]))
-                    morseSymbol = MorseCharacters.GetMorseCharactersKurdish()[character[0]];
-                else
-                    throw new KeyNotFoundException($"{character} is not presented in kurdish language.");
-            }
-                
-           
+                throw new KeyNotFoundException($"{character} is not presented in {nameof(Language)} language.");
+
+
+
             for (int i = 0; i < morseSymbol.Length; i++)
             {
                 if (i > 0)
@@ -202,14 +187,15 @@ namespace MorseSharp.Audio
         internal Memory<byte> ConvertToMorse(string text)
         {
             DataChunk data = default!;
-            if(Language == Language.English)
+            if ((Language & NonLatin) == 0)
                 data = GetText(text.ToUpper());
             else
                 data = GetText(text);
-            
+
             FormatChunk formatChunk = new FormatChunk();
             HeaderChunk headerChunk = new HeaderChunk(formatChunk, data);
             return headerChunk.ToBytes();
         }
+
     }
 }

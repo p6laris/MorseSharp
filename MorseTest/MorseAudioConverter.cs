@@ -1,16 +1,10 @@
-﻿using MorseSharp.Audio.Languages;
-using MorseSharp.Converter;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MorseSharp.Converter;
 
 namespace MorseTest
 {
     public class MorseAudioConverterTest
     {
-        //English
+        //Latin
         [Fact]
         public async void ConvertToAudioEnglish()
         {
@@ -26,19 +20,20 @@ namespace MorseTest
             Assert.ThrowsAsync<ArgumentNullException>(async () => await converter.ConvertMorseToAudio(null));
         }
 
-        //Kurdish
+        //NonLatin
         [Fact]
         public async void ConvertToAudioKurdish()
         {
-            MorseSharp.Converter.MorseAudioConverter converter = new(Language.Kurdish);
+            MorseAudioConverter converter = new(Language.Kurdish);
             var morse = await converter.ConvertMorseToAudio("زانا");
             Assert.True(morse.Length > 0);
         }
 
+        //Argumnet Null Exception
         [Fact]
         public void ConvertToAudioWithNullArgumentKurdish()
         {
-            MorseSharp.Converter.MorseAudioConverter converter = new(Language.Kurdish);
+            MorseAudioConverter converter = new(Language.Kurdish);
             Assert.ThrowsAsync<ArgumentNullException>(async () => await converter.ConvertMorseToAudio(null));
         }
     }

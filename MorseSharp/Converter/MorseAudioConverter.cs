@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MorseSharp.Audio;
-using MorseSharp.Audio.Languages;
+﻿using MorseSharp.Audio;
 
 namespace MorseSharp.Converter
 {
@@ -47,12 +41,13 @@ namespace MorseSharp.Converter
         /// initializes an instance of type <see cref="Converter.MorseAudioConverter"/> with custom audio configuration.
         /// </summary>
         public MorseAudioConverter() : base(Language.English){}
+
         /// <summary>
-        /// 
+        /// Generate's audio for the given text.
         /// </summary>
-        /// <param name="text"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <param name="text">Text to generate audio for.</param>
+        /// <returns><see cref="byte[]"/> of the generated audio.</returns>
+        /// <exception cref="ArgumentNullException">Throws if the text parameter was null.</exception>
         public async Task<byte[]> ConvertMorseToAudio(string text)
         {
             if(text is not null)
