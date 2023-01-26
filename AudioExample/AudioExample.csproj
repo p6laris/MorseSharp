@@ -11,5 +11,4 @@
 	<ItemGroup>
 		<ProjectReference Include="..\MorseSharp\MorseSharp.csproj" />
 	</ItemGroup>
-
 </Project>
