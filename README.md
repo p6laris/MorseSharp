@@ -65,7 +65,7 @@ catch(Exception ex)
 3.After getting the bytes you can stream the bytes and play the sound, this example use's SoundPlayer object to play the sound:
 ```C#
 SoundPlayer player = new();
-using(Stream stream = new MemoryStream(morse.ToArray())
+using(Stream stream = new MemoryStream(morse))
 {
    player.Stream = stream;
    player.PlayAsync();
