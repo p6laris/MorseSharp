@@ -17,33 +17,37 @@
         /// </summary>
         Kurdish = 1 << 1,
         /// <summary>
+        /// Kurdish Language.
+        /// </summary>
+        KurdishLatin = 1 << 2,
+        /// <summary>
         /// Arabic Language.
         /// </summary>
-        Arabic = 1 << 2,
+        Arabic = 1 << 3,
         /// <summary>
         /// Deutsch Language.
         /// </summary>
-        Deutsch = 1 << 3,
+        Deutsch = 1 << 4,
         /// <summary>
         /// Espaneol Language.
         /// </summary>
-        Espanol = 1 << 4,
+        Espanol = 1 << 5,
         /// <summary>
         /// Francais Language.
         /// </summary>
-        Francais = 1 << 5,
+        Francais = 1 << 6,
         /// <summary>
         /// Italiano Language.
         /// </summary>
-        Italiano = 1 << 6,
+        Italiano = 1 << 7,
         /// <summary>
         /// Japanese Language.
         /// </summary>
-        Japanese = 1 << 7,
+        Japanese = 1 << 8,
         /// <summary>
         /// Portugues Language.
         /// </summary>
-        Portugues = 1<< 8,
+        Portugues = 1<< 9,
         
     }
 }

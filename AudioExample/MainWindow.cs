@@ -23,9 +23,9 @@ namespace AudioExample
         private async void ToAudioBtn_Click(object sender, EventArgs e)
         {
             //Delcare and init MorseSharp MorseAudioConverter object to convert morse to audio of dash and dots.
-            MorseAudioConverter converter = new MorseAudioConverter(Language.Kurdish);
+            MorseAudioConverter converter = new MorseAudioConverter(Language.English);
             //Delcare and init MorseSharp MorseTextConverter object to convert sentence to morse dash and dots.
-            TextMorseConverter textConverter = new TextMorseConverter(Language.Kurdish);
+            TextMorseConverter textConverter = new TextMorseConverter(Language.English);
 
 
             try
