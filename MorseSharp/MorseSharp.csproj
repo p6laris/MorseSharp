@@ -11,14 +11,14 @@
     <PackageProjectUrl>https://github.com/p6laris/MorseSharp</PackageProjectUrl>
     <RepositoryUrl>https://github.com/p6laris/MorseSharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>MorseCode Morse Converter </PackageTags>
+    <PackageTags>MorseCode Morse Converter MorseKurdish KurdishLanguage </PackageTags>
     <PackAsTool>False</PackAsTool>
     <NeutralLanguage>en-GB</NeutralLanguage>
     <Copyright>2022</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <IncludeSymbols>False</IncludeSymbols>
-    <Version>3.0.0$(VersionPrefix)</Version>
+    <Version>3.1.0$(VersionPrefix)</Version>
     <PackageIcon>MorseSharp.png</PackageIcon>
   </PropertyGroup>
 
