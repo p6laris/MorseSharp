@@ -28,6 +28,15 @@ namespace MorseTest
             Assert.Equal("... ..._ ._ .__ ", morse);
         }
         [Fact]
+        public async void KurdishLatinToMorse()
+        {
+            TextMorseConverter Converter = new TextMorseConverter(Language.KurdishLatin);
+
+            var morse = await Converter.ConvertTextToMorse("slav");
+
+            Assert.Equal("... ._.. ._ .._.. ", morse);
+        }
+        [Fact]
         public async void ArabicToMorse()
         {
             TextMorseConverter Converter = new TextMorseConverter(Language.Arabic);
