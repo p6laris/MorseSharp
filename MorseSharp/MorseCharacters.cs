@@ -16,7 +16,6 @@
         {
             Language.English => GetMorseCharactersEnglish(),
             Language.Kurdish => GetMorseCharactersKurdish(),
-            Language.KurdishLatin => GetMorseCharactersKurdishLatin(),
             Language.Arabic => GetMorseCharactersArabic(),
             Language.Deutsch => GetMorseCharactersDeutsch(),
             Language.Espanol => GetMorseCharactersEspanol(),
