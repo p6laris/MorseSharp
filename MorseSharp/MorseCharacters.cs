@@ -1,4 +1,4 @@
-﻿namespace MorseSharp
+namespace MorseSharp
 {
     /// <summary>
     /// Defines all morse characters.
@@ -24,6 +24,7 @@
             Language.Italiano => GetMorseCharactersItaliano(),
             Language.Japanese => GetMorseCharactersJapanese(),
             Language.Portugues => GetMorseCharactersPortugues(),
+            Language.Russian => GetMorseCharactersRussian(),
             _ => throw new ArgumentOutOfRangeException(nameof(Language))
         };
         /// <summary>
@@ -865,6 +866,93 @@
                 {'=',"_..._" },
                 {')',"_.__._" },
                 {'(',"_.__." }
+            };
+        }
+
+        /// <summary>
+        /// Defines all morse characters in Russian.
+        /// </summary>
+        /// <returns><see cref="System.Collections.Generic.Dictionary{Char, String}"></see> of morse characters.</returns>
+        private static Dictionary<char, string> GetMorseCharactersRussian()
+        {
+
+            return new Dictionary<char, string>()
+            {
+                { 'А', "._" },
+                { 'Б', "_..." },
+                { 'В', ".__" },
+                { 'Г', "__." },
+                { 'Д', "_.." },
+                { 'Е', "." },
+                { 'Ё', "." },
+                { 'Ж', "..._" },
+                { 'З', "__.." },
+                { 'И', ".." },
+                { 'Й', ".___" },
+                { 'К', "_._" },
+                { 'Л', "._.." },
+                { 'М', "__" },
+                { 'Н', "_." },
+                { 'О', "___" },
+                { 'П', ".__." },
+                { 'Р', "._." },
+                { 'С', "..." },
+                { 'Т', "_" },
+                { 'У', ".._" },
+                { 'Ф', ".._." },
+                { 'Х', "...." },
+                { 'Ц', "_._." },
+                { 'Ч', "___." },
+                { 'Ш', "____" },
+                { 'Щ', "__._" },
+                // The value is used as in "Ь", since this symbol has several encoding options, and now it is often replaced by a code from "Ь"
+                { 'Ъ', "_.._" }, 
+                { 'Ы', "_.__" },
+                { 'Ь', "_.._" },
+                { 'Э', ".._.." },
+                { 'Ю', "..__" },
+                { 'Я', "._._" },
+                // Other cyrillic letters (not russian)
+                { 'Ї', ".___." },
+                { 'Є', ".._.." },
+                { 'І', ".." },
+                { 'Ґ', "__." },
+                // Numerics
+                { '1', ".____" },
+                { '2', "..___" },
+                { '3', "...__" },
+                { '4', "...._" },
+                { '5', "....." },
+                { '6', "_...." },
+                { '7', "__..." },
+                { '8', "___.." },
+                { '9', "____." },
+                { '0', "_____" },
+                // Space
+                {' ', "/" },
+                // Punctuation
+                {'.',"......" },
+                {',',"._._._" },
+                {'?',"..__.." },
+                {';',"_._._." },
+                {':',"___..." },
+                {'/',"_.._."},
+                {'\'',".____." },
+                {'\"',"._.._." },
+                {'!',"__..__" },
+                // Special Characters
+                {'_',"..__._"},
+                {'+',"._._." },
+                {'-',"_...._" },
+                {'*',"_.._" },
+                {'=',"_..._" },
+                {')',"_.__._" },
+                {'(',"_.__._" },
+                {'$',"..._.._" },
+                {'¿',".._._" },
+                {'¡',"__..._" },
+                {'&',"._..." },
+                {'@',".__._." }
             };
         }
     }
