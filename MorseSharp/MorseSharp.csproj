@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\..\OneDrive\Desktop\MorseSharp.png">
+    <None Include="..\MorseSharp.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
