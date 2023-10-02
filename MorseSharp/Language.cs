@@ -47,7 +47,11 @@
         /// <summary>
         /// Portugues Language.
         /// </summary>
-        Portugues = 1<< 9,
+        Portugues = 1 << 9,
+        /// <summary>
+        /// Russian Language.
+        /// </summary>
+        Russian = 1 << 10,
         
     }
 }

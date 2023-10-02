@@ -1,9 +1,4 @@
 ﻿using MorseSharp.Converter;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MorseTest
 {
@@ -110,6 +105,15 @@ namespace MorseTest
 
             Assert.Equal(".._ __ / .__. . __._ .._ . _. ___ / .___ ._ _... .._ _ .. / _.._ . ._. . _ ._ / ..._ .. .._ / _.. . __.. / _._. . __. ___ _. .... ._ ... / .._. . ._.. .. __.. . ... ",
                 morse);
+        }
+        [Fact]
+        public async void RussianToMorse()
+        {
+            TextMorseConverter Converter = new TextMorseConverter(Language.Russian);
+
+            var morse = await Converter.ConvertTextToMorse("Съешь ещё этих мягких французских булок, да выпей же чаю.");
+
+            Assert.Equal("... _.._ . ____ _.._ / . __._ . / .._.. _ .. .... / __ ._._ __. _._ .. .... / .._. ._. ._ _. _._. .._ __.. ... _._ .. .... / _... .._ ._.. ___ _._ ._._._ / _.. ._ / .__ _.__ .__. . .___ / ..._ . / ___. ._ ..__ ...... ", morse);
         }
     }
 }
