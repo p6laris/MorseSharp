@@ -2,9 +2,25 @@
 ![Nuget](https://img.shields.io/nuget/dt/MorseSharp?logo=nuget)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/p6laris/MorseSharp)
 
-MorseSharp is a .NET library to encoding/decoding  **up to 8 languages** including kurdish and generating audio morse.
+MorseSharp is a .NET library to encoding/decoding  **up to 9 languages** including kurdish and generating audio morse.
 
 ![alt text](https://github.com/p6laris/MorseSharp/blob/master/MorseSharp.png?raw=true)
+
+## Supported Languages
+
+| Language      | Enum Value   |
+|---------------|--------------|
+| English       | `Language.English` |
+| Kurdish       | `Language.Kurdish` |
+| Kurdish Latin | `Language.KurdishLatin` |
+| Arabic        | `Language.Arabic` |
+| Deutsch       | `Language.Deutsch` |
+| Espanol       | `Language.Espanol` |
+| Francais      | `Language.Francais` |
+| Italiano      | `Language.Italiano` |
+| Japanese      | `Language.Japanese` |
+| Portugues     | `Language.Portugues` |
+| Russian       | `Language.Russian` |
 
 ## Installation
 Use nuget package manager to install [MorseSharp](https://www.nuget.org/packages/MorseSharp).
