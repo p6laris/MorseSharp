@@ -41,18 +41,18 @@ Calling ConvertTextToMorse method and pass the text to encode the morse:
 
 ```C#
 using MorseSharp;
-var morse = await converter.ConvertTextToMorse("Hello");
+var morse = converter.ConvertTextToMorse("Hello");
 ```
 
 
 #### Decoding
-Calling asynchronous methods `ConvertMorseToText` to decode the morse:
+Calling method `ConvertMorseToText` to decode the morse:
  > :exclamation: Words must be separated by spaces, words by ( / ), Letters by space " ".
 
 ```C#
 using MorseSharp;
 
-var sentence = await converter.ConvertMorseToText(".... ...");
+var sentence = converter.ConvertMorseToText(".... ...");
 ```
 
 ### 2. Generating audio
@@ -102,8 +102,8 @@ string text = string.Empty;
 
 try
 {
-    morse = await Converter.ConvertTextToMorse("Hello World");
-    text = await Converter.ConvertMorseToText(".... ..");
+    morse = Converter.ConvertTextToMorse("Hello World");
+    text  =  Converter.ConvertMorseToText(".... ..");
 }
 catch (Exception ex)
 {
