@@ -47,7 +47,11 @@ namespace MorseSharp.Converter
                     if (morseChar.ContainsKey(Text[i]))
                     {
                         strBuilder.Append(morseChar[Text[i]]);
-                        strBuilder.Append(" ");
+                        // Check if it's not the last character before appending a space
+                        if (i < Text.Length - 1)
+                        {
+                            strBuilder.Append(' ');
+                        }
                     }
 
                     else
