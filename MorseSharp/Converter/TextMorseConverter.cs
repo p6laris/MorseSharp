@@ -9,10 +9,10 @@ namespace MorseSharp.Converter
     /// </summary>
     public class TextMorseConverter : IMorseConverter
     {
-        private StringBuilder? strBuilder;
-        private Lazy<Dictionary<char, string>> _morse;
+        private readonly StringBuilder? strBuilder;
+        private readonly Lazy<Dictionary<char, string>> _morse;
         private readonly Language _language;
-        private Language NonLatin = Language.Kurdish | Language.Arabic;
+        private readonly Language NonLatin = Language.Kurdish | Language.Arabic;
 
         /// <summary>
         /// Create a new instance of type <see cref="TextMorseConverter"></see>.
@@ -21,6 +21,7 @@ namespace MorseSharp.Converter
         public TextMorseConverter(Language Language)
         {
             _language = Language;
+            strBuilder = new StringBuilder();
             _morse = new Lazy<Dictionary<char, string>>(MorseCharacters.GetLanguageCharacter(Language: _language));
         }
 
@@ -33,7 +34,7 @@ namespace MorseSharp.Converter
         /// <exception cref="ArgumentNullException">Throws if the string text was null.</exception>
         public Task<string> ConvertTextToMorse(string Text)
         {
-            strBuilder = new StringBuilder();
+            strBuilder!.Clear();
 
             if ((_language & NonLatin) == 0)
                 Text = Text.ToUpper();
@@ -69,7 +70,7 @@ namespace MorseSharp.Converter
         /// <exception cref="ArgumentNullException">Throw if Morse param was null.</exception>
         public Task<string> ConvertMorseToText(string Morse)
         {
-            strBuilder = new StringBuilder();
+            strBuilder!.Clear();
 
             if (Morse is not null)
             {
