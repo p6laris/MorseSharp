@@ -10,7 +10,7 @@ namespace MorseSharp.Converter
     public class TextMorseConverter : IMorseConverter
     {
         private readonly StringBuilder? strBuilder;
-        private readonly Lazy<Dictionary<char, string>> morseChar;
+        private readonly Dictionary<char, string> morseChar;
         private readonly Language language;
         private readonly Language nonLatin = Language.Kurdish | Language.Arabic;
 
@@ -22,7 +22,7 @@ namespace MorseSharp.Converter
         {
             language = Language;
             strBuilder = new StringBuilder();
-            morseChar = new Lazy<Dictionary<char, string>>(MorseCharacters.GetLanguageCharacter(Language: language));
+            morseChar = MorseCharacters.GetLanguageCharacter(Language: language);
         }
 
         /// <summary>
@@ -43,9 +43,9 @@ namespace MorseSharp.Converter
             {
                 for (int i = 0; i < Text.Length; i++)
                 {
-                    if (morseChar.Value.ContainsKey(Text[i]))
+                    if (morseChar.ContainsKey(Text[i]))
                     {
-                        strBuilder.Append(morseChar.Value[Text[i]].AsSpan());
+                        strBuilder.Append(morseChar[Text[i]]);
                         strBuilder.Append(" ");
                     }
 
@@ -81,9 +81,9 @@ namespace MorseSharp.Converter
                     {
                         if (words[i] != "/")
                         {
-                            if (morseChar.Value.Values.Contains(words[i]))
+                            if (morseChar.Values.Contains(words[i]))
                             {
-                                var word = morseChar.Value.FirstOrDefault(x => x.Value == words[i]).Key;
+                                var word = morseChar.FirstOrDefault(x => x.Value == words[i]).Key;
                                 strBuilder.Append(word);
                             }
                             else
