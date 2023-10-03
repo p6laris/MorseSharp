@@ -9,10 +9,10 @@ namespace MorseSharp.Converter
     /// </summary>
     public class TextMorseConverter : IMorseConverter
     {
-        private StringBuilder? strBuilder;
-        private Lazy<Dictionary<char, string>> _morse;
-        private readonly Language _language;
-        private Language NonLatin = Language.Kurdish | Language.Arabic;
+        private readonly StringBuilder? strBuilder;
+        private readonly Dictionary<char, string> morseChar;
+        private readonly Language language;
+        private readonly Language nonLatin = Language.Kurdish | Language.Arabic;
 
         /// <summary>
         /// Create a new instance of type <see cref="TextMorseConverter"></see>.
@@ -20,8 +20,9 @@ namespace MorseSharp.Converter
         /// <param name="Language">The language convert from it to morse code.</param>
         public TextMorseConverter(Language Language)
         {
-            _language = Language;
-            _morse = new Lazy<Dictionary<char, string>>(MorseCharacters.GetLanguageCharacter(Language: _language));
+            language = Language;
+            strBuilder = new StringBuilder();
+            morseChar = MorseCharacters.GetLanguageCharacter(Language: language);
         }
 
         /// <summary>
@@ -31,21 +32,26 @@ namespace MorseSharp.Converter
         /// <returns><see cref="string"></see> of the morse result.</returns>
         /// <exception cref="Exception">Throws if a character doesn't presented.</exception>
         /// <exception cref="ArgumentNullException">Throws if the string text was null.</exception>
-        public Task<string> ConvertTextToMorse(string Text)
+        public string ConvertTextToMorse(string Text)
         {
-            strBuilder = new StringBuilder();
-
-            if ((_language & NonLatin) == 0)
-                Text = Text.ToUpper();
+            strBuilder!.Clear();
 
             if (Text is not null)
             {
+                if ((language & nonLatin) == 0)
+                Text = Text.ToUpper();
+
+            
                 for (int i = 0; i < Text.Length; i++)
                 {
-                    if (_morse.Value.ContainsKey(Text[i]))
+                    if (morseChar.ContainsKey(Text[i]))
                     {
-                        strBuilder.Append(_morse.Value[Text[i]].AsSpan());
-                        strBuilder.Append(" ");
+                        strBuilder.Append(morseChar[Text[i]]);
+                        // Check if it's not the last character before appending a space
+                        if (i < Text.Length - 1)
+                        {
+                            strBuilder.Append(' ');
+                        }
                     }
 
                     else
@@ -54,7 +60,7 @@ namespace MorseSharp.Converter
                     }
 
                 }
-                return Task.Run(() => strBuilder.ToString());
+                return strBuilder.ToString();
             }
 
             throw new ArgumentNullException(nameof(Text));
@@ -67,9 +73,9 @@ namespace MorseSharp.Converter
         /// <returns><see cref="string"/>of the converted morse.</returns>
         /// <exception cref="Exception">Throws if the morse letter was not presented.</exception>
         /// <exception cref="ArgumentNullException">Throw if Morse param was null.</exception>
-        public Task<string> ConvertMorseToText(string Morse)
+        public string ConvertMorseToText(string Morse)
         {
-            strBuilder = new StringBuilder();
+            strBuilder!.Clear();
 
             if (Morse is not null)
             {
@@ -80,9 +86,9 @@ namespace MorseSharp.Converter
                     {
                         if (words[i] != "/")
                         {
-                            if (_morse.Value.Values.Contains(words[i]))
+                            if (morseChar.Values.Contains(words[i]))
                             {
-                                var word = _morse.Value.FirstOrDefault(x => x.Value == words[i]).Key;
+                                var word = morseChar.FirstOrDefault(x => x.Value == words[i]).Key;
                                 strBuilder.Append(word);
                             }
                             else
@@ -93,7 +99,7 @@ namespace MorseSharp.Converter
                     }
                 }
 
-                return Task.Run(() => strBuilder.ToString());
+                return strBuilder.ToString();
             }
             throw new ArgumentNullException(nameof(Morse));
         }

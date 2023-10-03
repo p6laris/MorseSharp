@@ -10,12 +10,12 @@
         /// </summary>
         /// <param name="Text">The <see cref="System.String"></see> to convert to morse code.</param>
         /// <returns><see cref="string"></see> of the morse result.</returns>
-        Task<string> ConvertTextToMorse(string Text);
+        string ConvertTextToMorse(string Text);
         /// <summary>
         /// Converts a morse message to english sentence
         /// </summary>
         /// <param name="Morse">The <see cref="string"/> of the morse message.</param>
         /// <returns><see cref="string"/>of the converted morse.</returns>
-        Task<string> ConvertMorseToText(string Morse);
+        string ConvertMorseToText(string Morse);
     }
 }

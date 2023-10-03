@@ -38,7 +38,7 @@ namespace AudioExample
 
 
                     //Update the richtextbox text to morse dash and dots.
-                    MorseTxt.Text = await textConverter.ConvertTextToMorse(MessageMorseTxt.Text);
+                    MorseTxt.Text =  textConverter.ConvertTextToMorse(MessageMorseTxt.Text);
 
                     //Enable the play button to play
                     PlayBtn.Enabled = true;
@@ -82,7 +82,7 @@ namespace AudioExample
 
 
                     //Update the richtextbox text to morse dash and dots.
-                    MorseTxt.Text = await textConverter.ConvertTextToMorse(MessageMorseTxt.Text);
+                    MorseTxt.Text = textConverter.ConvertTextToMorse(MessageMorseTxt.Text);
 
                     //Enable the play button to play
                     PlayBtn.Enabled = true;
