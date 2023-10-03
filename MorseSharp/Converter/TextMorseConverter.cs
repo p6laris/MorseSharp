@@ -10,9 +10,9 @@ namespace MorseSharp.Converter
     public class TextMorseConverter : IMorseConverter
     {
         private readonly StringBuilder? strBuilder;
-        private readonly Lazy<Dictionary<char, string>> _morse;
-        private readonly Language _language;
-        private readonly Language NonLatin = Language.Kurdish | Language.Arabic;
+        private readonly Lazy<Dictionary<char, string>> morseChar;
+        private readonly Language language;
+        private readonly Language nonLatin = Language.Kurdish | Language.Arabic;
 
         /// <summary>
         /// Create a new instance of type <see cref="TextMorseConverter"></see>.
@@ -20,9 +20,9 @@ namespace MorseSharp.Converter
         /// <param name="Language">The language convert from it to morse code.</param>
         public TextMorseConverter(Language Language)
         {
-            _language = Language;
+            language = Language;
             strBuilder = new StringBuilder();
-            _morse = new Lazy<Dictionary<char, string>>(MorseCharacters.GetLanguageCharacter(Language: _language));
+            morseChar = new Lazy<Dictionary<char, string>>(MorseCharacters.GetLanguageCharacter(Language: language));
         }
 
         /// <summary>
@@ -36,16 +36,16 @@ namespace MorseSharp.Converter
         {
             strBuilder!.Clear();
 
-            if ((_language & NonLatin) == 0)
+            if ((language & nonLatin) == 0)
                 Text = Text.ToUpper();
 
             if (Text is not null)
             {
                 for (int i = 0; i < Text.Length; i++)
                 {
-                    if (_morse.Value.ContainsKey(Text[i]))
+                    if (morseChar.Value.ContainsKey(Text[i]))
                     {
-                        strBuilder.Append(_morse.Value[Text[i]].AsSpan());
+                        strBuilder.Append(morseChar.Value[Text[i]].AsSpan());
                         strBuilder.Append(" ");
                     }
 
@@ -81,9 +81,9 @@ namespace MorseSharp.Converter
                     {
                         if (words[i] != "/")
                         {
-                            if (_morse.Value.Values.Contains(words[i]))
+                            if (morseChar.Value.Values.Contains(words[i]))
                             {
-                                var word = _morse.Value.FirstOrDefault(x => x.Value == words[i]).Key;
+                                var word = morseChar.Value.FirstOrDefault(x => x.Value == words[i]).Key;
                                 strBuilder.Append(word);
                             }
                             else
