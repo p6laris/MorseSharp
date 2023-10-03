@@ -5,10 +5,10 @@ namespace MorseTest
     public class TextMorseConverterTest
     {
         [Fact]
-        public async void ConvertMorseWithValidString()
+        public void ConvertMorseWithValidString()
         {
             TextMorseConverter converter = new TextMorseConverter(Language.English);
-            var morse = await converter.ConvertTextToMorse("Hi There");
+            var morse =  converter.ConvertTextToMorse("Hi There");
             Assert.True(morse.Length > 0);
         }
 
@@ -16,32 +16,32 @@ namespace MorseTest
         public void ConvertMorseWithNullString()
         {
             TextMorseConverter converter = new TextMorseConverter(Language.English);
-            Assert.ThrowsAsync<ArgumentNullException>(async () => await converter.ConvertTextToMorse(null));
+            Assert.Throws<ArgumentNullException>(() => converter.ConvertTextToMorse(null));
         }
         [Fact]
         public void ConvertMorseWithInvalidCharacter()
         {
             var converter = new TextMorseConverter(Language.Kurdish);
-            Assert.ThrowsAsync<KeyNotFoundException>(async () => await converter.ConvertTextToMorse("Hi~"));
+            Assert.Throws<KeyNotFoundException>(() => converter.ConvertTextToMorse("Hi~"));
         }
         [Fact]
-        public async void ConvertTextWithValidMorse()
+        public void ConvertTextWithValidMorse()
         {
             TextMorseConverter converter = new TextMorseConverter(Language.Kurdish);
-            var morse = await converter.ConvertMorseToText("... ..._ ._ .__");
+            var morse = converter.ConvertMorseToText("... ..._ ._ .__");
             Assert.True(morse.Length > 0);
         }
         [Fact]
         public void ConvertTextWithNullMorse()
         {
             TextMorseConverter converter = new TextMorseConverter(Language.Kurdish);
-            Assert.ThrowsAsync<ArgumentNullException>(async () => await converter.ConvertMorseToText(null));
+            Assert.Throws<ArgumentNullException>(() => converter.ConvertMorseToText(null));
         }
         [Fact]
         public void ConvertTextWithInvalidMorse()
         {
             TextMorseConverter converter = new TextMorseConverter(Language.Kurdish);
-            Assert.ThrowsAsync<ArgumentNullException>(async () => await converter.ConvertMorseToText("........"));
+            Assert.Throws<KeyNotFoundException>(() => converter.ConvertMorseToText("........"));
         }
 
 

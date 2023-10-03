@@ -32,15 +32,16 @@ namespace MorseSharp.Converter
         /// <returns><see cref="string"></see> of the morse result.</returns>
         /// <exception cref="Exception">Throws if a character doesn't presented.</exception>
         /// <exception cref="ArgumentNullException">Throws if the string text was null.</exception>
-        public Task<string> ConvertTextToMorse(string Text)
+        public string ConvertTextToMorse(string Text)
         {
             strBuilder!.Clear();
 
-            if ((language & nonLatin) == 0)
-                Text = Text.ToUpper();
-
             if (Text is not null)
             {
+                if ((language & nonLatin) == 0)
+                Text = Text.ToUpper();
+
+            
                 for (int i = 0; i < Text.Length; i++)
                 {
                     if (morseChar.ContainsKey(Text[i]))
@@ -55,7 +56,7 @@ namespace MorseSharp.Converter
                     }
 
                 }
-                return Task.Run(() => strBuilder.ToString());
+                return strBuilder.ToString();
             }
 
             throw new ArgumentNullException(nameof(Text));
@@ -68,7 +69,7 @@ namespace MorseSharp.Converter
         /// <returns><see cref="string"/>of the converted morse.</returns>
         /// <exception cref="Exception">Throws if the morse letter was not presented.</exception>
         /// <exception cref="ArgumentNullException">Throw if Morse param was null.</exception>
-        public Task<string> ConvertMorseToText(string Morse)
+        public string ConvertMorseToText(string Morse)
         {
             strBuilder!.Clear();
 
@@ -94,7 +95,7 @@ namespace MorseSharp.Converter
                     }
                 }
 
-                return Task.Run(() => strBuilder.ToString());
+                return strBuilder.ToString();
             }
             throw new ArgumentNullException(nameof(Morse));
         }
