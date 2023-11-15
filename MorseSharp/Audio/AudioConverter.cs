@@ -1,201 +1,131 @@
 ﻿using MorseSharp.Audio.Chunks;
 
-namespace MorseSharp.Audio
+namespace MorseSharp.Audio;
+
+[StructLayout(LayoutKind.Sequential)]
+public ref struct AudioConverter
 {
-    public class AudioConverter
+
+    private readonly int _characterSpeed;
+    private readonly int _wordSpeed;
+    private readonly double _frequency;
+
+    public AudioConverter(int characterSpeed, int wordSpeed, double frequency)
     {
-        // Character speed in WPM
-        private int CharacterSpeed { get; set; }
-        // Overall speed in WPM (must be <= character speed)
-        private int WordSpeed { get; set; }
-        // Tone frequency
-        private double Frequency { get; set; }
-
-        //Language
-        private Language Language { get; set; }
-
-        // NonLatin Languages.
-        Language NonLatin = Language.Kurdish | Language.Arabic;
-        public AudioConverter(Language language, int charSpeed, int wordSpeed, double frequency)
-        {
-            CharacterSpeed = charSpeed;
-            WordSpeed = wordSpeed;
-            Frequency = frequency;
-            Language = language;
-        }
-
-        public AudioConverter(Language language, int charSpeed, int wordSpeed) : this(language, charSpeed, wordSpeed, 600.0) { }
-        public AudioConverter(Language language, int wpm) : this(language, wpm, wpm) { }
-        public AudioConverter(Language language) : this(language, 20) { }
-        public AudioConverter() : this(Language.English) { }
-
-        // Return given number of seconds of sine wave
-        private Span<short> GetWave(double seconds)
-        {
-            Span<short> waveArray;
-            int samples = (int)(11025 * seconds);
-
-            waveArray = new short[samples];
-
-            for (int i = 0; i < samples; i++)
-            {
-                waveArray[i] = Convert.ToInt16(32760 * Math.Sin(i * 2 * Math.PI * Frequency / 11025));
-            }
-
-            return waveArray;
-        }
-
-        // Return given number of seconds of flatline. This could also be
-        // achieved with slnt chunks inside a wavl chunk, but the resulting
-        // file might not be universally readable. If saving space is that
-        // important, it would be better to compress the output as mp3 or ogg
-        // anyway.
-        private Span<short> GetSilence(double seconds)
-        {
-            Span<short> waveArray;
-            int samples = (int)(11025 * seconds);
-
-            waveArray = new short[samples];
-
-            return waveArray;
-        }
-
-        // Dot -- 1 unit long
-        private Span<short> GetDot()
-        {
-            return GetWave(1.2 / CharacterSpeed);
-        }
-
-        // Dash -- 3 units long
-        private Span<short> GetDash()
-        {
-            return GetWave(3.6 / CharacterSpeed);
-        }
-
-        // Inter-element space -- 1 unit long
-        private Span<short> GetInterEltSpace()
-        {
-            return GetSilence(1.2 / CharacterSpeed);
-        }
-
-        // Space between letters -- nominally 3 units, but adjusted for
-        // Farnsworth timing (if word speed is lower than character
-        // speed) based on ARRL's Morse code timing standard:
-        // http://www.arrl.org/files/file/Technology/x9004008.pdf
-        private Span<short> GetInterCharSpace()
-        {
-            double delay = (60.0 / WordSpeed) - (32.0 / CharacterSpeed);
-            double spaceLength = 3 * delay / 19;
-            return GetSilence(spaceLength);
-        }
-
-        // Space between words -- nominally 7 units, but adjusted for
-        // Farnsworth timing in case word speed is lower than character
-        // speed.
-        private Span<short> GetInterWordSpace()
-        {
-            double delay = (60.0 / WordSpeed) - (32.0 / CharacterSpeed);
-            double spaceLength = 7 * delay / 19;
-            return GetSilence(spaceLength);
-        }
-
-        // Return a single character as a waveform
-        private Span<short> GetCharacter(string character)
-        {
-            Span<short> space = GetInterEltSpace();
-            Span<short> dot = GetDot();
-            Span<short> dash = GetDash();
-            List<short> morseChar = new List<short>();
-
-            string morseSymbol = string.Empty;
-
-            if (MorseCharacters.GetLanguageCharacter(Language).ContainsKey(character[0]))
-                morseSymbol = MorseCharacters.GetLanguageCharacter(Language)[character[0]];
-            else
-                throw new KeyNotFoundException($"{character} is not presented in {nameof(Language)} language.");
+        if (characterSpeed < wordSpeed)
+            throw new SmallerWordSpeedException(characterSpeed, wordSpeed);
 
 
-
-            for (int i = 0; i < morseSymbol.Length; i++)
-            {
-                if (i > 0)
-                    morseChar.AddRange(space.ToArray());
-                if (morseSymbol[i] == '_')
-                    morseChar.AddRange(dash.ToArray());
-                else if (morseSymbol[i] == '.')
-                    morseChar.AddRange(dot.ToArray());
-            }
-
-            return morseChar.ToArray<short>();
-        }
-
-        // Return a word as a waveform
-        private Span<short> GetWord(string word)
-        {
-            List<short> data = new List<short>();
-
-            for (int i = 0; i < word.Length; i++)
-            {
-                if (i > 0)
-                    data.AddRange(GetInterCharSpace().ToArray());
-                if (word[i] == '<')
-                {
-                    // Prosign
-                    int end = word.IndexOf('>', i);
-                    if (end < 0)
-                        throw new ArgumentException();
-                    data.AddRange(GetCharacter(word.Substring(i, end + 1 - i)).ToArray());
-                    i = end;
-                }
-                else
-                {
-                    data.AddRange(GetCharacter(word[i].ToString()).ToArray());
-                }
-            }
-
-            return data.ToArray<short>();
-        }
-
-        // Return a string (lower case text only, unrecognized characters
-        // throw an exception -- see Characters.cs for the list of recognized
-        // characters) as a waveform wrapped in a DataChunk, ready to by added
-        // to a wave file.
-        private DataChunk GetText(string text)
-        {
-            List<short> data = new List<short>();
-
-            string[] words = text.Split(' ');
-
-            for (int i = 0; i < words.Length; i++)
-            {
-                if (i > 0)
-                    data.AddRange(GetInterWordSpace().ToArray());
-                data.AddRange(GetWord(words[i]).ToArray());
-            }
-
-            // Pad the end with a little bit of silence. Otherwise the last
-            // character may sound funny in some media players.
-            data.AddRange(GetInterCharSpace().ToArray());
-
-            DataChunk dataChunk = new DataChunk(data.ToArray<short>());
-
-            return dataChunk;
-        }
-
-        // Returns a byte array in the Wave file format containing the given
-        // text in morse code
-        internal Memory<byte> ConvertToMorse(string text)
-        {
-            DataChunk data = default!;
-            if ((Language & NonLatin) == 0)
-                data = GetText(text.ToUpper());
-            else
-                data = GetText(text);
-
-            FormatChunk formatChunk = new FormatChunk();
-            HeaderChunk headerChunk = new HeaderChunk(formatChunk, data);
-            return headerChunk.ToBytes();
-        }
+        _characterSpeed = characterSpeed;
+        _wordSpeed = wordSpeed;
+        _frequency = frequency;
 
     }
+
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private Span<short> GetDot() => GetWave(1.2 / _characterSpeed);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private Span<short> GetDash() => GetWave(3.6 / _characterSpeed);
+
+
+    private Span<short> GetEleCharSpace() => GetSilence(1.2 / _characterSpeed);
+
+    private Span<short> GetInterCharSpace()
+    {
+        double delay = (60.0 / _wordSpeed) - (32.0 / _characterSpeed);
+        double spaceLength = 3 * delay / 19;
+        return GetSilence(spaceLength);
+    }
+
+    private Span<short> GetInterWordSpace()
+    {
+        double delay = (60.0 / _wordSpeed) - (32.0 / _characterSpeed);
+        double spaceLength = 7 * delay / 19;
+        return GetSilence(spaceLength);
+    }
+    [SkipLocalsInit]
+    private Span<short> GetWave(double seconds)
+    {
+        int samples = (int)(11025 * seconds);
+        using SpanOwner<short> owner = SpanOwner<short>.Allocate(samples);
+        Span<short> data = owner.Span;
+
+        for (int i = 0; i < samples; i++)
+        {
+            data[i] = Convert.ToInt16(32760 * Math.Sin(i * 2 * Math.PI * _frequency / 11025));
+        }
+
+        return data;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private Span<short> GetSilence(double seconds)
+    {
+        int samples = (int)(11025 * seconds);
+        using SpanOwner<short> owner = SpanOwner<short>.Allocate(samples, AllocationMode.Clear);
+        Span<short> data = owner.Span;
+
+        return data;
+
+    }
+
+    private Span<short> GetCharacter(string morseSymbol)
+    {
+        List<short> data = new List<short>();
+
+        for (int i = 0; i < morseSymbol.Length; i++)
+        {
+            if (i > 0)
+                data.AddRange(GetEleCharSpace());
+            if (morseSymbol[i] == '_')
+                data.AddRange(GetDash());
+            else if (morseSymbol[i] == '.')
+                data.AddRange(GetDot());
+        }
+
+        return CollectionsMarshal.AsSpan(data);
+    }
+
+    private Span<short> GenerateWav(string text)
+    {
+        List<short> data = new List<short>();
+
+        ReadOnlySpan<char> sMorse = text.AsSpan();
+        Span<Range> splitedRange = new Span<Range>(new Range[sMorse.Count(' ') + 1]);
+
+        sMorse.Split(splitedRange, ' ', StringSplitOptions.None);
+
+        for (int i = 0; i < splitedRange.Length; i++)
+        {
+            var morseSymbol = sMorse.Slice(splitedRange[i].Start.Value, splitedRange[i].End.Value - splitedRange[i].Start.Value);
+            if (i > 0)
+                data.AddRange(GetInterWordSpace());
+
+            data.AddRange(GetCharacter(morseSymbol.ToString()));
+        }
+        // Pad the end with a little bit of silence. Otherwise, the last character may sound funny in some media players.
+        data.AddRange(GetInterCharSpace());
+
+        return CollectionsMarshal.AsSpan(data);
+    }
+
+    [SkipLocalsInit]
+    internal void ConvertToAudio(string morse, out Span<byte> destination)
+    {
+        var data = GenerateWav(morse);
+        ValueDataChunk dataChunk = new ValueDataChunk(data);
+
+        ValueFormatChunk formatChunk = new ValueFormatChunk();
+        ValueHeaderChunk headerChunk = new ValueHeaderChunk(in dataChunk, in formatChunk);
+
+        Span<byte> bytes = headerChunk.ToBytes();
+        using SpanOwner<byte> owner = SpanOwner<byte>.Allocate(bytes.Length);
+        destination = owner.Span;
+
+        bytes.CopyTo(destination);
+    }
+
+
 }
