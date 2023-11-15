@@ -1,10 +1,4 @@
-﻿
-using MorseSharp.Audio;
-using MorseSharp.Exceptions;
-using MorseSharp.Interfaces;
-using MorseSharp.Light;
-
-namespace MorseSharp;
+﻿namespace MorseSharp;
 
 
 /// <summary>

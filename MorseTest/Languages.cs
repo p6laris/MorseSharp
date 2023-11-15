@@ -1,17 +1,11 @@
-﻿using MorseSharp.Converter;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MorseTest
+﻿namespace MorseTest
 {
     public class Languages
     {
         [Fact]
         public void EnglishToMorse()
         {
+            
             TextMorseConverter Converter = new TextMorseConverter(Language.English);
 
             var morse = Converter.ConvertTextToMorse("The quick brown fox jumps over the lazy dog");

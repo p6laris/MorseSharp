@@ -1,5 +1,4 @@
-﻿using MorseSharp.Audio.Chunks;
-
+﻿
 namespace MorseSharp.Audio;
 
 [StructLayout(LayoutKind.Sequential)]

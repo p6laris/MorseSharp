@@ -1,0 +1,11 @@
+﻿global using System.Text;
+global using MorseSharp.Extentions;
+global using MorseSharp.Interfaces;
+global using MorseSharp.Audio.Chunks;
+global using MorseSharp.Audio;
+global using MorseSharp.Light;
+global using MorseSharp.Exceptions;
+global using MorseSharp.Helpers;
+global using System.Runtime.CompilerServices;
+global using System.Runtime.InteropServices;
+global using CommunityToolkit.HighPerformance.Buffers;

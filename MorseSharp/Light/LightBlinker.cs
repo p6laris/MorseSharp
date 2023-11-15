@@ -1,7 +1,4 @@
-﻿
-using MorseSharp.Exceptions;
-
-namespace MorseSharp.Light
+﻿namespace MorseSharp.Light
 {
     internal partial class LightBlinker
     {

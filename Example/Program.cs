@@ -1,5 +1,4 @@
-﻿using MorseSharp;
-using MorseSharp.Converter;
+﻿
 
 
 TextMorseConverter Converter = new TextMorseConverter(Language.English);

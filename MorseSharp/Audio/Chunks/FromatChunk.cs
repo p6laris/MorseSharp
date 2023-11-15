@@ -1,5 +1,4 @@
-﻿using MorseSharp.Helpers;
-
+﻿
 namespace MorseSharp.Audio.Chunks;
 
 [StructLayout(LayoutKind.Sequential)]
@@ -30,7 +29,7 @@ public readonly ref struct ValueFormatChunk
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<byte> ToBytes()
     {
-        Span<byte> chunkId = [102, 109, 116, 32];
+        Span<byte> chunkId = stackalloc byte[4]{102, 109, 116, 32};
 
         using SpanOwner<byte> owner = SpanOwner<byte>.Allocate(Capacity);
         Span<byte> data = owner.Span;

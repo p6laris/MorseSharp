@@ -42,7 +42,7 @@
         public bool AddRangeBit(uint value)
         {
             Span<byte> bytes = stackalloc byte[4];
-            NumericConverter.GetBytes(value, bytes);
+            NumericBitConverter.GetBytes(value, bytes);
 
             if (offset + bytes.Length > buffer.Length)
             {
@@ -63,7 +63,7 @@
         public bool AddRangeBit(short value)
         {
             Span<byte> bytes = stackalloc byte[2];
-            NumericConverter.GetBytes(value, bytes);
+            NumericBitConverter.GetBytes(value, bytes);
 
             if (offset + bytes.Length > buffer.Length)
                 return false; // Not enough space in the buffer.
