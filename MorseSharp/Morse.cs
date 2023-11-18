@@ -1,4 +1,6 @@
-﻿namespace MorseSharp;
+﻿using System.Buffers;
+
+namespace MorseSharp;
 
 
 /// <summary>
@@ -8,22 +10,31 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
     ICanConvertToAudio, ICanSetAudioOptions, ICanGenerateAudioAndLight,
     ICanSetBlinkerOptions, ICanConvertToLight
 {
-    private Lazy<Dictionary<char, string>> _morseChar = default!;
 
-    private Language _sLanguage;
+    private static ThreadLocal<Lazy<Dictionary<char, string>>> _morseChar;
+    private static ThreadLocal<Language> _sLanguage;
+    private static ThreadLocal<StringBuilder> _strBuilder;
+    private static ThreadLocal<int> _charSpeed;
+    private static ThreadLocal<int> _wordSpeed;
+    private static ThreadLocal<double> _frequency;
+
     private const Language NonLatin = Language.Kurdish | Language.Arabic;
+
     private static Morse? _instance;
-    private static readonly StringBuilder _strBuilder = new StringBuilder();
-    private static readonly object ObjLock = new();
-    private int _charSpeed;
-    private int _wordSpeed;
-    private double _frequency;
+    private static object ObjLock = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Morse"/> class.
     /// </summary>
     private Morse()
     {
+        _sLanguage = new ThreadLocal<Language>(() => default(Language));
+        _morseChar = new ThreadLocal<Lazy<Dictionary<char, string>>>(() => new Lazy<Dictionary<char, string>>());
+        _strBuilder = new ThreadLocal<StringBuilder>(() => new StringBuilder());
+        _charSpeed = new ThreadLocal<int>(() => 0);
+        _wordSpeed = new ThreadLocal<int>(() => 0);
+        _frequency = new ThreadLocal<double>(() => 0.0);
+
     }
 
     /// <summary>
@@ -37,7 +48,11 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
         {
             lock (ObjLock)
             {
-                _instance = new Morse();
+                if (_instance is null)
+                {
+                    _instance = new Morse();
+                }
+
             }
         }
 
@@ -51,11 +66,12 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
     /// <returns>An instance of the <see cref="ICanSetConversionOption"/> interface.</returns>
     public ICanSetConversionOption ForLanguage(Language language)
     {
+
         //cache the language
-        if (language != _sLanguage)
+        if (language != _sLanguage.Value)
         {
-            _sLanguage = language;
-            _morseChar = new Lazy<Dictionary<char, string>>(MorseCharacters.GetLanguageCharacter(language)!);
+            _sLanguage.Value = language;
+            _morseChar.Value = new Lazy<Dictionary<char, string>>(MorseCharacters.GetLanguageCharacter(_sLanguage.Value)!);
         }
 
         return this;
@@ -68,57 +84,55 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
     /// <returns>The converted text.</returns>
     public string Decode(string morse)
     {
-        if (!string.IsNullOrEmpty(morse))
-        {
-
-            if (_strBuilder.Length > 0)
-                _strBuilder.Length = 0;
-
-
-            ReadOnlySpan<char> sMorse = morse.AsSpan();
-
-            int count = 0;
-
-            unsafe
-            {
-                fixed (char* ptr = morse)
-                {
-                    // Count occurrences of spaces to split Morse code into words
-                    count = StringCounter.CountOccurrences(ptr, ' ');
-                }
-
-            }
-
-            Span<Range> splitedRange = new Span<Range>(new Range[count + 1]);
-
-            // Split Morse code into individual words
-            sMorse.Split(splitedRange, ' ', StringSplitOptions.None);
-
-            for (int i = 0; i < splitedRange.Length; i++)
-            {
-                var sequence = sMorse.Slice(splitedRange[i].Start.Value, splitedRange[i].End.Value - splitedRange[i].Start.Value);
-
-                if (sequence.IsWhiteSpace())
-                    continue;
-
-                if (sequence != "/")
-                {
-                    if (_morseChar.Value.Values.Contains(sequence.ToString()))
-                    {
-                        var value = _morseChar.Value.KeyByValue(sequence.ToString());
-                        _strBuilder.Append(value);
-                    }
-                    else
-                        throw new SequenceNotFoundException(sequence.ToString(), language: _sLanguage);
-                }
-            }
-            return _strBuilder.ToString();
-        }
-        else
+        if (string.IsNullOrEmpty(morse))
             throw new ArgumentNullException(nameof(morse));
 
 
+        if (_strBuilder.Value!.Length > 0)
+            _strBuilder.Value.Length = 0;
 
+        int count = 0;
+
+        unsafe
+        {
+            fixed (char* ptr = morse)
+            {
+                // Count occurrences of spaces to split Morse code into words
+                count = StringCounter.CountOccurrences(ptr, ' ');
+            }
+
+        }
+
+        Range[]? rngArray = null;
+        Span<Range> splitedRange = count + 1 < 256
+            ? stackalloc Range[count + 1] : rngArray = ArrayPool<Range>.Shared.Rent(count + 1);
+
+        // Split Morse code into individual words
+        morse.AsSpan().Split(splitedRange, ' ', StringSplitOptions.None);
+
+        for (int i = 0; i < splitedRange.Length; i++)
+        {
+            var sequence = morse.AsSpan().Slice(splitedRange[i].Start.Value, splitedRange[i].End.Value - splitedRange[i].Start.Value);
+
+            if (sequence.IsWhiteSpace())
+                continue;
+
+            if (sequence != "/")
+            {
+                var value = _morseChar.Value!.Value.KeyByValue(sequence.ToString());
+
+                if (value != '\0')
+                    _strBuilder.Value.Append(value);
+
+                else
+                    throw new SequenceNotFoundException(sequence.ToString(), language: _sLanguage.Value);
+            }
+        }
+
+        if (rngArray is not null)
+            ArrayPool<Range>.Shared.Return(rngArray);
+
+        return _strBuilder.Value.ToString();
     }
 
     /// <summary>
@@ -128,52 +142,48 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
     /// <returns>The Morse code representation of the text.</returns>
     public ICanGenerateAudioAndLight ToMorse(string text)
     {
-        if (!string.IsNullOrEmpty(text))
+        if (string.IsNullOrEmpty(text))
+            throw new ArgumentNullException(nameof(text));
+
+        lock (_strBuilder)
         {
-
-            if (_strBuilder.Length > 0)
-                _strBuilder.Length = 0;
-
-
-            ReadOnlySpan<char> sText = text.AsSpan();
-
-
-            var length = sText.Length;
-
-
-            if ((_sLanguage & NonLatin) == 0)
-            {
-                unsafe
-                {
-                    fixed (char* ptr = text)
-                    fixed (char* outPtr = sText)
-                    {
-                        // Convert text to uppercase using pointers
-                        ToUpperSpanExtention.ToUpperWithPointers(ptr, outPtr, text.Length);
-                    }
-                }
-            }
-
-            for (int i = 0; i < length; i++)
-            {
-                if (_morseChar.Value.TryGetValue(sText[i], out string? val))
-                {
-                    // Check if it's not the last character before appending a space
-                    if (i < text.Length - 1)
-                    {
-                        _strBuilder.Append(val.AsSpan()).Append(' ');
-                    }
-                    else
-                        _strBuilder.Append(val.AsSpan());
-                }
-                else
-                    throw new WordNotPresentedException(sText[i], language: _sLanguage);
-            }
-
-            return this;
+            if (_strBuilder.Value!.Length > 0)
+                _strBuilder.Value.Length = 0;
         }
+
+
+        var length = text.Length;
+        char[]? txtArray = null;
+        Span<char> txt = length < 256
+            ? stackalloc char[length] : txtArray = ArrayPool<char>.Shared.Rent(length);
+
+
+        if ((_sLanguage.Value & NonLatin) == 0)
+            text.AsSpan().ToUpperInvariant(txt);
         else
-            throw new ArgumentException(nameof(text));
+            text.AsSpan().CopyTo(txt);
+
+
+
+        for (int i = 0; i < length; i++)
+        {
+            if (_morseChar.Value!.Value.TryGetValue(txt[i], out string? val))
+            {
+                // Check if it's not the last character before appending a space
+                if (i < text.Length - 1)
+                    _strBuilder.Value.Append(val.AsSpan()).Append(' ');
+
+                else
+                    _strBuilder.Value.Append(val.AsSpan());
+            }
+            else
+                throw new WordNotPresentedException(txt[i], language: _sLanguage.Value);
+        }
+
+        if (txtArray is not null)
+            ArrayPool<char>.Shared.Return(txtArray);
+
+        return this;
 
     }
 
@@ -184,8 +194,8 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
     /// <param name="destination">The destination span to store the audio bytes.</param>
     public void GetBytes(out Span<byte> destination)
     {
-        AudioConverter a = new AudioConverter(_charSpeed, _wordSpeed, _frequency);
-        a.ConvertToAudio(_strBuilder.ToString(), out Span<byte> bytes);
+        AudioConverter a = new AudioConverter(_charSpeed.Value, _wordSpeed.Value, _frequency.Value);
+        a.ConvertToAudio(_strBuilder.Value!.ToString(), out Span<byte> bytes);
         destination = bytes;
     }
 
@@ -201,36 +211,63 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
         if (charSpeed < wordSpeed)
             throw new SmallerWordSpeedException(charSpeed, wordSpeed);
 
-        _charSpeed = charSpeed;
-        _wordSpeed = wordSpeed;
-        _frequency = frequency;
+        _charSpeed.Value = charSpeed;
+        _wordSpeed.Value = wordSpeed;
+        _frequency.Value = frequency;
 
         return this;
     }
 
-    public string Encode() => _strBuilder.ToString();
+    public string Encode() => _strBuilder.Value!.ToString();
 
     public ICanSetAudioOptions ToAudio() => this;
 
     public ICanSetBlinkerOptions ToLight() => this;
+    public ICanSetAudioOptions ToAudio(string morse)
+    {
+        if (string.IsNullOrEmpty(morse))
+            throw new ArgumentException(nameof(morse));
+
+
+        if (_strBuilder.Value!.Length > 0)
+            _strBuilder.Value.Length = 0;
+
+        _strBuilder.Value.Append(morse);
+        return this;
+    }
+
+    public ICanSetBlinkerOptions ToLight(string morse)
+    {
+        if (string.IsNullOrEmpty(morse))
+            throw new ArgumentException(nameof(morse));
+
+
+        if (_strBuilder.Value!.Length > 0)
+            _strBuilder.Value.Length = 0;
+
+        _strBuilder.Value.Append(morse);
+        return this;
+    }
 
     public ICanConvertToLight SetBlinkerOptions(int charSpeed = 25, int wordSpeed = 25)
     {
         if (charSpeed < wordSpeed)
             throw new SmallerWordSpeedException(charSpeed, wordSpeed);
 
-        _charSpeed = charSpeed;
-        _wordSpeed = wordSpeed;
+        _charSpeed.Value = charSpeed;
+        _wordSpeed.Value = wordSpeed;
 
         return this;
     }
 
     public async Task DoBlinks(Action<bool> blinkerAction)
     {
-        if (blinkerAction == null)
+        if (blinkerAction is null)
             throw new ArgumentNullException(nameof(blinkerAction));
 
-        LightBlinker lightBlinker = new LightBlinker(_charSpeed, _wordSpeed, blinkerAction);
-        await lightBlinker.BlinkLight(_strBuilder.ToString());
+        LightBlinker lightBlinker = new LightBlinker(_charSpeed.Value, _wordSpeed.Value, blinkerAction);
+        await lightBlinker.BlinkLight(_strBuilder.Value!.ToString());
     }
+
+
 }
