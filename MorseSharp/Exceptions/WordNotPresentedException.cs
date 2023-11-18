@@ -2,7 +2,7 @@
 namespace MorseSharp.Exceptions
 {
     [Serializable]
-    internal class WordNotPresentedException : Exception
+    public class WordNotPresentedException : Exception
     {
 
         public WordNotPresentedException() { }

@@ -1,4 +1,6 @@
-﻿
+﻿using ListPool;
+using System.Buffers;
+
 namespace MorseSharp.Audio;
 
 [StructLayout(LayoutKind.Sequential)]
@@ -72,7 +74,7 @@ public ref struct AudioConverter
 
     private Span<short> GetCharacter(string morseSymbol)
     {
-        List<short> data = new List<short>();
+        using ListPool<short> data = new ListPool<short>();
 
         for (int i = 0; i < morseSymbol.Length; i++)
         {
@@ -84,21 +86,33 @@ public ref struct AudioConverter
                 data.AddRange(GetDot());
         }
 
-        return CollectionsMarshal.AsSpan(data);
+        return data.AsSpan();
     }
 
     private Span<short> GenerateWav(string text)
     {
-        List<short> data = new List<short>();
+        using ListPool<short> data = new ListPool<short>();
 
-        ReadOnlySpan<char> sMorse = text.AsSpan();
-        Span<Range> splitedRange = new Span<Range>(new Range[sMorse.Count(' ') + 1]);
+        int count = 0;
+        unsafe
+        {
+            fixed (char* ptr = text)
+            {
+                // Count occurrences of spaces to split Morse code into words
+                count = StringCounter.CountOccurrences(ptr, ' ');
+            }
 
-        sMorse.Split(splitedRange, ' ', StringSplitOptions.None);
+        }
+
+        Range[]? rngArray = null;
+        Span<Range> splitedRange = count + 1 < 256
+            ? stackalloc Range[count + 1] : rngArray = ArrayPool<Range>.Shared.Rent(count + 1);
+
+        text.AsSpan().Split(splitedRange, ' ', StringSplitOptions.None);
 
         for (int i = 0; i < splitedRange.Length; i++)
         {
-            var morseSymbol = sMorse.Slice(splitedRange[i].Start.Value, splitedRange[i].End.Value - splitedRange[i].Start.Value);
+            var morseSymbol = text.AsSpan().Slice(splitedRange[i].Start.Value, splitedRange[i].End.Value - splitedRange[i].Start.Value);
             if (i > 0)
                 data.AddRange(GetInterWordSpace());
 
@@ -107,7 +121,9 @@ public ref struct AudioConverter
         // Pad the end with a little bit of silence. Otherwise, the last character may sound funny in some media players.
         data.AddRange(GetInterCharSpace());
 
-        return CollectionsMarshal.AsSpan(data);
+        if (rngArray is not null)
+            ArrayPool<Range>.Shared.Return(rngArray);
+        return data.AsSpan();
     }
 
     [SkipLocalsInit]

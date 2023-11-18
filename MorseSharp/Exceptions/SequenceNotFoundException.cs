@@ -1,7 +1,7 @@
 ﻿namespace MorseSharp.Exceptions
 {
     [Serializable]
-    internal class SequenceNotFoundException : Exception
+    public class SequenceNotFoundException : Exception
     {
         public SequenceNotFoundException() { }
 

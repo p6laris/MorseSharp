@@ -1,40 +1,33 @@
-﻿using MorseSharp.Converter;
-
-namespace MorseTest
+﻿namespace MorseTest
 {
     public class MorseAudioConverterTest
     {
         //Latin
         [Fact]
-        public async void ConvertToAudioEnglish()
+        public void ConvertToAudioEnglish()
         {
-            MorseSharp.Converter.MorseAudioConverter converter = new();
-            var morse = await converter.ConvertMorseToAudio("Hello Morse");
-            Assert.True(morse.Length > 0);
-        }
+            Morse.GetConverter()
+                .ForLanguage(Language.English)
+                .ToMorse("Hello Morse")
+                .ToAudio()
+                .SetAudioOptions(25, 25, 600)
+                .GetBytes(out Span<byte> morse);
 
-        [Fact]
-        public void ConvertToAudioWithNullArgumentEnglish()
-        {
-            MorseSharp.Converter.MorseAudioConverter converter = new();
-            Assert.ThrowsAsync<ArgumentNullException>(async () => await converter.ConvertMorseToAudio(null));
+            Assert.True(morse.Length > 0);
         }
 
         //NonLatin
         [Fact]
-        public async void ConvertToAudioKurdish()
+        public void ConvertToAudioKurdish()
         {
-            MorseAudioConverter converter = new(Language.Kurdish);
-            var morse = await converter.ConvertMorseToAudio("زانا");
-            Assert.True(morse.Length > 0);
-        }
+            Morse.GetConverter()
+                 .ForLanguage(Language.Kurdish)
+                 .ToMorse("کووی")
+                 .ToAudio()
+                 .SetAudioOptions(25, 25, 600)
+                 .GetBytes(out Span<byte> morse);
 
-        //Argumnet Null Exception
-        [Fact]
-        public void ConvertToAudioWithNullArgumentKurdish()
-        {
-            MorseAudioConverter converter = new(Language.Kurdish);
-            Assert.ThrowsAsync<ArgumentNullException>(async () => await converter.ConvertMorseToAudio(null));
+            Assert.True(morse.Length > 0);
         }
     }
 }

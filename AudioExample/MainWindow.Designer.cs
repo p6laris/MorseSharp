@@ -28,73 +28,93 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.ToMorseEnglishBtn = new System.Windows.Forms.Button();
-            this.MessageMorseTxt = new System.Windows.Forms.TextBox();
-            this.PlayBtn = new System.Windows.Forms.Button();
-            this.MorseTxt = new System.Windows.Forms.RichTextBox();
-            this.ToMorseKurdishBtn = new System.Windows.Forms.Button();
-            this.SuspendLayout();
+            ToMorseEnglishBtn = new Button();
+            MessageMorseTxt = new TextBox();
+            PlayBtn = new Button();
+            MorseTxt = new RichTextBox();
+            ToMorseKurdishBtn = new Button();
+            blinkerPl = new Panel();
+            blinkBtn = new Button();
+            SuspendLayout();
             // 
             // ToMorseEnglishBtn
             // 
-            this.ToMorseEnglishBtn.Location = new System.Drawing.Point(304, 35);
-            this.ToMorseEnglishBtn.Name = "ToMorseEnglishBtn";
-            this.ToMorseEnglishBtn.Size = new System.Drawing.Size(173, 29);
-            this.ToMorseEnglishBtn.TabIndex = 0;
-            this.ToMorseEnglishBtn.Text = "To Morse English";
-            this.ToMorseEnglishBtn.UseVisualStyleBackColor = true;
-            this.ToMorseEnglishBtn.Click += new System.EventHandler(this.ToAudioBtn_Click);
+            ToMorseEnglishBtn.Location = new Point(304, 35);
+            ToMorseEnglishBtn.Name = "ToMorseEnglishBtn";
+            ToMorseEnglishBtn.Size = new Size(173, 29);
+            ToMorseEnglishBtn.TabIndex = 0;
+            ToMorseEnglishBtn.Text = "To Morse English";
+            ToMorseEnglishBtn.UseVisualStyleBackColor = true;
+            ToMorseEnglishBtn.Click += ToAudioBtn_Click;
             // 
             // MessageMorseTxt
             // 
-            this.MessageMorseTxt.Location = new System.Drawing.Point(12, 37);
-            this.MessageMorseTxt.Name = "MessageMorseTxt";
-            this.MessageMorseTxt.Size = new System.Drawing.Size(286, 27);
-            this.MessageMorseTxt.TabIndex = 1;
+            MessageMorseTxt.Location = new Point(12, 37);
+            MessageMorseTxt.Name = "MessageMorseTxt";
+            MessageMorseTxt.Size = new Size(286, 27);
+            MessageMorseTxt.TabIndex = 1;
             // 
             // PlayBtn
             // 
-            this.PlayBtn.Location = new System.Drawing.Point(304, 105);
-            this.PlayBtn.Name = "PlayBtn";
-            this.PlayBtn.Size = new System.Drawing.Size(142, 29);
-            this.PlayBtn.TabIndex = 2;
-            this.PlayBtn.Text = "Play";
-            this.PlayBtn.UseVisualStyleBackColor = true;
-            this.PlayBtn.Click += new System.EventHandler(this.PlayBtn_Click);
+            PlayBtn.Location = new Point(304, 105);
+            PlayBtn.Name = "PlayBtn";
+            PlayBtn.Size = new Size(173, 29);
+            PlayBtn.TabIndex = 2;
+            PlayBtn.Text = "Play";
+            PlayBtn.UseVisualStyleBackColor = true;
+            PlayBtn.Click += PlayBtn_Click;
             // 
             // MorseTxt
             // 
-            this.MorseTxt.Location = new System.Drawing.Point(12, 70);
-            this.MorseTxt.Name = "MorseTxt";
-            this.MorseTxt.Size = new System.Drawing.Size(286, 109);
-            this.MorseTxt.TabIndex = 3;
-            this.MorseTxt.Text = "";
+            MorseTxt.Location = new Point(12, 70);
+            MorseTxt.Name = "MorseTxt";
+            MorseTxt.Size = new Size(286, 109);
+            MorseTxt.TabIndex = 3;
+            MorseTxt.Text = "";
             // 
             // ToMorseKurdishBtn
             // 
-            this.ToMorseKurdishBtn.Location = new System.Drawing.Point(304, 70);
-            this.ToMorseKurdishBtn.Name = "ToMorseKurdishBtn";
-            this.ToMorseKurdishBtn.Size = new System.Drawing.Size(173, 29);
-            this.ToMorseKurdishBtn.TabIndex = 4;
-            this.ToMorseKurdishBtn.Text = "To Morse Kurdish";
-            this.ToMorseKurdishBtn.UseVisualStyleBackColor = true;
-            this.ToMorseKurdishBtn.Click += new System.EventHandler(this.ToMorseKurdish_Click);
+            ToMorseKurdishBtn.Location = new Point(304, 70);
+            ToMorseKurdishBtn.Name = "ToMorseKurdishBtn";
+            ToMorseKurdishBtn.Size = new Size(173, 29);
+            ToMorseKurdishBtn.TabIndex = 4;
+            ToMorseKurdishBtn.Text = "To Morse Kurdish";
+            ToMorseKurdishBtn.UseVisualStyleBackColor = true;
+            ToMorseKurdishBtn.Click += ToMorseKurdish_Click;
+            // 
+            // blinkerPl
+            // 
+            blinkerPl.Location = new Point(12, 207);
+            blinkerPl.Name = "blinkerPl";
+            blinkerPl.Size = new Size(465, 179);
+            blinkerPl.TabIndex = 5;
+            // 
+            // blinkBtn
+            // 
+            blinkBtn.Location = new Point(304, 140);
+            blinkBtn.Name = "blinkBtn";
+            blinkBtn.Size = new Size(173, 29);
+            blinkBtn.TabIndex = 6;
+            blinkBtn.Text = "Light";
+            blinkBtn.UseVisualStyleBackColor = true;
+            blinkBtn.Click += blinkBtn_Click;
             // 
             // MainWindow
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(592, 191);
-            this.Controls.Add(this.ToMorseKurdishBtn);
-            this.Controls.Add(this.MorseTxt);
-            this.Controls.Add(this.PlayBtn);
-            this.Controls.Add(this.MessageMorseTxt);
-            this.Controls.Add(this.ToMorseEnglishBtn);
-            this.Name = "MainWindow";
-            this.Text = "MorseToAudio";
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(500, 398);
+            Controls.Add(blinkBtn);
+            Controls.Add(blinkerPl);
+            Controls.Add(ToMorseKurdishBtn);
+            Controls.Add(MorseTxt);
+            Controls.Add(PlayBtn);
+            Controls.Add(MessageMorseTxt);
+            Controls.Add(ToMorseEnglishBtn);
+            Name = "MainWindow";
+            Text = "MorseToAudio";
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -104,5 +124,7 @@
         private Button PlayBtn;
         private RichTextBox MorseTxt;
         private Button ToMorseKurdishBtn;
+        private Panel blinkerPl;
+        private Button blinkBtn;
     }
 }

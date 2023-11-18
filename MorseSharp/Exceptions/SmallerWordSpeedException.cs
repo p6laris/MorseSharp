@@ -2,7 +2,7 @@
 namespace MorseSharp.Exceptions
 {
     [Serializable]
-    internal class SmallerWordSpeedException : Exception
+    public class SmallerWordSpeedException : Exception
     {
         public SmallerWordSpeedException() { }
 

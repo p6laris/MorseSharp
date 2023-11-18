@@ -18,5 +18,7 @@
         /// <param name="text">The text to be converted to Morse code.</param>
         /// <returns>The converted Morse code.</returns>
         ICanGenerateAudioAndLight ToMorse(string text);
+        ICanSetAudioOptions ToAudio(string morse);
+        ICanSetBlinkerOptions ToLight(string morse);
     }
 }
