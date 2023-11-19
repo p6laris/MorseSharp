@@ -8,6 +8,7 @@ namespace AudioExample
         //Declare memory of bytes
         byte[] bytes = default;
 
+        string morse;
         //Language
         Language language;
 
@@ -30,11 +31,13 @@ namespace AudioExample
                 //Check if the message length is greater than zero.
                 if (MessageMorseTxt.Text.Length > 0)
                 {
+                    morse = Morse.GetConverter()
+                        .ForLanguage(Language.English)
+                        .ToMorse(MessageMorseTxt.Text).Encode();
                     //Get wav bytes from the ConvertMorseAudio method and then assigned to memory of bytes
                     Morse.GetConverter()
                         .ForLanguage(Language.English)
-                        .ToMorse(MessageMorseTxt.Text)
-                        .ToAudio()
+                        .ToAudio(morse)
                         .SetAudioOptions(25, 25, 600)
                         .GetBytes(out Span<byte> bytes);
 
@@ -42,10 +45,7 @@ namespace AudioExample
 
 
                     //Update the richtextbox text to morse dash and dots.
-                    MorseTxt.Text = Morse.GetConverter()
-                        .ForLanguage(Language.English)
-                        .ToMorse(MessageMorseTxt.Text)
-                        .Encode();
+                    MorseTxt.Text = morse;
 
                     language = Language.English;
                     //Enable the play button to play
@@ -85,11 +85,13 @@ namespace AudioExample
                 //Check if the message length is greater than zero.
                 if (MessageMorseTxt.Text.Length > 0)
                 {
+                    morse = Morse.GetConverter()
+                        .ForLanguage(Language.Kurdish)
+                        .ToMorse(MessageMorseTxt.Text).Encode();
                     //Get wav bytes from the ConvertMorseAudio method and then assigned to memory of bytes
                     Morse.GetConverter()
                         .ForLanguage(Language.Kurdish)
-                        .ToMorse(MessageMorseTxt.Text)
-                        .ToAudio()
+                        .ToAudio(morse)
                         .SetAudioOptions(25, 25, 600)
                         .GetBytes(out Span<byte> bytes);
 
@@ -97,12 +99,9 @@ namespace AudioExample
 
 
                     //Update the richtextbox text to morse dash and dots.
-                    MorseTxt.Text = Morse.GetConverter()
-                        .ForLanguage(Language.Kurdish)
-                        .ToMorse(MessageMorseTxt.Text)
-                        .Encode();
+                    MorseTxt.Text = morse;
 
-                    language = Language.Kurdish;
+                    language = Language.English;
                     //Enable the play button to play
                     PlayBtn.Enabled = true;
                 }
@@ -116,12 +115,11 @@ namespace AudioExample
 
         private void blinkBtn_Click(object sender, EventArgs e)
         {
-            if (MessageMorseTxt.Text.Length > 0)
+            if (MessageMorseTxt.Text.Length > 0 && morse.Length > 0)
             {
                 Morse.GetConverter()
                     .ForLanguage(this.language)
-                    .ToMorse(MessageMorseTxt.Text)
-                    .ToLight()
+                    .ToLight(morse)
                     .SetBlinkerOptions(25, 25)
                     .DoBlinks((hasToBlink) =>
                     {
