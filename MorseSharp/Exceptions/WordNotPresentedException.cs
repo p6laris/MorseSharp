@@ -1,5 +1,4 @@
-﻿
-namespace MorseSharp.Exceptions
+﻿namespace MorseSharp.Exceptions
 {
     [Serializable]
     public class WordNotPresentedException : Exception

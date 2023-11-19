@@ -1,6 +1,4 @@
-﻿using System.Buffers;
-
-namespace MorseSharp;
+﻿namespace MorseSharp;
 
 
 /// <summary>

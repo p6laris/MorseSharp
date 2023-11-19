@@ -1,8 +1,7 @@
-﻿
-namespace MorseSharp.Audio.Chunks;
+﻿namespace MorseSharp.Audio.Chunks;
 
 [StructLayout(LayoutKind.Sequential)]
-public readonly ref struct ValueFormatChunk
+internal readonly ref struct ValueFormatChunk
 {
     private readonly short CompressionCode;
     private readonly short NumChannels;

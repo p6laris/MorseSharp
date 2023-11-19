@@ -1,10 +1,7 @@
-﻿using ListPool;
-using System.Buffers;
-
-namespace MorseSharp.Audio;
+﻿namespace MorseSharp.Audio;
 
 [StructLayout(LayoutKind.Sequential)]
-public ref struct AudioConverter
+internal ref struct AudioConverter
 {
 
     private readonly int _characterSpeed;

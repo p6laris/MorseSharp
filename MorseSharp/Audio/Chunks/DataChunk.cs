@@ -1,11 +1,9 @@
-﻿
-
-namespace MorseSharp.Audio.Chunks;
+﻿namespace MorseSharp.Audio.Chunks;
 /// <summary>
 /// Represents a data chunk for WAVE files.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
-public readonly ref struct ValueDataChunk
+internal readonly ref struct ValueDataChunk
 {
 
     private readonly Span<short> _chunkData;

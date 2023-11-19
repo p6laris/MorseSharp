@@ -1,7 +1,6 @@
-﻿
-namespace MorseSharp.Audio.Chunks;
+﻿namespace MorseSharp.Audio.Chunks;
 
-public readonly ref struct ValueHeaderChunk
+internal readonly ref struct ValueHeaderChunk
 {
     readonly ValueDataChunk _dataChunk;
     readonly ValueFormatChunk _formatChunk;
