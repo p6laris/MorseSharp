@@ -17,8 +17,7 @@ try
     //Light Blinking
     await Morse.GetConverter()
         .ForLanguage(Language.English)
-        .ToMorse("Hi")
-        .ToLight()
+        .ToLight(".... ..")
         .SetBlinkerOptions(25, 25)
         .DoBlinks((hasToBlink) =>
         {
