@@ -2,7 +2,7 @@
 ![Nuget](https://img.shields.io/nuget/dt/MorseSharp?logo=nuget)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/p6laris/MorseSharp)
 
-MorseSharp is a .NET library to encoding/decoding  **up to 9 languages** including kurdish and generating audio morse.
+MorseSharp is a fast .NET library to encoding/decoding  **up to 10 languages** including kurdish and generating audio , blinking lights for morse dash and dots.
 
 ![alt text](https://github.com/p6laris/MorseSharp/blob/master/MorseSharp.png?raw=true)
 
@@ -28,90 +28,146 @@ Use nuget package manager to install [MorseSharp](https://www.nuget.org/packages
 Install-Package MorseSharp
 ```
 ## Usage
-### 1. Text
-You can decode/encode use MorseSharp just by instantiating `TextMorseConverter` class and pass 'Language' enum to specify the language.
+Effortlessly decode/encode Morse code, generate audio, and control blinking lights using the fluent `Morse` class. Begin by obtaining a singleton instance through the `GetConverter()` method and specifying your desired language using the `ForLanguage` method and pass the `Language` enum to it.
 
 ```C#
 using MorseSharp;
-TextMorseConverter converter = new TextMorseConverter(Language.English);
+
+var conv = Morse.GetConverter()
+     .ForLanguage(Language.English);
 ```
+
+### 1. Text
+Once you've set the language via the `ForLanguage` method, you can decode/encode Morse code with a series of method calls.
 
 #### Encoding
-Calling ConvertTextToMorse method and pass the text to encode the morse:
+Utilize the `ToMorse` method to encode your text into Morse code, and then call the `Encode` method to obtain the Morse code as a string:
 
 ```C#
 using MorseSharp;
-var morse = converter.ConvertTextToMorse("Hello");
+
+ var morse = Morse.GetConverter()
+     .ForLanguage(Language.English)
+     .ToMorse("Hi")
+     .Encode();
 ```
+
+:warning: __WordNotPresentedException__ will be throw when a character in the input text does not have a corresponding Morse code representation.
 
 
 #### Decoding
-Calling method `ConvertMorseToText` to decode the morse:
- > :exclamation: Words must be separated by spaces, words by ( / ), Letters by space " ".
+to decode Morse code using the `Decode` method:
+ > :exclamation: ``Words must be separated by ( / ), Letters by space " ".``
 
 ```C#
 using MorseSharp;
 
-var sentence = converter.ConvertMorseToText(".... ...");
-```
+var text = Morse.GetConverter()
+    .ForLanguage(Language.English)
+    .Decode(".... ..");
 
-### 2. Generating audio
-1. To generate audio first you need to instantiate ``MorseAudioConverter``, there are five overloaded constructor
-To configure audio options such as language and characters speed, word speed ,frequency. this WinForm example demonstrate the purpose:
-> MorseAudioConverter is just optimized wrapper of [jstoddard](https://github.com/jstoddard)'s [CWLibrary](https://github.com/jstoddard/CWLibrary) Library.
+```
+:warning: __SequenceNotFoundException__ when an invalid Morse code sequence is encountered, and the corresponding character cannot be found.
+
+### 2.Audio
+You have two options to generate audio:
+
+#### By Encoding The Text
+Encode your text using `ToMorse`, and then proceed through the chain to generate audio for the encoded text. After encoding the text, use the `ToAudio` method, set the audio options with `SetAudioOptions`, and finally, retrieve audio bytes using `GetBytes`:
+
 ```C#
 using MorseSharp;
 
-MorseAudioConverter converter = new(Language.English,25,20,600);
-//Or for kurdish language
-//MorseAudioConverter converter = new(Language.Kurdish,25,20,600);
+ Morse.GetConverter()
+     .ForLanguage(Language.English)
+     .ToMorse("Hello Morse")
+     .ToAudio()
+     .SetAudioOptions(25, 25, 600)
+     .GetBytes(out Span<byte> morse);
+```
+
+#### Manually
+If you already have the encoded text as a string, skip the encoding step and pass the encoded text directly to the overloaded `ToAudio` method:
+```C#
+using MorseSharp;
+
+Morse.GetConverter()
+    .ForLanguage(Language.English)
+    .ToAudio(".... ..")
+    .SetAudioOptions (25, 25, 600)
+    .GetBytes(out Span<byte> morse);
 
 ```
-2. Bytes for the generated wav audio can be recived by calling ``MorseAudioConverter``'s asynchronous ``ConvertMorseToAudio`` method:
+:warning: The character speed must be greater than or equal to the word speed; otherwise, a __SmallerCharSpeedException__ will be thrown.
+
+## Light
+The class can also be able to blink lights to a specific morse. Just like the audio you have to options to blink lights either by Encoding it first or by set the dash and dots directly to the method and skip the encoding part:
+
 ```C#
-try
-{
-   var morse = await converter.ConvertMorseToAudio("Hello Morse");
-}
-catch(Exception ex)
-{
-   MessageBox.Show(ex.Message);
-}
+using MorseSharp;
+
+ //By Encoding it then blink the lights.
+Morse.GetConverter()
+    .ForLanguage(Language.English)
+    .ToMorse(null)
+    .ToLight()
+    .SetBlinkerOptions(25, 25)
+    .DoBlinks((hasToBlink) => {
+       //Do something
+    });
+
+//By directly pass the morse to method.
+ await Morse.GetConverter()
+     .ForLanguage(Language.English)
+     .ToLight(".... ..")
+     .SetBlinkerOptions(25, 25)
+     .DoBlinks((hasToBlink) =>
+     {
+         if (hasToBlink)
+             Console.BackgroundColor = ConsoleColor.White;
+         else 
+             Console.BackgroundColor = ConsoleColor.Black;
+     });
 ```
-3.After getting the bytes you can stream the bytes and play the sound, this example use's SoundPlayer object to play the sound:
-```C#
-SoundPlayer player = new();
-using(Stream stream = new MemoryStream(morse))
-{
-   player.Stream = stream;
-   player.PlayAsync();
-}
-```
+You need to set the character speed and word speed using `SetBlinkerOptions`, then invoke async `DoBlinks` and subscribe to the `Action<bool> parameter`.
+
 ## Example 
 This piece of code encode and decode's the morse and then show it to the console:
 ```C#
 using MorseSharp;
-using MorseSharp.Converter;
 
-
-TextMorseConverter Converter = new TextMorseConverter(Language.English);
-
-
-string morse = string.Empty;
-string text = string.Empty;
 
 try
 {
-    morse = Converter.ConvertTextToMorse("Hello World");
-    text  =  Converter.ConvertMorseToText(".... ..");
+    //Encoding
+    var morse = Morse.GetConverter()
+        .ForLanguage(Language.English)
+        .ToMorse("Hi")
+        .Encode();
+
+    //Decoding
+    var text = Morse.GetConverter()
+        .ForLanguage(Language.English)
+        .Decode(".... ..");
+
+    //Light Blinking
+    await Morse.GetConverter()
+        .ForLanguage(Language.English)
+        .ToLight(".... ..")
+        .SetBlinkerOptions(25, 25)
+        .DoBlinks((hasToBlink) =>
+        {
+            if (hasToBlink)
+                Console.BackgroundColor = ConsoleColor.White;
+            else 
+                Console.BackgroundColor = ConsoleColor.Black;
+        });
+
 }
-catch (Exception ex)
+catch(Exception ex)
 {
     Console.WriteLine(ex.Message);
 }
-
-Console.WriteLine(morse);
-Console.WriteLine(text);
 ```
 
 ## License
