@@ -2,7 +2,8 @@
 
 
 /// <summary>
-/// Decode/encodes morse text.
+/// Provides functionality to decode/encode Morse code, convert text to Morse code,
+/// generate audio bytes, and control light blinking based on Morse code.
 /// </summary>
 public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
     ICanConvertToAudio, ICanSetAudioOptions, ICanGenerateAudioAndLight,
@@ -80,6 +81,10 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
     /// </summary>
     /// <param name="morse">The Morse code to convert to text.</param>
     /// <returns>The converted text.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the input Morse code is null or empty.</exception>
+    /// <exception cref="SequenceNotFoundException">
+    /// Thrown when an invalid Morse code sequence is encountered, and the corresponding character cannot be found.
+    /// </exception>
     public string Decode(string morse)
     {
         if (string.IsNullOrEmpty(morse))
@@ -138,6 +143,10 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
     /// </summary>
     /// <param name="text">The text to convert to Morse code.</param>
     /// <returns>The Morse code representation of the text.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the input text is null or empty.</exception>
+    /// <exception cref="WordNotPresentedException">
+    /// Thrown when a character in the input text does not have a corresponding Morse code representation.
+    /// </exception>
     public ICanGenerateAudioAndLight ToMorse(string text)
     {
         if (string.IsNullOrEmpty(text))
@@ -204,10 +213,13 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
     /// <param name="wordSpeed">The word speed for audio.</param>
     /// <param name="frequency">The frequency for audio.</param>
     /// <returns>An instance of the <see cref="ICanConvertToAudio"/> interface.</returns>
+    /// <exception cref="SmallerCharSpeedException">
+    /// Thrown when the character speed is less than the word speed, which is invalid for audio conversion.
+    /// </exception>
     public ICanConvertToAudio SetAudioOptions(int charSpeed = 25, int wordSpeed = 25, double frequency = 700)
     {
         if (charSpeed < wordSpeed)
-            throw new SmallerWordSpeedException(charSpeed, wordSpeed);
+            throw new SmallerCharSpeedException(charSpeed, wordSpeed);
 
         _charSpeed.Value = charSpeed;
         _wordSpeed.Value = wordSpeed;
@@ -216,15 +228,36 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
         return this;
     }
 
+
+    /// <summary>
+    /// Encode the Morse code.
+    /// </summary>
+    /// <returns>The encoded Morse code as a string.</returns>
     public string Encode() => _strBuilder.Value!.ToString();
 
+
+    /// <summary>
+    /// Switch to audio conversion mode.
+    /// </summary>
+    /// <returns>An instance of the <see cref="ICanSetAudioOptions"/> interface.</returns>
     public ICanSetAudioOptions ToAudio() => this;
 
+    /// <summary>
+    /// Switch to light blinking mode.
+    /// </summary>
+    /// <returns>An instance of the <see cref="ICanSetBlinkerOptions"/> interface.</returns>
     public ICanSetBlinkerOptions ToLight() => this;
+
+    /// <summary>
+    /// Switch to audio conversion mode with a specified Morse code.
+    /// </summary>
+    /// <param name="morse">The Morse code to convert to audio.</param>
+    /// <returns>An instance of the <see cref="ICanSetAudioOptions"/> interface.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the input Morse code is null or empty.</exception>
     public ICanSetAudioOptions ToAudio(string morse)
     {
         if (string.IsNullOrEmpty(morse))
-            throw new ArgumentException(nameof(morse));
+            throw new ArgumentNullException(nameof(morse));
 
 
         if (_strBuilder.Value!.Length > 0)
@@ -233,11 +266,18 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
         _strBuilder.Value.Append(morse);
         return this;
     }
+
+    /// <summary>
+    /// Switch to light blinking mode with a specified Morse code.
+    /// </summary>
+    /// <param name="morse">The Morse code to convert to light blinking.</param>
+    /// <returns>An instance of the <see cref="ICanSetBlinkerOptions"/> interface.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the input Morse code is null or empty.</exception>
 
     public ICanSetBlinkerOptions ToLight(string morse)
     {
         if (string.IsNullOrEmpty(morse))
-            throw new ArgumentException(nameof(morse));
+            throw new ArgumentNullException(nameof(morse));
 
 
         if (_strBuilder.Value!.Length > 0)
@@ -247,10 +287,19 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
         return this;
     }
 
+    /// <summary>
+    /// Set light blinking options.
+    /// </summary>
+    /// <param name="charSpeed">The character speed for light blinking.</param>
+    /// <param name="wordSpeed">The word speed for light blinking.</param>
+    /// <returns>An instance of the <see cref="ICanConvertToLight"/> interface.</returns>
+    /// <exception cref="SmallerCharSpeedException">
+    /// Thrown when the character speed is less than the word speed, which is invalid for light blinking.
+    /// </exception>
     public ICanConvertToLight SetBlinkerOptions(int charSpeed = 25, int wordSpeed = 25)
     {
         if (charSpeed < wordSpeed)
-            throw new SmallerWordSpeedException(charSpeed, wordSpeed);
+            throw new SmallerCharSpeedException(charSpeed, wordSpeed);
 
         _charSpeed.Value = charSpeed;
         _wordSpeed.Value = wordSpeed;
@@ -258,6 +307,12 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
         return this;
     }
 
+    /// <summary>
+    /// Perform light blinking based on the set options.
+    /// </summary>
+    /// <param name="blinkerAction">The action to perform for each blink (true for on, false for off).</param>
+    /// <returns>An asynchronous task.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the blinker action is null.</exception>
     public async Task DoBlinks(Action<bool> blinkerAction)
     {
         if (blinkerAction is null)
@@ -266,6 +321,4 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
         LightBlinker lightBlinker = new LightBlinker(_charSpeed.Value, _wordSpeed.Value, blinkerAction);
         await lightBlinker.BlinkLight(_strBuilder.Value!.ToString());
     }
-
-
 }

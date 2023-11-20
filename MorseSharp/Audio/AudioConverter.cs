@@ -11,7 +11,7 @@ internal ref struct AudioConverter
     public AudioConverter(int characterSpeed, int wordSpeed, double frequency)
     {
         if (characterSpeed < wordSpeed)
-            throw new SmallerWordSpeedException(characterSpeed, wordSpeed);
+            throw new SmallerCharSpeedException(characterSpeed, wordSpeed);
 
 
         _characterSpeed = characterSpeed;

@@ -11,7 +11,7 @@
         public LightBlinker(int characterSpeed, int wordSpeed, Action<bool> blinkerAction)
         {
             if (characterSpeed < wordSpeed)
-                throw new SmallerWordSpeedException(characterSpeed, wordSpeed);
+                throw new SmallerCharSpeedException(characterSpeed, wordSpeed);
 
             if (blinkerAction == null)
                 throw new ArgumentNullException(nameof(blinkerAction));
