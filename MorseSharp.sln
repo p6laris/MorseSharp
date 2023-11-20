@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32819.101
@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MorseTest", "MorseTest\Mors
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleExample", "Example\ConsoleExample.csproj", "{5209A0AB-CB2B-4E0E-8A53-5193607516C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioExample", "AudioExample\AudioExample.csproj", "{4A028B6C-2BB1-4A57-B259-9AB94EE3D353}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AudioExample", "AudioExample\AudioExample.csproj", "{4A028B6C-2BB1-4A57-B259-9AB94EE3D353}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

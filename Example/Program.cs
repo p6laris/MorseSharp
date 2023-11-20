@@ -1,22 +1,34 @@
 ﻿using MorseSharp;
-using MorseSharp.Converter;
 
-
-TextMorseConverter Converter = new TextMorseConverter(Language.English);
-
-
-string morse = string.Empty;
-string text = string.Empty;
 
 try
 {
-    morse =  Converter.ConvertTextToMorse("The quick brown fox jumps over the lazy dog");
-    text = Converter.ConvertMorseToText("_ .... . / __._ .._ .. _._. _._ / _... ._. ___ .__ _. / .._. ___ _.._ / .___ .._ __ .__. ... / ___ ..._ . ._. / _ .... . / ._.. ._ __.. _.__ / _.. ___ __.");
+    //Encoding
+    var morse = Morse.GetConverter()
+        .ForLanguage(Language.English)
+        .ToMorse("Hi")
+        .Encode();
+
+    //Decoding
+    var text = Morse.GetConverter()
+        .ForLanguage(Language.English)
+        .Decode(".... ..");
+
+    //Light Blinking
+    await Morse.GetConverter()
+        .ForLanguage(Language.English)
+        .ToLight(".... ..")
+        .SetBlinkerOptions(25, 25)
+        .DoBlinks((hasToBlink) =>
+        {
+            if (hasToBlink)
+                Console.BackgroundColor = ConsoleColor.White;
+            else 
+                Console.BackgroundColor = ConsoleColor.Black;
+        });
+
 }
-catch (Exception ex)
+catch(Exception ex)
 {
     Console.WriteLine(ex.Message);
 }
-
-Console.WriteLine(morse);
-Console.WriteLine(text);

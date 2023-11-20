@@ -1,47 +1,68 @@
-﻿using MorseSharp.Converter;
-
-namespace MorseTest
+﻿namespace MorseTest
 {
     public class TextMorseConverterTest
     {
         [Fact]
-        public void ConvertMorseWithValidString()
+        public void ConvertToMorseWithValidString()
         {
-            TextMorseConverter converter = new TextMorseConverter(Language.English);
-            var morse =  converter.ConvertTextToMorse("Hi There");
+            var morse = Morse.GetConverter()
+                .ForLanguage(Language.English)
+                .ToMorse("The quick brown fox jumps over the lazy dog")
+                .Encode();
+
             Assert.True(morse.Length > 0);
         }
 
         [Fact]
-        public void ConvertMorseWithNullString()
+        public void ConvertToMorseWithNullString()
         {
-            TextMorseConverter converter = new TextMorseConverter(Language.English);
-            Assert.Throws<ArgumentNullException>(() => converter.ConvertTextToMorse(null));
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                var morse = Morse.GetConverter()
+                .ForLanguage(Language.English)
+                .ToMorse(null)
+                .Encode();
+            });
         }
         [Fact]
-        public void ConvertMorseWithInvalidCharacter()
+        public void ConvertToMorseWithInvalidCharacter()
         {
-            var converter = new TextMorseConverter(Language.Kurdish);
-            Assert.Throws<KeyNotFoundException>(() => converter.ConvertTextToMorse("Hi~"));
+            Assert.Throws<WordNotPresentedException>(() =>
+            {
+                var morse = Morse.GetConverter()
+                .ForLanguage(Language.Kurdish)
+                .ToMorse("~")
+                .Encode();
+            });
         }
         [Fact]
-        public void ConvertTextWithValidMorse()
+        public void ConvertToTextWithValidMorse()
         {
-            TextMorseConverter converter = new TextMorseConverter(Language.Kurdish);
-            var morse = converter.ConvertMorseToText("... ..._ ._ .__");
+            var morse = Morse.GetConverter()
+                .ForLanguage(Language.English)
+                .Decode(".... ..");
+
             Assert.True(morse.Length > 0);
         }
         [Fact]
-        public void ConvertTextWithNullMorse()
+        public void ConvertToTextWithNullMorse()
         {
-            TextMorseConverter converter = new TextMorseConverter(Language.Kurdish);
-            Assert.Throws<ArgumentNullException>(() => converter.ConvertMorseToText(null));
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                var morse = Morse.GetConverter()
+                .ForLanguage(Language.Kurdish)
+                .Decode(null);
+            });
         }
         [Fact]
         public void ConvertTextWithInvalidMorse()
         {
-            TextMorseConverter converter = new TextMorseConverter(Language.Kurdish);
-            Assert.Throws<KeyNotFoundException>(() => converter.ConvertMorseToText("........"));
+            Assert.Throws<SequenceNotFoundException>(() =>
+            {
+                var morse = Morse.GetConverter()
+                .ForLanguage(Language.Kurdish)
+                .Decode("............");
+            });
         }
 
 

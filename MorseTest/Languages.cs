@@ -1,15 +1,15 @@
-﻿using MorseSharp.Converter;
-
-namespace MorseTest
+﻿namespace MorseTest
 {
     public class Languages
     {
         [Fact]
         public void EnglishToMorse()
         {
-            TextMorseConverter Converter = new TextMorseConverter(Language.English);
 
-            var morse = Converter.ConvertTextToMorse("The quick brown fox jumps over the lazy dog");
+            var morse = Morse.GetConverter()
+                .ForLanguage(Language.English)
+                .ToMorse("The quick brown fox jumps over the lazy dog")
+                .Encode();
 
             Assert.Equal("_ .... . / __._ .._ .. _._. _._ / _... ._. ___ .__ _. / .._. ___ _.._ / .___ .._ __ .__. ... / ___ ..._ . ._. / _ .... . / ._.. ._ __.. _.__ / _.. ___ __.",
                 morse);
@@ -17,9 +17,11 @@ namespace MorseTest
         [Fact]
         public void KurdishToMorse()
         {
-            TextMorseConverter Converter = new TextMorseConverter(Language.Kurdish);
 
-            var morse = Converter.ConvertTextToMorse("کۆژین و ڤیان چوونە بۆ باغەکە ئاوی ساردیان دا بە خرینگ و عەگ و قوڵینگەکان ئینجا پەروازەکانیان فڕاند دواتریش هەموو حاجیلەکانیان چنی");
+            var morse = Morse.GetConverter()
+                .ForLanguage(Language.Kurdish)
+                .ToMorse("کۆژین و ڤیان چوونە بۆ باغەکە ئاوی ساردیان دا بە خرینگ و عەگ و قوڵینگەکان ئینجا پەروازەکانیان فڕاند دواتریش هەموو حاجیلەکانیان چنی")
+                .Encode();
 
             Assert.Equal("_.... ._._ __. .. _. / .__ / .._.. .. ._ _. / ___. .__ .__ _. . / _... ._._ / _... ._ ..__ . _.... . / .._.. ._ .__ .. / ... ._ _._ _.. .. ._ _. / _.. ._ / _... . / _.._ _._ .. _. __._ / .__ / ___ . __._ / .__ / ...___ .__ ..._ .. _. __._ . _.... ._ _. / .._.. .. _. .___ ._ / .__. . _._ .__ ._ __.. . _.... ._ _. .. ._ _. / .._. ._. ._ _. _.. / _.. .__ ._ _ _._ .. ____ / _._. . __ .__ .__ / .... ._ .___ .. ._.. . _.... ._ _. .. ._ _. / ___. _. ..",
                 morse);
@@ -27,9 +29,10 @@ namespace MorseTest
         [Fact]
         public void KurdishLatinToMorse()
         {
-            TextMorseConverter Converter = new TextMorseConverter(Language.KurdishLatin);
-
-            var morse =  Converter.ConvertTextToMorse("Cem vî Fekoyê pîs zêdetir ji çar gulên xweşik hebûn");
+            var morse = Morse.GetConverter()
+                 .ForLanguage(Language.KurdishLatin)
+                 .ToMorse("Cem vî Fekoyê pîs zêdetir ji çar gulên xweşik hebûn")
+                 .Encode();
 
             Assert.Equal(".___ . __ / .._.. .. / .._. . _.... ._._ ..__ .._ / .__. .. ... / __.. .._ _.. . _ .._.. _._ / __. .._.. / ___. ._ _._ / __._ .__ ._.. .._ _. / _.._ ___ . ____ .._.. _.... / _._. . _... .__.__ _.",
                 morse);
@@ -37,9 +40,10 @@ namespace MorseTest
         [Fact]
         public void ArabicToMorse()
         {
-            TextMorseConverter Converter = new TextMorseConverter(Language.Arabic);
-
-            var morse = Converter.ConvertTextToMorse("ابجد هوز حطي كلمن سعفص قرشت ثخذ ضظغ");
+            var morse = Morse.GetConverter()
+                 .ForLanguage(Language.Arabic)
+                 .ToMorse("ابجد هوز حطي كلمن سعفص قرشت ثخذ ضظغ")
+                 .Encode();
 
             Assert.Equal("._ _... .___ _.. / .._.. .__ ___. / .... .._ .. / _._ ._.. __ _. / ... ._._ .._. _.._ / __._ ._. ____ _ / _._. ___ __.. / ..._ _.__ __.",
                 morse);
@@ -47,9 +51,10 @@ namespace MorseTest
         [Fact]
         public void DeutschToMorse()
         {
-            TextMorseConverter Converter = new TextMorseConverter(Language.Deutsch);
-
-            var morse = Converter.ConvertTextToMorse("Victor jagt zwölf Boxkämpfer quer über den groẞen Sylter Deich");
+            var morse = Morse.GetConverter()
+                 .ForLanguage(Language.Deutsch)
+                 .ToMorse("Victor jagt zwölf Boxkämpfer quer über den groẞen Sylter Deich")
+                 .Encode();
 
             Assert.Equal("..._ .. _._. _ ___ _._ / .___ ._ __. _ / __.. .__ ___. ._.. .._. / _... ___ _.._ _._ ._._ __ .__. .._. . _._ / __._ .._ . _._ / ..__ _... . _._ / _.. . _. / __. _._ ___ ...... . _. / ... _.__ ._.. _ . _._ / _.. . .. _._. ....",
                 morse);
@@ -58,9 +63,10 @@ namespace MorseTest
         [Fact]
         public void EspanolToMorse()
         {
-            TextMorseConverter Converter = new TextMorseConverter(Language.Espanol);
-
-            var morse = Converter.ConvertTextToMorse("El jefe buscó el éxtasis en un imprevisto baño de whisky y gozó como un duque");
+            var morse = Morse.GetConverter()
+                 .ForLanguage(Language.Espanol)
+                 .ToMorse("El jefe buscó el éxtasis en un imprevisto baño de whisky y gozó como un duque")
+                 .Encode();
 
             Assert.Equal(". ._.. / .___ . .._. . / _... .._ ... _._. ___. / . ._.. / .._.. _.._ _ ._ ... .. ... / . _. / .._ _. / .. __ .__. ._. . ..._ .. ... _ ___ / _... ._ __.__ ___ / _.. . / .__ .... .. ... _._ _.__ / _.__ / __. ___ __.. ___. / _._. ___ __ ___ / .._ _. / _.. .._ __._ .._ .",
                 morse);
@@ -68,9 +74,10 @@ namespace MorseTest
         [Fact]
         public void FrancaisToMorse()
         {
-            TextMorseConverter Converter = new TextMorseConverter(Language.Francais);
-
-            var morse = Converter.ConvertTextToMorse("Portez ce vieux whisky au juge blond qui fume");
+            var morse = Morse.GetConverter()
+                .ForLanguage(Language.Francais)
+                .ToMorse("Portez ce vieux whisky au juge blond qui fume")
+                .Encode();
 
             Assert.Equal(".__. ___ ._. _ . __.. / _._. . / ..._ .. . .._ _.._ / .__ .... .. ... _._ _.__ / ._ .._ / .___ .._ __. . / _... ._.. ___ _. _.. / __._ .._ .. / .._. .._ __ .",
                 morse);
@@ -78,9 +85,10 @@ namespace MorseTest
         [Fact]
         public void ItalianoToMorse()
         {
-            TextMorseConverter Converter = new TextMorseConverter(Language.Italiano);
-
-            var morse = Converter.ConvertTextToMorse("Pranzo d'acqua fa volti sghembi");
+            var morse = Morse.GetConverter()
+                .ForLanguage(Language.Italiano)
+                .ToMorse("Pranzo d'acqua fa volti sghembi")
+                .Encode();
 
             Assert.Equal(".__. ._. ._ _. __.. ___ / _.. .____. ._ _._. __._ .._ ._ / .._. ._ / ..._ ___ ._.. _ .. / ... __. .... . __ _... ..",
                 morse);
@@ -88,9 +96,10 @@ namespace MorseTest
         [Fact]
         public void JapaneseToMorse()
         {
-            TextMorseConverter Converter = new TextMorseConverter(Language.Japanese);
-
-            var morse = Converter.ConvertTextToMorse("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン");
+            var morse = Morse.GetConverter()
+                .ForLanguage(Language.Japanese)
+                .ToMorse("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン")
+                .Encode();
 
             Assert.Equal("__.__ ._ .._ _.___ ._... ._.. _._.. ..._ _.__ ____ _._._ __._. ___._ .___. ___. _. .._. .__. ._.__ .._.. ._. _._. .... __._ ..__ _... __.._ __.. . _.. _.._ .._._ _ _..._ _.._. .__ _..__ __ ... __. _.__. ___ ._._ _._ .___ ._._.",
                 morse);
@@ -99,9 +108,10 @@ namespace MorseTest
         [Fact]
         public void PortuguesToMorse()
         {
-            TextMorseConverter Converter = new TextMorseConverter(Language.Portugues);
-
-            var morse = Converter.ConvertTextToMorse("Um pequeno jabuti xereta viu dez cegonhas felizes");
+            var morse = Morse.GetConverter()
+                 .ForLanguage(Language.Portugues)
+                 .ToMorse("Um pequeno jabuti xereta viu dez cegonhas felizes")
+                 .Encode();
 
             Assert.Equal(".._ __ / .__. . __._ .._ . _. ___ / .___ ._ _... .._ _ .. / _.._ . ._. . _ ._ / ..._ .. .._ / _.. . __.. / _._. . __. ___ _. .... ._ ... / .._. . ._.. .. __.. . ...",
                 morse);

@@ -1,33 +1,41 @@
-﻿using System.Text;
+﻿namespace MorseSharp.Audio.Chunks;
 
-namespace MorseSharp.Audio.Chunks
+internal readonly ref struct ValueHeaderChunk
 {
-    internal class HeaderChunk : WaveChunk
+    readonly ValueDataChunk _dataChunk;
+    readonly ValueFormatChunk _formatChunk;
+    readonly uint _chunkSize;
+    readonly int _bufferSize;
+
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ValueHeaderChunk(in ValueDataChunk dataChunk, in ValueFormatChunk formatChunk)
     {
-        public ReadOnlyMemory<char> RiffType { get; set; }
-        public FormatChunk FormatChunk { get; set; }
-        public DataChunk DataChunk { get; set; }
+        _dataChunk = dataChunk;
+        _formatChunk = formatChunk;
+        _chunkSize = 36 + dataChunk.GetChunkSize();
+        _bufferSize = (3 * 4) + dataChunk.Capacity + formatChunk.Capacity;
 
-        public HeaderChunk(FormatChunk formatChunk, DataChunk dataChunk)
-        {
-            ChunkId = "RIFF".ToCharArray();
-            RiffType = "WAVE".ToCharArray();
-            FormatChunk = formatChunk;
-            DataChunk = dataChunk;
-            ChunkSize = 36 + DataChunk.ChunkSize;
-        }
+    }
 
-        public override Memory<byte> ToBytes()
-        {
-            List<byte> bytes = new List<byte>();
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Span<byte> ToBytes()
+    {
+        Span<byte> riffType = stackalloc byte[4]{87, 65, 86, 69};
+        Span<byte> chunkId = stackalloc byte[4] {82, 73, 70, 70};
 
-            bytes.AddRange(Encoding.UTF8.GetBytes(ChunkId.ToArray() ));
-            bytes.AddRange(BitConverter.GetBytes(ChunkSize));
-            bytes.AddRange(Encoding.UTF8.GetBytes(RiffType.ToArray()));
-            bytes.AddRange(FormatChunk.ToBytes().ToArray());
-            bytes.AddRange(DataChunk.ToBytes().ToArray());
+        using SpanOwner<byte> owner = SpanOwner<byte>.Allocate(_bufferSize);
+        Span<byte> data = owner.Span;
 
-            return bytes.ToArray<byte>();
-        }
+        SpanByteWriter writer = new SpanByteWriter(ref data);
+
+        writer.AddRange(chunkId);
+        writer.AddRangeBit(_chunkSize);
+        writer.AddRange(riffType);
+        writer.AddRange(_formatChunk.ToBytes());
+        writer.AddRange(_dataChunk.ToBytes());
+
+
+        return owner.Span;
     }
 }
