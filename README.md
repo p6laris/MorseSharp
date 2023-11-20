@@ -37,7 +37,7 @@ var conv = Morse.GetConverter()
      .ForLanguage(Language.English);
 ```
 
-### 1. Text
+## Text
 Once you've set the language via the `ForLanguage` method, you can decode/encode Morse code with a series of method calls.
 
 #### Encoding
@@ -69,7 +69,7 @@ var text = Morse.GetConverter()
 ```
 :warning: __SequenceNotFoundException__ when an invalid Morse code sequence is encountered, and the corresponding character cannot be found.
 
-### 2.Audio
+## Audio
 You have two options to generate audio:
 
 #### By Encoding The Text
