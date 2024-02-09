@@ -77,7 +77,7 @@ internal ref struct AudioConverter
         {
             if (i > 0)
                 data.AddRange(GetEleCharSpace());
-            if (morseSymbol[i] == '_')
+            if (morseSymbol[i] == '-')
                 data.AddRange(GetDash());
             else if (morseSymbol[i] == '.')
                 data.AddRange(GetDot());

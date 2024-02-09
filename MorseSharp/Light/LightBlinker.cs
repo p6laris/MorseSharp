@@ -58,7 +58,7 @@
             {
                 if (i > 0)
                     await GetElementCharDurationAsync();
-                if (morseSymbol[i] == '_')
+                if (morseSymbol[i] == '-')
                     await GetDashDurationAsync();
                 else if (morseSymbol[i] == '.')
                     await GetDotDurationAsync();
