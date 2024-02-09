@@ -16,7 +16,7 @@
     <NeutralLanguage>en-GB</NeutralLanguage>
     <Copyright>2022</Copyright>
     <IncludeSymbols>False</IncludeSymbols>
-    <Version>4.0.0$(VersionPrefix)</Version>
+    <Version>4.0.1$(VersionPrefix)</Version>
     <PackageIcon>MorseSharp.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
