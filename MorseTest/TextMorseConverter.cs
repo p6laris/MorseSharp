@@ -27,7 +27,7 @@
         [Fact]
         public void ConvertToMorseWithInvalidCharacter()
         {
-            Assert.Throws<WordNotPresentedException>(() =>
+            Assert.Throws<CharacterNotPresentedException>(() =>
             {
                 var morse = Morse.GetConverter()
                 .ForLanguage(Language.Kurdish)

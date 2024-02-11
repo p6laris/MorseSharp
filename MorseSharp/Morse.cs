@@ -144,7 +144,7 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
     /// <param name="text">The text to convert to Morse code.</param>
     /// <returns>The Morse code representation of the text.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the input text is null or empty.</exception>
-    /// <exception cref="WordNotPresentedException">
+    /// <exception cref="CharacterNotPresentedException">
     /// Thrown when a character in the input text does not have a corresponding Morse code representation.
     /// </exception>
     public ICanGenerateAudioAndLight ToMorse(string text)
@@ -184,7 +184,7 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
                     _strBuilder.Value.Append(val.AsSpan());
             }
             else
-                throw new WordNotPresentedException(txt[i], language: _sLanguage.Value);
+                throw new CharacterNotPresentedException(txt[i], language: _sLanguage.Value);
         }
 
         if (txtArray is not null)
