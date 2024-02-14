@@ -107,7 +107,7 @@ The class can also be able to blink lights to a specific morse. Just like the au
 using MorseSharp;
 
  //By Encoding it then blink the lights.
-Morse.GetConverter()
+await Morse.GetConverter()
     .ForLanguage(Language.English)
     .ToMorse(null)
     .ToLight()
@@ -132,7 +132,7 @@ Morse.GetConverter()
 You need to set the character speed and word speed using `SetBlinkerOptions`, then invoke async `DoBlinks` and subscribe to the `Action<bool> parameter`.
 
 ## Example 
-This piece of code encode and decode's the morse and then show it to the console:
+This piece of code encode and decode's the morse and then show it to the console, also blinks the console background based on the light blink:
 ```C#
 using MorseSharp;
 
