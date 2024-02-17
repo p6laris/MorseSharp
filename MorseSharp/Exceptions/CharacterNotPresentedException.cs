@@ -1,19 +1,10 @@
 ﻿namespace MorseSharp.Exceptions
 {
     [Serializable]
-    public class CharacterNotPresentedException : Exception
+    public class CharacterNotPresentedException(char character, Language language)
+        : Exception($"The {character} character is not presented in {Enum.GetName(language)} Language.")
     {
-
-        public CharacterNotPresentedException() { }
-        public CharacterNotPresentedException(char word)
-            : base($"The {word} character is not presented in the specified Language.")
-        {
-
-        }
-        public CharacterNotPresentedException(char word, Language language)
-            : base($"The {word} character is not presented in {Enum.GetName(language)} Language.")
-        {
-
-        }
+        public char Character { get; } = character;
+        public Language Language { get; } = language;
     }
 }
