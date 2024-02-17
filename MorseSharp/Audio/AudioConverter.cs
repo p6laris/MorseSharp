@@ -1,5 +1,10 @@
 ﻿namespace MorseSharp.Audio;
 
+/*
+ * The AudioConverter, chunks classes are inspired by jstoddard's CWLibrary
+ * Src: https://github.com/jstoddard/CWLibrary
+ */
+
 [StructLayout(LayoutKind.Sequential)]
 internal ref struct AudioConverter
 {
