@@ -1,5 +1,5 @@
 # MorseSharp
-[![NuGet](https://img.shields.io/nuget/dt/ClipLazor?logo=nuget)](https://www.nuget.org/packages/MorseSharp)
+[![NuGet](https://img.shields.io/nuget/dt/MorseSharp?logo=nuget)](https://www.nuget.org/packages/MorseSharp)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/p6laris/MorseSharp)
 
 MorseSharp is a fast .NET library to encoding/decoding  **up to 10 languages** including kurdish and generating audio , blinking lights for morse dash and dots.
