@@ -22,6 +22,10 @@ MorseSharp is a fast .NET library to encoding/decoding  **up to 10 languages** i
 | Portugues     | `Language.Portugues` |
 | Russian       | `Language.Russian` |
 
+NOTE: All language sources are obtained from [MorseCoder](https://morsedecoder.com/), except for Kurdish, Kurdish Latin [More info](https://github.com/p6laris/MorseSharp/blob/master/KurdishToMorse.md) and Russian obtained from this [wiki](https://en.wikipedia.org/wiki/Russian_Morse_code).
+If you encounter any issues with the obtained characters or have suggestions for improvement, please feel free to [open an issue](https://github.com/p6laris/MorseSharp/issues) in this repository.
+
+
 ## Installation
 Use nuget package manager to install [MorseSharp](https://www.nuget.org/packages/MorseSharp).
 ```bash
