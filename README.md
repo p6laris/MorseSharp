@@ -112,8 +112,8 @@ using MorseSharp;
 
  //By Encoding it then blink the lights.
 await Morse.GetConverter()
-    .ForLanguage(Language.English)
-    .ToMorse(null)
+    .ForLanguage(Language.Kurdish)
+    .ToMorse("سڵاو")
     .ToLight()
     .SetBlinkerOptions(25, 25)
     .DoBlinks((hasToBlink) => {
