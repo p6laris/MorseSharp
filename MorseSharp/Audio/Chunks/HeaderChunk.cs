@@ -14,10 +14,11 @@ internal readonly ref struct ValueHeaderChunk
         _dataChunk = dataChunk;
         _formatChunk = formatChunk;
         _chunkSize = 36 + dataChunk.GetChunkSize();
-        _bufferSize = (3 * 4) + dataChunk.Capacity + formatChunk.Capacity;
+        _bufferSize = 12 + dataChunk.Capacity + ValueFormatChunk.Capacity;
 
     }
 
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<byte> ToBytes()
     {
