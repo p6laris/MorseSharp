@@ -6,7 +6,7 @@
  */
 
 [StructLayout(LayoutKind.Sequential)]
-internal ref struct AudioConverter
+internal readonly ref struct AudioConverter
 {
 
     private readonly int _characterSpeed;
@@ -25,7 +25,6 @@ internal ref struct AudioConverter
 
     }
 
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Span<short> GetDot() => GetWave(1.2 / _characterSpeed);
 
@@ -33,6 +32,7 @@ internal ref struct AudioConverter
     private Span<short> GetDash() => GetWave(3.6 / _characterSpeed);
 
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Span<short> GetEleCharSpace() => GetSilence(1.2 / _characterSpeed);
 
     private Span<short> GetInterCharSpace()
@@ -48,11 +48,12 @@ internal ref struct AudioConverter
         double spaceLength = 7 * delay / 19;
         return GetSilence(spaceLength);
     }
+
     [SkipLocalsInit]
     private Span<short> GetWave(double seconds)
     {
         int samples = (int)(11025 * seconds);
-        using SpanOwner<short> owner = SpanOwner<short>.Allocate(samples);
+        using SpanOwner<short> owner = SpanOwner<short>.Allocate(samples, AllocationMode.Clear);
         Span<short> data = owner.Span;
 
         for (int i = 0; i < samples; i++)
@@ -63,7 +64,7 @@ internal ref struct AudioConverter
         return data;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     private Span<short> GetSilence(double seconds)
     {
         int samples = (int)(11025 * seconds);
@@ -74,7 +75,7 @@ internal ref struct AudioConverter
 
     }
 
-    private Span<short> GetCharacter(string morseSymbol)
+    private Span<short> GetCharacter(ReadOnlySpan<char> morseSymbol)
     {
         using ListPool<short> data = new ListPool<short>();
 
@@ -91,7 +92,7 @@ internal ref struct AudioConverter
         return data.AsSpan();
     }
 
-    private Span<short> GenerateWav(string text)
+    private Span<short> GenerateWav(ReadOnlySpan<char> text)
     {
         using ListPool<short> data = new ListPool<short>();
 
@@ -110,15 +111,15 @@ internal ref struct AudioConverter
         Span<Range> splitedRange = count + 1 < 256
             ? stackalloc Range[count + 1] : rngArray = ArrayPool<Range>.Shared.Rent(count + 1);
 
-        text.AsSpan().Split(splitedRange, ' ', StringSplitOptions.None);
+        text.Split(splitedRange, ' ', StringSplitOptions.None);
 
         for (int i = 0; i < splitedRange.Length; i++)
         {
-            var morseSymbol = text.AsSpan().Slice(splitedRange[i].Start.Value, splitedRange[i].End.Value - splitedRange[i].Start.Value);
+            var morseSymbol = text.Slice(splitedRange[i].Start.Value, splitedRange[i].End.Value - splitedRange[i].Start.Value);
             if (i > 0)
                 data.AddRange(GetInterWordSpace());
 
-            data.AddRange(GetCharacter(morseSymbol.ToString()));
+            data.AddRange(GetCharacter(morseSymbol));
         }
         // Pad the end with a little bit of silence. Otherwise, the last character may sound funny in some media players.
         data.AddRange(GetInterCharSpace());
@@ -129,7 +130,7 @@ internal ref struct AudioConverter
     }
 
     [SkipLocalsInit]
-    internal void ConvertToAudio(string morse, out Span<byte> destination)
+    internal void ConvertToAudio(ReadOnlySpan<char> morse, out Span<byte> destination)
     {
         var data = GenerateWav(morse);
         ValueDataChunk dataChunk = new ValueDataChunk(data);
