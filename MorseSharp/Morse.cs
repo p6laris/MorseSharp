@@ -92,7 +92,7 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
 
 
         if (_strBuilder.Value!.Length > 0)
-            _strBuilder.Value.Length = 0;
+            _strBuilder.Value.Clear();
 
         int count = 0;
 
@@ -153,7 +153,7 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
             throw new ArgumentNullException(nameof(text));
 
         if (_strBuilder.Value!.Length > 0)
-            _strBuilder.Value.Length = 0;
+            _strBuilder.Value.Clear();
 
 
         var length = text.Length;
@@ -199,7 +199,7 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
     public void GetBytes(out Span<byte> destination)
     {
         AudioConverter a = new AudioConverter(_charSpeed.Value, _wordSpeed.Value, _frequency.Value);
-        a.ConvertToAudio(_strBuilder.Value!.ToString(), out Span<byte> bytes);
+        a.ConvertToAudio(_strBuilder.Value!.ToString().AsSpan(), out Span<byte> bytes);
         destination = bytes;
     }
 
