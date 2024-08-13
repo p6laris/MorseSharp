@@ -152,11 +152,8 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
         if (string.IsNullOrEmpty(text))
             throw new ArgumentNullException(nameof(text));
 
-        lock (_strBuilder)
-        {
-            if (_strBuilder.Value!.Length > 0)
-                _strBuilder.Value.Length = 0;
-        }
+        if (_strBuilder.Value!.Length > 0)
+            _strBuilder.Value.Length = 0;
 
 
         var length = text.Length;
