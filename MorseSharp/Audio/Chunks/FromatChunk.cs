@@ -23,8 +23,9 @@ internal readonly ref struct ValueFormatChunk
         ChunkSize = 16;
     }
 
-    public int Capacity => (4 * 4) + (2 * 4);
+    public const int Capacity = 24;
 
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<byte> ToBytes()
     {
