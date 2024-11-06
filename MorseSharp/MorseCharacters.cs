@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace MorseSharp
 {
     /*
@@ -34,13 +36,10 @@ namespace MorseSharp
             Language.Russian => GetMorseCharactersRussian(),
             _ => throw new ArgumentOutOfRangeException(nameof(Language))
         };
-        /// <summary>
-        /// Defines all morse characters in English.
-        /// </summary>
-        /// <returns><see cref="System.Collections.Generic.Dictionary{char, string}"></see> of morse characters.</returns>
+
         private static Dictionary<char, string> GetMorseCharactersEnglish()
         {
-            return new Dictionary<char, string>()
+            return new Dictionary<char, string>(comparer: new CharIgnoreCase())
             {
                 //Alphabets
                 { 'A', ".-" },
@@ -108,10 +107,6 @@ namespace MorseSharp
         };
         }
         
-        /// <summary>
-        /// Defines all morse characters in Kurdish.
-        /// </summary>
-        /// <returns><see cref="System.Collections.Generic.Dictionary{Char, String}"></see> of morse characters.</returns>
         private static Dictionary<char, string> GetMorseCharactersKurdish()
         {
             return new Dictionary<char, string>()
@@ -190,13 +185,10 @@ namespace MorseSharp
 
         };
         }
-        // <summary>
-        /// Defines all morse characters in Kurdish Latin.
-        /// </summary>
-        /// <returns><see cref="System.Collections.Generic.Dictionary{Char, String}"></see> of morse characters.</returns>
+
         private static Dictionary<char, string> GetMorseCharactersKurdishLatin()
         {
-            return new Dictionary<char, string>()
+            return new Dictionary<char, string>(comparer: new CharIgnoreCase())
             {
                  //Alphabets
                 {'A',".-" },
@@ -272,10 +264,7 @@ namespace MorseSharp
                 {'!', "-.-.--"} 
         };
         }
-        /// <summary>
-        /// Defines all morse characters in Arabic.
-        /// </summary>
-        /// <returns><see cref="System.Collections.Generic.Dictionary{TKey, TValue}"></see> of morse characters.</returns>
+
         private static Dictionary<char, string> GetMorseCharactersArabic()
         {
             return new Dictionary<char, string>
@@ -348,13 +337,10 @@ namespace MorseSharp
                 {'!', "-.-.--"} 
             };
         }
-        /// <summary>
-        /// Defines all morse characters in Deutsch.
-        /// </summary>
-        /// <returns><see cref="System.Collections.Generic.Dictionary{TKey, TValue}"></see> of morse characters.</returns>
+
         private static Dictionary<char, string> GetMorseCharactersDeutsch()
         {
-            return new Dictionary<char, string>
+            return new Dictionary<char, string>(comparer: new CharIgnoreCase())
             {
                 //Alphabets
                 {'A',".-" },
@@ -426,14 +412,10 @@ namespace MorseSharp
             };
         }
 
-        /// <summary>
-        /// Defines all morse characters in Espanol.
-        /// </summary>
-        /// <returns><see cref="System.Collections.Generic.Dictionary{TKey, TValue}"></see> of morse characters.</returns>
         private static Dictionary<char, string> GetMorseCharactersEspanol()
         {
 
-            return new Dictionary<char, string>()
+            return new Dictionary<char, string>(comparer: new CharIgnoreCase())
             {
                 //Alphabets
                 {'A',".-"},
@@ -508,14 +490,10 @@ namespace MorseSharp
             };
         }
 
-        /// <summary>
-        /// Defines all morse characters in Francais.
-        /// </summary>
-        /// <returns><see cref="System.Collections.Generic.Dictionary{TKey, TValue}"></see> of morse characters.</returns>
         private static Dictionary<char, string> GetMorseCharactersFrancais()
         {
 
-            return new Dictionary<char, string>()
+            return new Dictionary<char, string>(comparer: new CharIgnoreCase())
             {
                 //Alphabets
                 {'A',".-"},
@@ -597,14 +575,10 @@ namespace MorseSharp
             };
         }
 
-        /// <summary>
-        /// Defines all morse characters in Italiano.
-        /// </summary>
-        /// <returns><see cref="System.Collections.Generic.Dictionary{TKey, TValue}"></see> of morse characters.</returns>
         private static Dictionary<char, string> GetMorseCharactersItaliano()
         {
 
-            return new Dictionary<char, string>()
+            return new Dictionary<char, string>(comparer: new CharIgnoreCase())
             {
                 //Alphabets
                 {'A',".-"},
@@ -681,10 +655,6 @@ namespace MorseSharp
             };
         }
 
-        /// <summary>
-        /// Defines all morse characters in Japanese.
-        /// </summary>
-        /// <returns><see cref="System.Collections.Generic.Dictionary{TKey, TValue}"></see> of morse characters.</returns>
         private static Dictionary<char, string> GetMorseCharactersJapanese()
         {
 
@@ -788,14 +758,10 @@ namespace MorseSharp
             };
         }
 
-        /// <summary>
-        /// Defines all morse characters in Portugues.
-        /// </summary>
-        /// <returns></returns>
         private static Dictionary<char, string> GetMorseCharactersPortugues()
         {
 
-            return new Dictionary<char, string>()
+            return new Dictionary<char, string>(comparer: new CharIgnoreCase())
             {
                //Alphabets
                 {'A',".-"},
@@ -876,14 +842,10 @@ namespace MorseSharp
             };
         }
 
-        /// <summary>
-        /// Defines all morse characters in Russian.
-        /// </summary>
-        /// <returns><see cref="System.Collections.Generic.Dictionary{Char, String}"></see> of morse characters.</returns>
         private static Dictionary<char, string> GetMorseCharactersRussian()
         {
 
-            return new Dictionary<char, string>()
+            return new Dictionary<char, string>(comparer: new CharIgnoreCase())
             {
                 { 'А', ".-" },
                 { 'Б', "-..." },

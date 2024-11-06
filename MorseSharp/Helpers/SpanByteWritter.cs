@@ -1,76 +1,57 @@
-﻿namespace MorseSharp.Helpers
+﻿using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+namespace MorseSharp.Helpers
 {
-    /// <summary>
-    /// A helper struct for writing spans of bytes efficiently.
-    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     internal ref struct SpanByteWriter
     {
         private int offset;
         private Span<byte> buffer;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SpanByteWriter"/> struct with the provided buffer.
-        /// </summary>
-        /// <param name="buffer">The target buffer for writing bytes.</param>
         public SpanByteWriter(ref Span<byte> buffer)
         {
             this.buffer = buffer;
             offset = 0;
         }
 
-        /// <summary>
-        /// Adds a range of bytes from a source span to the target buffer.
-        /// </summary>
-        /// <param name="source">The source span containing the bytes to be added.</param>
-        /// <exception cref="ArgumentException">Thrown when there is not enough space in the buffer to add the source data.</exception>
-        public void AddRange(Span<byte> source)
+        public void AddRange(ReadOnlySpan<byte> source)
         {
-            if (offset + source.Length > buffer.Length)
-                throw new ArgumentException("Not enough space in the buffer to add the source data.");
-
+            EnsureSpace(source.Length);
             source.CopyTo(buffer.Slice(offset));
             offset += source.Length;
         }
 
-        /// <summary>
-        /// Adds a range of bytes from a 32-bit unsigned integer (value) to the target buffer.
-        /// </summary>
-        /// <param name="value">The 32-bit unsigned integer value to be added as bytes.</param>
-        /// <returns><c>true</c> if there is enough space in the buffer for the operation; otherwise, <c>false</c>.</returns>
         [SkipLocalsInit]
-        public bool AddRangeBit(uint value)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AddRangeBit(uint value)
         {
-            Span<byte> bytes = stackalloc byte[4];
-            NumericBitConverter.GetBytes(value, bytes);
-
-            if (offset + bytes.Length > buffer.Length)
-            {
-                return false; // Not enough space in the buffer.
-            }
-
-            bytes.TryCopyTo(buffer.Slice(offset));
-            offset += bytes.Length;
-            return true;
+            EnsureSpace(sizeof(uint));
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(buffer.Slice(offset)), value);
+            offset += sizeof(uint);
         }
 
-        /// <summary>
-        /// Adds a range of bytes from a 16-bit signed integer (value) to the target buffer.
-        /// </summary>
-        /// <param name="value">The 16-bit signed integer value to be added as bytes.</param>
-        /// <returns><c>true</c> if there is enough space in the buffer for the operation; otherwise, <c>false</c>.</returns>
         [SkipLocalsInit]
-        public bool AddRangeBit(short value)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AddRangeBit(short value)
         {
-            Span<byte> bytes = stackalloc byte[2];
-            NumericBitConverter.GetBytes(value, bytes);
+            EnsureSpace(sizeof(short));
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(buffer.Slice(offset)), value);
+            offset += sizeof(short);
+        }
 
-            if (offset + bytes.Length > buffer.Length)
-                return false; // Not enough space in the buffer.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void EnsureSpace(int requiredBytes)
+        {
+            if (offset + requiredBytes > buffer.Length)
+                throw new ArgumentException("Not enough space in the buffer.");
+        }
 
-            bytes.TryCopyTo(buffer.Slice(offset));
-            offset += bytes.Length;
-            return true;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ref byte GetDestinationReference()
+        {
+            return ref MemoryMarshal.GetReference(buffer.Slice(offset));
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿global using System.Text;
-global using MorseSharp.Extentions;
+global using MorseSharp.Extensions;
 global using MorseSharp.Interfaces;
 global using MorseSharp.Audio.Chunks;
 global using MorseSharp.Audio;

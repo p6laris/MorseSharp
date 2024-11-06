@@ -1,5 +1,6 @@
 ﻿namespace MorseSharp.Audio.Chunks;
 
+[StructLayout(LayoutKind.Sequential)]
 internal readonly ref struct ValueHeaderChunk
 {
     readonly ValueDataChunk _dataChunk;
@@ -13,8 +14,8 @@ internal readonly ref struct ValueHeaderChunk
     {
         _dataChunk = dataChunk;
         _formatChunk = formatChunk;
-        _chunkSize = 36 + dataChunk.GetChunkSize();
-        _bufferSize = 12 + dataChunk.Capacity + ValueFormatChunk.Capacity;
+        _chunkSize = 36 + dataChunk.GetChunkSize(); // 36 is the size of the rest of the RIFF header
+        _bufferSize = 12 + dataChunk.Capacity + ValueFormatChunk.Capacity; // RIFF header (12) + data + format
 
     }
 
@@ -22,8 +23,8 @@ internal readonly ref struct ValueHeaderChunk
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<byte> ToBytes()
     {
-        Span<byte> riffType = stackalloc byte[4]{87, 65, 86, 69};
-        Span<byte> chunkId = stackalloc byte[4] {82, 73, 70, 70};
+        ReadOnlySpan<byte> riffType = [87, 65, 86, 69];  // 'WAVE'
+        ReadOnlySpan<byte> chunkId = [82, 73, 70, 70];  // 'RIFF'
 
         using SpanOwner<byte> owner = SpanOwner<byte>.Allocate(_bufferSize);
         Span<byte> data = owner.Span;
@@ -35,7 +36,6 @@ internal readonly ref struct ValueHeaderChunk
         writer.AddRange(riffType);
         writer.AddRange(_formatChunk.ToBytes());
         writer.AddRange(_dataChunk.ToBytes());
-
 
         return owner.Span;
     }

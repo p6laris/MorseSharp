@@ -1,4 +1,6 @@
-﻿namespace MorseSharp.Audio;
+﻿using MorseSharp.Extentions;
+
+namespace MorseSharp.Audio;
 
 /*
  * The AudioConverter, chunks classes are inspired by jstoddard's CWLibrary
@@ -8,124 +10,105 @@
 [StructLayout(LayoutKind.Sequential)]
 internal readonly ref struct AudioConverter
 {
-
     private readonly int _characterSpeed;
     private readonly int _wordSpeed;
     private readonly double _frequency;
+
+    private readonly double _delay;
+    private readonly SpanOwner<short> _preCalculatedDot;
+    private readonly SpanOwner<short> _preCalculatedDash;
+    private readonly SpanOwner<short> _preCalculatedSilenceBuffer;
+
 
     public AudioConverter(int characterSpeed, int wordSpeed, double frequency)
     {
         if (characterSpeed < wordSpeed)
             throw new SmallerCharSpeedException(characterSpeed, wordSpeed);
 
-
         _characterSpeed = characterSpeed;
         _wordSpeed = wordSpeed;
         _frequency = frequency;
+        _delay = (60.0 / _wordSpeed) - (32.0 / _characterSpeed);
 
+        // Precalculate dot and dash using pooled buffers
+        _preCalculatedDot = SpanOwner<short>.Allocate((int)(11025 * (1.2 / _characterSpeed)), AllocationMode.Clear);
+        _preCalculatedDash = SpanOwner<short>.Allocate((int)(11025 * (3.6 / _characterSpeed)), AllocationMode.Clear);
+        PopulateWave(_preCalculatedDot.Span, 1.2 / _characterSpeed);
+        PopulateWave(_preCalculatedDash.Span, 3.6 / _characterSpeed);
+
+        // Precalculate a single large silence buffer to be sliced as needed
+        int maxSilenceSamples = (int)(11025 * (7 * _delay / 19)); // largest silence needed (inter-word space)
+        _preCalculatedSilenceBuffer = SpanOwner<short>.Allocate(maxSilenceSamples, AllocationMode.Clear);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Span<short> GetDot() => GetWave(1.2 / _characterSpeed);
+    private ReadOnlySpan<short> GetDot() => _preCalculatedDot.Span;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Span<short> GetDash() => GetWave(3.6 / _characterSpeed);
-
+    private ReadOnlySpan<short> GetDash() => _preCalculatedDash.Span;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Span<short> GetEleCharSpace() => GetSilence(1.2 / _characterSpeed);
+    private ReadOnlySpan<short> GetEleCharSpace() => GetSilence(1.2 / _characterSpeed);
 
-    private Span<short> GetInterCharSpace()
-    {
-        double delay = (60.0 / _wordSpeed) - (32.0 / _characterSpeed);
-        double spaceLength = 3 * delay / 19;
-        return GetSilence(spaceLength);
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private ReadOnlySpan<short> GetInterCharSpace() => GetSilence(3 * _delay / 19);
 
-    private Span<short> GetInterWordSpace()
-    {
-        double delay = (60.0 / _wordSpeed) - (32.0 / _characterSpeed);
-        double spaceLength = 7 * delay / 19;
-        return GetSilence(spaceLength);
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private ReadOnlySpan<short> GetInterWordSpace() => GetSilence(7 * _delay / 19);
 
-    [SkipLocalsInit]
-    private Span<short> GetWave(double seconds)
+    private void PopulateWave(Span<short> data, double seconds)
     {
-        int samples = (int)(11025 * seconds);
-        using SpanOwner<short> owner = SpanOwner<short>.Allocate(samples, AllocationMode.Clear);
-        Span<short> data = owner.Span;
+        int samples = data.Length;
+        double angleIncrement = 2 * Math.PI * _frequency / 11025;
 
         for (int i = 0; i < samples; i++)
         {
-            data[i] = Convert.ToInt16(32760 * Math.Sin(i * 2 * Math.PI * _frequency / 11025));
+            data[i] = (short)(32760 * Math.Sin(i * angleIncrement));
         }
-
-        return data;
     }
 
-    [SkipLocalsInit]
-    private Span<short> GetSilence(double seconds)
+    private ReadOnlySpan<short> GetSilence(double seconds)
     {
-        int samples = (int)(11025 * seconds);
-        using SpanOwner<short> owner = SpanOwner<short>.Allocate(samples, AllocationMode.Clear);
-        Span<short> data = owner.Span;
-
-        return data;
-
+        int requiredSamples = (int)(11025 * seconds);
+        return _preCalculatedSilenceBuffer.Span.Slice(0, requiredSamples);
     }
 
-    private Span<short> GetCharacter(ReadOnlySpan<char> morseSymbol)
+    private ReadOnlySpan<short> GetCharacter(ReadOnlySpan<char> morseSymbol)
     {
-        using ListPool<short> data = new ListPool<short>();
+        using ValueListPool<short> data = new ValueListPool<short>();
 
-        for (int i = 0; i < morseSymbol.Length; i++)
+        int i = 0;
+        foreach (char c in morseSymbol)
         {
             if (i > 0)
                 data.AddRange(GetEleCharSpace());
-            if (morseSymbol[i] == '-')
+            if (c == '-')
                 data.AddRange(GetDash());
-            else if (morseSymbol[i] == '.')
+            else if (c == '.')
                 data.AddRange(GetDot());
-        }
 
+            i++;
+        }
+        
         return data.AsSpan();
     }
 
-    private Span<short> GenerateWav(ReadOnlySpan<char> text)
+    private ReadOnlySpan<short> GenerateWav(ReadOnlySpan<char> text)
     {
-        using ListPool<short> data = new ListPool<short>();
+        using ValueListPool<short> data = new ValueListPool<short>();
 
-        int count = 0;
-        unsafe
+        int i = 0;
+        foreach (Range range in text.Split(' '))
         {
-            fixed (char* ptr = text)
-            {
-                // Count occurrences of spaces to split Morse code into words
-                count = StringCounter.CountOccurrences(ptr, ' ');
-            }
-
-        }
-
-        Range[]? rngArray = null;
-        Span<Range> splitedRange = count + 1 < 256
-            ? stackalloc Range[count + 1] : rngArray = ArrayPool<Range>.Shared.Rent(count + 1);
-
-        text.Split(splitedRange, ' ', StringSplitOptions.None);
-
-        for (int i = 0; i < splitedRange.Length; i++)
-        {
-            var morseSymbol = text.Slice(splitedRange[i].Start.Value, splitedRange[i].End.Value - splitedRange[i].Start.Value);
             if (i > 0)
                 data.AddRange(GetInterWordSpace());
 
-            data.AddRange(GetCharacter(morseSymbol));
+            data.AddRange(GetCharacter(text[range]));
+            i++;
         }
         // Pad the end with a little bit of silence. Otherwise, the last character may sound funny in some media players.
         data.AddRange(GetInterCharSpace());
 
-        if (rngArray is not null)
-            ArrayPool<Range>.Shared.Return(rngArray);
         return data.AsSpan();
     }
 
@@ -145,5 +128,10 @@ internal readonly ref struct AudioConverter
         bytes.CopyTo(destination);
     }
 
-
+    public void Dispose()
+    {
+        _preCalculatedDot.Dispose();
+        _preCalculatedDash.Dispose();
+        _preCalculatedSilenceBuffer.Dispose();
+    }
 }
