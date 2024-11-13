@@ -1,6 +1,4 @@
-﻿using MorseSharp.Extentions;
-
-namespace MorseSharp.Audio;
+﻿namespace MorseSharp.Audio;
 
 /*
  * The AudioConverter, chunks classes are inspired by jstoddard's CWLibrary
