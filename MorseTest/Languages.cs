@@ -117,7 +117,7 @@
                 morse);
         }
         [Fact]
-        public async void RussianToMorse()
+        public void RussianToMorse()
         {
 
             var morse = Morse.GetConverter()
