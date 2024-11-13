@@ -103,11 +103,11 @@
             Assert.True(blinkValues.Count > 0);
         }
         [Fact]
-        public void ConvertToLightWithNull()
+        public async Task ConvertToLightWithNull()
         {
-            Assert.Throws<ArgumentNullException>(() =>
+            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
             {
-                Morse.GetConverter()
+                await Morse.GetConverter()
                 .ForLanguage(Language.English)
                 .ToMorse(null)
                 .ToLight()
@@ -119,11 +119,11 @@
             
         }
         [Fact]
-        public void ConvertToLightWithSmallerCharSpeed()
+        public async Task ConvertToLightWithSmallerCharSpeed()
         {
-            Assert.Throws<SmallerCharSpeedException>(() =>
+            await Assert.ThrowsAsync<SmallerCharSpeedException>(async () =>
             {
-                Morse.GetConverter()
+                await Morse.GetConverter()
                 .ForLanguage(Language.English)
                 .ToMorse("Hi")
                 .ToLight()
@@ -135,11 +135,11 @@
 
         }
         [Fact]
-        public void ConvertToLightWithoutConversionNull()
+        public async Task ConvertToLightWithoutConversionNull()
         {
-            Assert.Throws<ArgumentNullException>(() =>
+            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
             {
-                Morse.GetConverter()
+                await Morse.GetConverter()
                 .ForLanguage(Language.English)
                 .ToLight(null)
                 .SetBlinkerOptions(25, 25)
@@ -150,11 +150,11 @@
 
         }
         [Fact]
-        public void ConvertToLightWithoutConversionSmallerCharSpeed()
+        public async Task ConvertToLightWithoutConversionSmallerCharSpeed()
         {
-            Assert.Throws<SmallerCharSpeedException>(() =>
+            await Assert.ThrowsAsync<SmallerCharSpeedException>(async () =>
             {
-                Morse.GetConverter()
+                await Morse.GetConverter()
                 .ForLanguage(Language.English)
                 .ToLight(".... ..")
                 .SetBlinkerOptions(20, 25)
