@@ -112,6 +112,8 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
                 else
                     throw new SequenceNotFoundException(characters, language: _sLanguage.Value);
             }
+            else 
+                _strBuilder.Value.Append(' ');
         }
 
         return _strBuilder.Value.ToString();
