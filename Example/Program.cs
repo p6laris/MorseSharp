@@ -1,6 +1,4 @@
 ﻿using MorseSharp;
-using BenchmarkDotNet;
-using BenchmarkDotNet.Running;
 
 try
 {
