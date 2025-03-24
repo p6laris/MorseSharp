@@ -1,8 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
-namespace MorseSharp.Helpers
+﻿namespace MorseSharp.Helpers
 {
     [StructLayout(LayoutKind.Sequential)]
     internal ref struct SpanByteWriter
@@ -46,12 +42,6 @@ namespace MorseSharp.Helpers
         {
             if (offset + requiredBytes > buffer.Length)
                 throw new ArgumentException("Not enough space in the buffer.");
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ref byte GetDestinationReference()
-        {
-            return ref MemoryMarshal.GetReference(buffer.Slice(offset));
         }
     }
 }
