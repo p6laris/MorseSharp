@@ -6,69 +6,15 @@
  */
 
 [StructLayout(LayoutKind.Sequential)]
-internal readonly ref struct AudioConverter
+internal readonly ref struct AudioConverter : IDisposable
 {
-    private readonly int _characterSpeed;
-    private readonly int _wordSpeed;
-    private readonly double _frequency;
-
-    private readonly double _delay;
-    private readonly SpanOwner<short> _preCalculatedDot;
-    private readonly SpanOwner<short> _preCalculatedDash;
-    private readonly SpanOwner<short> _preCalculatedSilenceBuffer;
-
-
+    private readonly WaveformBuffer _buffer;
     public AudioConverter(int characterSpeed, int wordSpeed, double frequency)
     {
         if (characterSpeed < wordSpeed)
             throw new SmallerCharSpeedException(characterSpeed, wordSpeed);
 
-        _characterSpeed = characterSpeed;
-        _wordSpeed = wordSpeed;
-        _frequency = frequency;
-        _delay = (60.0 / _wordSpeed) - (32.0 / _characterSpeed);
-
-        // Precalculate dot and dash using pooled buffers
-        _preCalculatedDot = SpanOwner<short>.Allocate((int)(11025 * (1.2 / _characterSpeed)), AllocationMode.Clear);
-        _preCalculatedDash = SpanOwner<short>.Allocate((int)(11025 * (3.6 / _characterSpeed)), AllocationMode.Clear);
-        PopulateWave(_preCalculatedDot.Span, 1.2 / _characterSpeed);
-        PopulateWave(_preCalculatedDash.Span, 3.6 / _characterSpeed);
-
-        // Precalculate a single large silence buffer to be sliced as needed
-        int maxSilenceSamples = (int)(11025 * (7 * _delay / 19)); // largest silence needed (inter-word space)
-        _preCalculatedSilenceBuffer = SpanOwner<short>.Allocate(maxSilenceSamples, AllocationMode.Clear);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ReadOnlySpan<short> GetDot() => _preCalculatedDot.Span;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ReadOnlySpan<short> GetDash() => _preCalculatedDash.Span;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ReadOnlySpan<short> GetEleCharSpace() => GetSilence(1.2 / _characterSpeed);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ReadOnlySpan<short> GetInterCharSpace() => GetSilence(3 * _delay / 19);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ReadOnlySpan<short> GetInterWordSpace() => GetSilence(7 * _delay / 19);
-
-    private void PopulateWave(Span<short> data, double seconds)
-    {
-        int samples = data.Length;
-        double angleIncrement = 2 * Math.PI * _frequency / 11025;
-
-        for (int i = 0; i < samples; i++)
-        {
-            data[i] = (short)(32760 * Math.Sin(i * angleIncrement));
-        }
-    }
-
-    private ReadOnlySpan<short> GetSilence(double seconds)
-    {
-        int requiredSamples = (int)(11025 * seconds);
-        return _preCalculatedSilenceBuffer.Span.Slice(0, requiredSamples);
+        _buffer = new WaveformBuffer(characterSpeed, wordSpeed, frequency);
     }
 
     private ReadOnlySpan<short> GetCharacter(ReadOnlySpan<char> morseSymbol)
@@ -79,15 +25,11 @@ internal readonly ref struct AudioConverter
         foreach (char c in morseSymbol)
         {
             if (i > 0)
-                data.AddRange(GetEleCharSpace());
-            if (c == '-')
-                data.AddRange(GetDash());
-            else if (c == '.')
-                data.AddRange(GetDot());
-
+                data.AddRange(_buffer.GetEleCharSpace());
+                
+            data.AddRange(c == '-' ? _buffer.GetDash() : _buffer.GetDot());
             i++;
         }
-        
         return data.AsSpan();
     }
 
@@ -99,14 +41,12 @@ internal readonly ref struct AudioConverter
         foreach (Range range in text.Split(' '))
         {
             if (i > 0)
-                data.AddRange(GetInterWordSpace());
+                data.AddRange(_buffer.GetInterWordSpace());
 
             data.AddRange(GetCharacter(text[range]));
             i++;
         }
-        // Pad the end with a little bit of silence. Otherwise, the last character may sound funny in some media players.
-        data.AddRange(GetInterCharSpace());
-
+        data.AddRange(_buffer.GetInterCharSpace());
         return data.AsSpan();
     }
 
@@ -128,8 +68,7 @@ internal readonly ref struct AudioConverter
 
     public void Dispose()
     {
-        _preCalculatedDot.Dispose();
-        _preCalculatedDash.Dispose();
-        _preCalculatedSilenceBuffer.Dispose();
+        _buffer.Dispose();
     }
 }
+
