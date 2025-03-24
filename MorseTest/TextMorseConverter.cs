@@ -64,7 +64,17 @@
                 .Decode("............");
             });
         }
-
+        
+        [Fact]
+        public void ConvertToTextWithMoreThanOneWords()
+        {
+            var text = Morse.GetConverter()
+                .ForLanguage(Language.English)
+                .Decode(".... .. / .... ..");
+            
+            Assert.True(text == "HI HI");
+           
+        }
 
 
     }
