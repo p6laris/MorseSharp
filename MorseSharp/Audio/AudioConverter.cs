@@ -26,8 +26,13 @@ internal readonly ref struct AudioConverter : IDisposable
         {
             if (i > 0)
                 data.AddRange(_buffer.GetEleCharSpace());
-                
-            data.AddRange(c == '-' ? _buffer.GetDash() : _buffer.GetDot());
+             
+            if(c.Equals('.'))
+                data.AddRange(_buffer.GetDot());
+            
+            else if (c == '-')
+                data.AddRange(_buffer.GetDash());
+            
             i++;
         }
         return data.AsSpan();
@@ -41,7 +46,9 @@ internal readonly ref struct AudioConverter : IDisposable
         foreach (Range range in text.Split(' '))
         {
             if (i > 0)
+            {
                 data.AddRange(_buffer.GetInterWordSpace());
+            }
 
             data.AddRange(GetCharacter(text[range]));
             i++;
