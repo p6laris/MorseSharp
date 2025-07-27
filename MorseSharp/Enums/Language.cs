@@ -30,15 +30,15 @@ public enum Language
     /// <summary>
     /// Espaneol Language.
     /// </summary>
-    Espanol = 1 << 5,
+    Spanish = 1 << 5,
     /// <summary>
     /// Francais Language.
     /// </summary>
-    Francais = 1 << 6,
+    French = 1 << 6,
     /// <summary>
     /// Italiano Language.
     /// </summary>
-    Italiano = 1 << 7,
+    Italian = 1 << 7,
     /// <summary>
     /// Japanese Language.
     /// </summary>
