@@ -34,7 +34,7 @@
                  .ToMorse("Cem vî Fekoyê pîs zêdetir ji çar gulên xweşik hebûn")
                  .Encode();
 
-            Assert.Equal(".--- . -- / ..-.. .. / ..-. . -.... .-.- ..-- ..- / .--. .. ... / --.. ..- -.. . - ..-.. -.- / --. ..-.. / ---. .- -.- / --.- .-- .-.. ..- -. / -..- --- . ---- ..-.. -.... / -.-. . -... .--.-- -.",
+            Assert.Equal(".--- . -- / ..-.. .. / ..-. . -.... .-.- ..-- ..- / .--. .. ... / --.. ..- -.. . - ..-..- -.- / --. ..-..- / ---. .- -.- / --.- .-- .-.. ..- -. / -..- --- . ---- ..-..- -.... / -.-. . -... .--.-- -.",
                 morse);
         }
         [Fact]
@@ -56,7 +56,7 @@
                  .ToMorse("Victor jagt zwölf Boxkämpfer quer über den groẞen Sylter Deich")
                  .Encode();
 
-            Assert.Equal("...- .. -.-. - --- -.- / .--- .- --. - / --.. .-- ---. .-.. ..-. / -... --- -..- -.- .-.- -- .--. ..-. . -.- / --.- ..- . -.- / ..-- -... . -.- / -.. . -. / --. -.- --- ...... . -. / ... -.-- .-.. - . -.- / -.. . .. -.-. ....",
+            Assert.Equal("...- .. -.-. - --- .-. / .--- .- --. - / --.. .-- ---. .-.. ..-. / -... --- -..- -.- .-.- -- .--. ..-. . .-. / --.- ..- . .-. / ..-- -... . .-. / -.. . -. / --. .-. --- ...... . -. / ... -.-- .-.. - . .-. / -.. . .. -.-. ....",
                 morse);
         }
 
@@ -64,7 +64,7 @@
         public void EspanolToMorse()
         {
             var morse = Morse.GetConverter()
-                 .ForLanguage(Language.Espanol)
+                 .ForLanguage(Language.Spanish)
                  .ToMorse("El jefe buscó el éxtasis en un imprevisto baño de whisky y gozó como un duque")
                  .Encode();
 
@@ -75,7 +75,7 @@
         public void FrancaisToMorse()
         {
             var morse = Morse.GetConverter()
-                .ForLanguage(Language.Francais)
+                .ForLanguage(Language.French)
                 .ToMorse("Portez ce vieux whisky au juge blond qui fume")
                 .Encode();
 
@@ -86,7 +86,7 @@
         public void ItalianoToMorse()
         {
             var morse = Morse.GetConverter()
-                .ForLanguage(Language.Italiano)
+                .ForLanguage(Language.Italian)
                 .ToMorse("Pranzo d'acqua fa volti sghembi")
                 .Encode();
 
@@ -123,7 +123,7 @@
             var morse = Morse.GetConverter()
                 .ForLanguage(Language.Russian)
                 .ToMorse("Съешь ещё этих мягких французских булок, да выпей же чаю.")
-                .Encode(); 
+                .Encode();
 
             Assert.Equal("... -..- . ---- -..- / . --.- . / ..-.. - .. .... / -- .-.- --. -.- .. .... / ..-. .-. .- -. -.-. ..- --.. ... -.- .. .... / -... ..- .-.. --- -.- --..-- / -.. .- / .-- -.-- .--. . .--- / ...- . / ---. .- ..-- .-.-.-", morse);
         }
