@@ -15,9 +15,9 @@ MorseSharp is a fast .NET library to encoding/decoding  **up to 10 languages** i
 | Kurdish Latin | `Language.KurdishLatin` |
 | Arabic        | `Language.Arabic` |
 | Deutsch       | `Language.Deutsch` |
-| Espanol       | `Language.Espanol` |
-| Francais      | `Language.Francais` |
-| Italiano      | `Language.Italiano` |
+| Espanol       | `Language.Spanish` |
+| Francais      | `Language.French` |
+| Italiano      | `Language.Italian` |
 | Japanese      | `Language.Japanese` |
 | Portugues     | `Language.Portugues` |
 | Russian       | `Language.Russian` |
