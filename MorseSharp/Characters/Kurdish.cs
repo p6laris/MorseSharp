@@ -27,7 +27,7 @@ internal static class KurdishCharacters
         table.Add('ف', "..-.");
         table.Add('ڤ', "..-..");
         table.Add('ق', "...---");
-        table.Add('ک', "-....");
+        table.Add('ک', "-.-..");
         table.Add('گ', "--.-");
         table.Add('ل', ".-..");
         table.Add('ڵ', "...-");
@@ -39,7 +39,7 @@ internal static class KurdishCharacters
         table.Add('ۆ', ".-.-");
         table.Add('ی', "..");
         table.Add('ێ', "..-");
-        table.Add('ئ', "..-..");
+        table.Add('ئ', "..-..-");
 
         // Numbers (Arabic numerals)
         table.Add('٠', "-----");
