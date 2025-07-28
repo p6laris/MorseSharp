@@ -27,7 +27,7 @@ internal static class KurdishLatinCharacters
         table.Add('F', "..-.");
         table.Add('V', "..-..");
         table.Add('Ň', "...---");
-        table.Add('K', "-....");
+        table.Add('K', "-.-..");
         table.Add('G', "--.-");
         table.Add('L', ".-..");
         table.Add('Ł', "...-");
@@ -108,7 +108,7 @@ internal static class KurdishLatinCharacters
         reversed.Add("---", 'W');
         reversed.Add("..--", 'Y');
         reversed.Add("..-.", 'F');
-        reversed.Add("..-..", 'I');      // Note: shared by both 'I' and 'V'
+        reversed.Add("..-..", 'V');
         reversed.Add("...---", 'Ň');
         reversed.Add("-.-..", 'K');
         reversed.Add("--.-", 'G');
@@ -123,6 +123,7 @@ internal static class KurdishLatinCharacters
         reversed.Add(".-.-", 'O');
         reversed.Add("..", 'Î');
         reversed.Add("..-", 'Ê');
+        reversed.Add("..-..-", 'I');
 
         // Numbers
         reversed.Add(".----", '1');
