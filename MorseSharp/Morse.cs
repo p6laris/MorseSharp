@@ -9,6 +9,8 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
     ICanConvertToAudio, ICanSetAudioOptions, ICanGenerateAudioAndLight,
     ICanSetBlinkerOptions, ICanConvertToLight
 {
+    private static Morse? _instance;
+
     [ThreadStatic] private static MorseTable256 _morseChar;
     [ThreadStatic] private static MorseTableReverse256 _morseCharReversed;
     [ThreadStatic] private static Language _sLanguage;
@@ -22,25 +24,20 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _builder ??= new StringBuilder();
     }
-    private static Morse? _instance;
 
     /// <summary>
     /// Gets an instance of the <see cref="Morse"/> class for conversion.
     /// </summary>
     /// <returns>An instance of the <see cref="ICanSpecifyLanguage"/> interface.</returns>
-    public static ICanSpecifyLanguage GetConverter()
-    {
-        if (_instance is null)
-            _instance = new Morse();
-
-        return _instance;
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ICanSpecifyLanguage GetConverter() => _instance ??= new Morse();
 
     /// <summary>
     /// Specify the language for Morse code conversion.
     /// </summary>
     /// <param name="language">The language for which to set conversion options.</param>
     /// <returns>An instance of the <see cref="ICanSetConversionOption"/> interface.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ICanSetConversionOption ForLanguage(Language language)
     {
         // Cache the language
