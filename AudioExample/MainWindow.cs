@@ -1,137 +1,94 @@
 using MorseSharp;
-using System.IO;
 using System.Media;
+
 namespace AudioExample
 {
     public partial class MainWindow : Form
     {
-        //Declare memory of bytes
-        byte[] bytes = default;
+        // The last rendered WAV file.
+        private byte[] wav = [];
 
-        string morse;
-        //Language
-        Language language;
+        // The last encoded Morse string and the language it was encoded with.
+        private string morse = "";
+        private Language language = Language.English;
 
-        //Declare SoundPlayer object to play the sound form the stream
-        SoundPlayer soundPlayer;
+        // Plays the WAV from a memory stream.
+        private readonly SoundPlayer soundPlayer = new();
+
+        private CancellationTokenSource? blinkCancellation;
+
         public MainWindow()
         {
             InitializeComponent();
-
-            //Init members
             PlayBtn.Enabled = false;
-            soundPlayer = new();
         }
 
-        private void ToAudioBtn_Click(object sender, EventArgs e)
-        {
+        private void ToAudioBtn_Click(object sender, EventArgs e) => Convert(Language.English);
 
+        private void ToMorseKurdish_Click(object sender, EventArgs e) => Convert(Language.Kurdish);
+
+        private void Convert(Language selected)
+        {
             try
             {
-                //Check if the message length is greater than zero.
-                if (MessageMorseTxt.Text.Length > 0)
-                {
-                    morse = Morse.GetConverter()
-                        .ForLanguage(Language.English)
-                        .ToMorse(MessageMorseTxt.Text).Encode();
-                    //Get wav bytes from the ConvertMorseAudio method and then assigned to memory of bytes
-                    Morse.GetConverter()
-                        .ForLanguage(Language.English)
-                        .ToAudio(morse)
-                        .SetAudioOptions(25, 25, 600)
-                        .GetBytes(out Span<byte> bytes);
+                if (MessageMorseTxt.Text.Length == 0)
+                    return;
 
-                    this.bytes = bytes.ToArray();
+                var encoded = Morse.GetConverter()
+                    .ForLanguage(selected)
+                    .ToMorse(MessageMorseTxt.Text);
 
+                morse = encoded.Encode();
+                wav = encoded.ToAudio()
+                    .SetAudioOptions(25, 25, 600)
+                    .GetBytes();
 
-                    //Update the richtextbox text to morse dash and dots.
-                    MorseTxt.Text = morse;
-
-                    language = Language.English;
-                    //Enable the play button to play
-                    PlayBtn.Enabled = true;
-                }
+                language = selected;
+                MorseTxt.Text = morse;
+                PlayBtn.Enabled = true;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
-
         }
 
         private void PlayBtn_Click(object sender, EventArgs e)
         {
-            //Read the memory stream from the memory of bytes
-            using (Stream stream = new MemoryStream(bytes.ToArray()))
-            {
-                //Assign the stream to soundPlayer Stream
-                soundPlayer.Stream = stream;
-
-                //Play the sound
-                soundPlayer.PlaySync();
-            }
+            using MemoryStream stream = new(wav, writable: false);
+            soundPlayer.Stream = stream;
+            soundPlayer.PlaySync();
         }
 
-        private void ToMorseKurdish_Click(object sender, EventArgs e)
+        private async void blinkBtn_Click(object sender, EventArgs e)
         {
-            ////Delcare and init MorseSharp MorseAudioConverter object to convert morse to audio of dash and dots.
-            //MorseAudioConverter converter = new MorseAudioConverter(Language.Kurdish);
+            if (morse.Length == 0)
+                return;
 
-            ////Delcare and init MorseSharp MorseTextConverter object to convert sentence to morse dash and dots.
-            //TextMorseConverter textConverter = new TextMorseConverter(Language.Kurdish);
+            // A second click stops the running sequence.
+            if (blinkCancellation is not null)
+            {
+                blinkCancellation.Cancel();
+                return;
+            }
 
+            blinkCancellation = new CancellationTokenSource();
             try
             {
-                //Check if the message length is greater than zero.
-                if (MessageMorseTxt.Text.Length > 0)
-                {
-                    morse = Morse.GetConverter()
-                        .ForLanguage(Language.Kurdish)
-                        .ToMorse(MessageMorseTxt.Text).Encode();
-                    //Get wav bytes from the ConvertMorseAudio method and then assigned to memory of bytes
-                    Morse.GetConverter()
-                        .ForLanguage(Language.Kurdish)
-                        .ToAudio(morse)
-                        .SetAudioOptions(25, 25, 600)
-                        .GetBytes(out Span<byte> bytes);
-
-                    this.bytes = bytes.ToArray();
-
-
-                    //Update the richtextbox text to morse dash and dots.
-                    MorseTxt.Text = morse;
-
-                    language = Language.English;
-                    //Enable the play button to play
-                    PlayBtn.Enabled = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-
-        }
-
-        private void blinkBtn_Click(object sender, EventArgs e)
-        {
-            if (MessageMorseTxt.Text.Length > 0 && morse.Length > 0)
-            {
-                Morse.GetConverter()
-                    .ForLanguage(this.language)
+                await Morse.GetConverter()
+                    .ForLanguage(language)
                     .ToLight(morse)
                     .SetBlinkerOptions(25, 25)
-                    .DoBlinks((hasToBlink) =>
-                    {
-                        if (hasToBlink)
-                        {
-                            blinkerPl.BackColor = Color.Black;
-                        }
-                        else
-                        {
-                            blinkerPl.BackColor = Color.White;
-                        }
-                    });
+                    .DoBlinks(on => blinkerPl.BackColor = on ? Color.Black : Color.White, blinkCancellation.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Stopped by the user.
+            }
+            finally
+            {
+                blinkCancellation.Dispose();
+                blinkCancellation = null;
             }
         }
     }
