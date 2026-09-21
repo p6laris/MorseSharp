@@ -1,131 +1,89 @@
-﻿namespace MorseTest
+namespace MorseTest;
+
+/// <summary>
+/// Pangram-level checks for each alphabet. Every case also decodes back to the original text, so the forward and
+/// reverse directions cannot drift apart.
+/// </summary>
+public class Languages
 {
-    public class Languages
+    /// <param name="expectedDecoded">
+    /// What decoding gives back, when that differs from the input because the text uses a letter that shares its
+    /// pattern with another one (for example Russian Ё, which is keyed exactly like Е).
+    /// </param>
+    private static void AssertRoundTrip(Language language, string text, string expectedMorse, string? expectedDecoded = null)
     {
-        [Fact]
-        public void EnglishToMorse()
-        {
+        var conv = Morse.GetConverter().ForLanguage(language);
 
-            var morse = Morse.GetConverter()
-                .ForLanguage(Language.English)
-                .ToMorse("The quick brown fox jumps over the lazy dog")
-                .Encode();
-
-            Assert.Equal("- .... . / --.- ..- .. -.-. -.- / -... .-. --- .-- -. / ..-. --- -..- / .--- ..- -- .--. ... / --- ...- . .-. / - .... . / .-.. .- --.. -.-- / -.. --- --.",
-                morse);
-        }
-        [Fact]
-        public void KurdishToMorse()
-        {
-
-            var morse = Morse.GetConverter()
-                .ForLanguage(Language.Kurdish)
-                .ToMorse("کۆژین و ڤیان چوونە بۆ باغەکە ئاوی ساردیان دا بە خرینگ و عەگ و قوڵینگەکان ئینجا پەروازەکانیان فڕاند دواتریش هەموو حاجیلەکانیان چنی")
-                .Encode();
-
-            Assert.Equal("-.-.. .-.- --. .. -. / .-- / ..-.. .. .- -. / ---. .-- .-- -. . / -... .-.- / -... .- ..-- . -.-.. . / ..-..- .- .-- .. / ... .- -.- -.. .. .- -. / -.. .- / -... . / -..- -.- .. -. --.- / .-- / --- . --.- / .-- / ...--- .-- ...- .. -. --.- . -.-.. .- -. / ..-..- .. -. .--- .- / .--. . -.- .-- .- --.. . -.-.. .- -. .. .- -. / ..-. .-. .- -. -.. / -.. .-- .- - -.- .. ---- / -.-. . -- .-- .-- / .... .- .--- .. .-.. . -.-.. .- -. .. .- -. / ---. -. ..",
-                morse);
-        }
-        [Fact]
-        public void KurdishLatinToMorse()
-        {
-            var morse = Morse.GetConverter()
-                 .ForLanguage(Language.KurdishLatin)
-                 .ToMorse("Cem vî Fekoyê pîs zêdetir ji çar gulên xweşik hebûn")
-                 .Encode();
-
-            Assert.Equal(".--- . -- / ..-.. .. / ..-. . -.-.. .-.- ..-- ..- / .--. .. ... / --.. ..- -.. . - ..-..- -.- / --. ..-..- / ---. .- -.- / --.- .-- .-.. ..- -. / -..- --- . ---- ..-..- -.-.. / -.-. . -... .--.-- -.",
-                morse);
-        }
-        [Fact]
-        public void ArabicToMorse()
-        {
-            var morse = Morse.GetConverter()
-                 .ForLanguage(Language.Arabic)
-                 .ToMorse("ابجد هوز حطي كلمن سعفص قرشت ثخذ ضظغ")
-                 .Encode();
-
-            Assert.Equal(".- -... .--- -.. / ..-.. .-- ---. / .... ..- .. / -.- .-.. -- -. / ... .-.- ..-. -..- / --.- .-. ---- - / -.-. --- --.. / ...- -.-- --.",
-                morse);
-        }
-        [Fact]
-        public void DeutschToMorse()
-        {
-            var morse = Morse.GetConverter()
-                 .ForLanguage(Language.Deutsch)
-                 .ToMorse("Victor jagt zwölf Boxkämpfer quer über den groẞen Sylter Deich")
-                 .Encode();
-
-            Assert.Equal("...- .. -.-. - --- .-. / .--- .- --. - / --.. .-- ---. .-.. ..-. / -... --- -..- -.- .-.- -- .--. ..-. . .-. / --.- ..- . .-. / ..-- -... . .-. / -.. . -. / --. .-. --- ...... . -. / ... -.-- .-.. - . .-. / -.. . .. -.-. ....",
-                morse);
-        }
-
-        [Fact]
-        public void EspanolToMorse()
-        {
-            var morse = Morse.GetConverter()
-                 .ForLanguage(Language.Spanish)
-                 .ToMorse("El jefe buscó el éxtasis en un imprevisto baño de whisky y gozó como un duque")
-                 .Encode();
-
-            Assert.Equal(". .-.. / .--- . ..-. . / -... ..- ... -.-. ---. / . .-.. / ..-.. -..- - .- ... .. ... / . -. / ..- -. / .. -- .--. .-. . ...- .. ... - --- / -... .- --.-- --- / -.. . / .-- .... .. ... -.- -.-- / -.-- / --. --- --.. ---. / -.-. --- -- --- / ..- -. / -.. ..- --.- ..- .",
-                morse);
-        }
-        [Fact]
-        public void FrancaisToMorse()
-        {
-            var morse = Morse.GetConverter()
-                .ForLanguage(Language.French)
-                .ToMorse("Portez ce vieux whisky au juge blond qui fume")
-                .Encode();
-
-            Assert.Equal(".--. --- .-. - . --.. / -.-. . / ...- .. . ..- -..- / .-- .... .. ... -.- -.-- / .- ..- / .--- ..- --. . / -... .-.. --- -. -.. / --.- ..- .. / ..-. ..- -- .",
-                morse);
-        }
-        [Fact]
-        public void ItalianoToMorse()
-        {
-            var morse = Morse.GetConverter()
-                .ForLanguage(Language.Italian)
-                .ToMorse("Pranzo d'acqua fa volti sghembi")
-                .Encode();
-
-            Assert.Equal(".--. .-. .- -. --.. --- / -.. .----. .- -.-. --.- ..- .- / ..-. .- / ...- --- .-.. - .. / ... --. .... . -- -... ..",
-                morse);
-        }
-        [Fact]
-        public void JapaneseToMorse()
-        {
-            var morse = Morse.GetConverter()
-                .ForLanguage(Language.Japanese)
-                .ToMorse("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン")
-                .Encode();
-
-            Assert.Equal("--.-- .- ..- -.--- .-... .-.. -.-.. ...- -.-- ---- -.-.- --.-. ---.- .---. ---. -. ..-. .--. .-.-- ..-.. .-. -.-. .... --.- ..-- -... --..- --.. . -.. -..- ..-.- - -...- -..-. .-- -..-- -- ... --. -.--. --- .-.- -.- .--- .-.-.",
-                morse);
-        }
-
-        [Fact]
-        public void PortuguesToMorse()
-        {
-            var morse = Morse.GetConverter()
-                 .ForLanguage(Language.Portugues)
-                 .ToMorse("Um pequeno jabuti xereta viu dez cegonhas felizes")
-                 .Encode();
-
-            Assert.Equal("..- -- / .--. . --.- ..- . -. --- / .--- .- -... ..- - .. / -..- . .-. . - .- / ...- .. ..- / -.. . --.. / -.-. . --. --- -. .... .- ... / ..-. . .-.. .. --.. . ...",
-                morse);
-        }
-        [Fact]
-        public void RussianToMorse()
-        {
-
-            var morse = Morse.GetConverter()
-                .ForLanguage(Language.Russian)
-                .ToMorse("Съешь ещё этих мягких французских булок, да выпей же чаю.")
-                .Encode();
-
-            Assert.Equal("... -..- . ---- -..- / . --.- . / ..-.. - .. .... / -- .-.- --. -.- .. .... / ..-. .-. .- -. -.-. ..- --.. ... -.- .. .... / -... ..- .-.. --- -.- --..-- / -.. .- / .-- -.-- .--. . .--- / ...- . / ---. .- ..-- .-.-.-", morse);
-        }
+        string morse = conv.ToMorse(text).Encode();
+        Assert.Equal(expectedMorse, morse);
+        Assert.Equal(expectedDecoded ?? text.ToUpperInvariant(), conv.Decode(morse));
     }
+
+    [Fact]
+    public void EnglishToMorse() => AssertRoundTrip(
+        Language.English,
+        "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG",
+        "- .... . / --.- ..- .. -.-. -.- / -... .-. --- .-- -. / ..-. --- -..- / .--- ..- -- .--. ... / --- ...- . .-. / - .... . / .-.. .- --.. -.-- / -.. --- --.");
+
+    [Fact]
+    public void KurdishToMorse() => AssertRoundTrip(
+        Language.Kurdish,
+        "کۆژین و ڤیان چوونە بۆ باغەکە ئاوی ساردیان دا بە خرینگ و عەگ و قوڵینگەکان ئینجا پەروازەکانیان فڕاند دواتریش هەموو حاجیلەکانیان چنی",
+        "-.-.. .-.- --. .. -. / .-- / ..-.. .. .- -. / ---. .-- .-- -. . / -... .-.- / -... .- ..-- . -.-.. . / ..-..- .- .-- .. / ... .- -.- -.. .. .- -. / -.. .- / -... . / -..- -.- .. -. --.- / .-- / --- . --.- / .-- / ...--- .-- ...- .. -. --.- . -.-.. .- -. / ..-..- .. -. .--- .- / .--. . -.- .-- .- --.. . -.-.. .- -. .. .- -. / ..-. .-. .- -. -.. / -.. .-- .- - -.- .. ---- / -.-. . -- .-- .-- / .... .- .--- .. .-.. . -.-.. .- -. .. .- -. / ---. -. ..");
+
+    [Fact]
+    public void KurdishLatinToMorse() => AssertRoundTrip(
+        Language.KurdishLatin,
+        "Cem vî Fekoyê pîs zêdetir ji çar gulên xweşik hebûn",
+        ".--- . -- / ..-.. .. / ..-. . -.-.. .-.- ..-- ..- / .--. .. ... / --.. ..- -.. . - ..-..- -.- / --. ..-..- / ---. .- -.- / --.- .-- .-.. ..- -. / -..- --- . ---- ..-..- -.-.. / -.-. . -... .--.-- -.");
+
+    [Fact]
+    public void ArabicToMorse() => AssertRoundTrip(
+        Language.Arabic,
+        "ابجد هوز حطي كلمن سعفص قرشت ثخذ ضظغ",
+        ".- -... .--- -.. / ..-.. .-- ---. / .... ..- .. / -.- .-.. -- -. / ... .-.- ..-. -..- / --.- .-. ---- - / -.-. --- --.. / ...- -.-- --.");
+
+    [Fact]
+    public void DeutschToMorse() => AssertRoundTrip(
+        Language.Deutsch,
+        "VICTOR JAGT ZWÖLF BOXKÄMPFER QUER ÜBER DEN GROẞEN SYLTER DEICH",
+        "...- .. -.-. - --- .-. / .--- .- --. - / --.. .-- ---. .-.. ..-. / -... --- -..- -.- .-.- -- .--. ..-. . .-. / --.- ..- . .-. / ..-- -... . .-. / -.. . -. / --. .-. --- ...... . -. / ... -.-- .-.. - . .-. / -.. . .. -.-. ....");
+
+    [Fact]
+    public void EspanolToMorse() => AssertRoundTrip(
+        Language.Spanish,
+        "EL JEFE BUSCÓ EL ÉXTASIS EN UN IMPREVISTO BAÑO DE WHISKY Y GOZÓ COMO UN DUQUE",
+        ". .-.. / .--- . ..-. . / -... ..- ... -.-. ---. / . .-.. / ..-.. -..- - .- ... .. ... / . -. / ..- -. / .. -- .--. .-. . ...- .. ... - --- / -... .- --.-- --- / -.. . / .-- .... .. ... -.- -.-- / -.-- / --. --- --.. ---. / -.-. --- -- --- / ..- -. / -.. ..- --.- ..- .");
+
+    [Fact]
+    public void FrancaisToMorse() => AssertRoundTrip(
+        Language.French,
+        "PORTEZ CE VIEUX WHISKY AU JUGE BLOND QUI FUME",
+        ".--. --- .-. - . --.. / -.-. . / ...- .. . ..- -..- / .-- .... .. ... -.- -.-- / .- ..- / .--- ..- --. . / -... .-.. --- -. -.. / --.- ..- .. / ..-. ..- -- .");
+
+    [Fact]
+    public void ItalianoToMorse() => AssertRoundTrip(
+        Language.Italian,
+        "PRANZO D'ACQUA FA VOLTI SGHEMBI",
+        ".--. .-. .- -. --.. --- / -.. .----. .- -.-. --.- ..- .- / ..-. .- / ...- --- .-.. - .. / ... --. .... . -- -... ..");
+
+    [Fact]
+    public void JapaneseToMorse() => AssertRoundTrip(
+        Language.Japanese,
+        "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
+        "--.-- .- ..- -.--- .-... .-.. -.-.. ...- -.-- ---- -.-.- --.-. ---.- .---. ---. -. ..-. .--. .-.-- ..-.. .-. -.-. .... --.- ..-- -... --..- --.. . -.. -..- ..-.- - -...- -..-. .-- -..-- -- ... --. -.--. --- .-.- -.- .--- .-.-.");
+
+    [Fact]
+    public void PortuguesToMorse() => AssertRoundTrip(
+        Language.Portugues,
+        "UM PEQUENO JABUTI XERETA VIU DEZ CEGONHAS FELIZES",
+        "..- -- / .--. . --.- ..- . -. --- / .--- .- -... ..- - .. / -..- . .-. . - .- / ...- .. ..- / -.. . --.. / -.-. . --. --- -. .... .- ... / ..-. . .-.. .. --.. . ...");
+
+    [Fact]
+    public void RussianToMorse() => AssertRoundTrip(
+        Language.Russian,
+        "СЪЕШЬ ЕЩЁ ЭТИХ МЯГКИХ ФРАНЦУЗСКИХ БУЛОК, ДА ВЫПЕЙ ЖЕ ЧАЮ.",
+        "... -..- . ---- -..- / . --.- . / ..-.. - .. .... / -- .-.- --. -.- .. .... / ..-. .-. .- -. -.-. ..- --.. ... -.- .. .... / -... ..- .-.. --- -.- --..-- / -.. .- / .-- -.-- .--. . .--- / ...- . / ---. .- ..-- .-.-.-",
+        // Ь is keyed like Ъ and Ё like Е, so both come back as the letter that owns the pattern.
+        "СЪЕШЪ ЕЩЕ ЭТИХ МЯГКИХ ФРАНЦУЗСКИХ БУЛОК, ДА ВЫПЕЙ ЖЕ ЧАЮ.");
 }

@@ -1,82 +1,113 @@
-﻿namespace MorseTest
+namespace MorseTest;
+
+public class TextMorseConverterTest
 {
-    public class TextMorseConverterTest
+    [Fact]
+    public void ConvertToMorseWithValidString()
     {
-        [Fact]
-        public void ConvertToMorseWithValidString()
-        {
-            var morse = Morse.GetConverter()
-                .ForLanguage(Language.English)
-                .ToMorse("The quick brown fox jumps over the lazy dog")
-                .Encode();
+        var morse = Morse.GetConverter()
+            .ForLanguage(Language.English)
+            .ToMorse("The quick brown fox jumps over the lazy dog")
+            .Encode();
 
-            Assert.True(morse.Length > 0);
-        }
+        Assert.True(morse.Length > 0);
+    }
 
-        [Fact]
-        public void ConvertToMorseWithNullString()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-            {
-                var morse = Morse.GetConverter()
+    [Fact]
+    public void ConvertToMorseWithNullString()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            Morse.GetConverter()
                 .ForLanguage(Language.English)
-                .ToMorse(null)
-                .Encode();
-            });
-        }
-        [Fact]
-        public void ConvertToMorseWithInvalidCharacter()
-        {
-            Assert.Throws<CharacterNotPresentedException>(() =>
-            {
-                var morse = Morse.GetConverter()
+                .ToMorse(null!)
+                .Encode());
+    }
+
+    [Fact]
+    public void ConvertToMorseWithEmptyString()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            Morse.GetConverter()
+                .ForLanguage(Language.English)
+                .ToMorse("")
+                .Encode());
+    }
+
+    [Fact]
+    public void ConvertToMorseWithInvalidCharacter()
+    {
+        var ex = Assert.Throws<CharacterNotPresentedException>(() =>
+            Morse.GetConverter()
                 .ForLanguage(Language.Kurdish)
                 .ToMorse("~")
-                .Encode();
-            });
-        }
-        [Fact]
-        public void ConvertToTextWithValidMorse()
-        {
-            var morse = Morse.GetConverter()
-                .ForLanguage(Language.English)
-                .Decode(".... ..");
+                .Encode());
 
-            Assert.True(morse.Length > 0);
-        }
-        [Fact]
-        public void ConvertToTextWithNullMorse()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-            {
-                var morse = Morse.GetConverter()
+        Assert.Equal('~', ex.Character);
+        Assert.Equal(Language.Kurdish, ex.Language);
+    }
+
+    [Fact]
+    public void ConvertToTextWithValidMorse()
+    {
+        var text = Morse.GetConverter()
+            .ForLanguage(Language.English)
+            .Decode(".... ..");
+
+        Assert.Equal("HI", text);
+    }
+
+    [Fact]
+    public void ConvertToTextWithNullMorse()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            Morse.GetConverter()
                 .ForLanguage(Language.Kurdish)
-                .Decode(null);
-            });
-        }
-        [Fact]
-        public void ConvertTextWithInvalidMorse()
-        {
-            Assert.Throws<SequenceNotFoundException>(() =>
-            {
-                var morse = Morse.GetConverter()
+                .Decode(null!));
+    }
+
+    [Fact]
+    public void ConvertTextWithInvalidMorse()
+    {
+        Assert.Throws<SequenceNotFoundException>(() =>
+            Morse.GetConverter()
                 .ForLanguage(Language.Kurdish)
-                .Decode("............");
-            });
-        }
+                .Decode("............"));
+    }
 
-        [Fact]
-        public void ConvertToTextWithMoreThanOneWords()
-        {
-            var text = Morse.GetConverter()
-                .ForLanguage(Language.English)
-                .Decode(".... .. / .... ..");
-            Console.WriteLine("--------------------------");
-            Console.WriteLine(text);
-            Assert.True(text == "HI HI");
+    [Fact]
+    public void ConvertToTextWithMoreThanOneWords()
+    {
+        var text = Morse.GetConverter()
+            .ForLanguage(Language.English)
+            .Decode(".... .. / .... ..");
 
-        }
+        Assert.Equal("HI HI", text);
+    }
 
+    [Fact]
+    public void EncodeThenDecodeRoundTripsAPangram()
+    {
+        const string original = "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG 0123456789";
+        var conv = Morse.GetConverter().ForLanguage(Language.English);
 
+        var morse = conv.ToMorse(original).Encode();
+        Assert.Equal(original, conv.Decode(morse));
+    }
+
+    [Fact]
+    public void EncodeIsLazyButValidatesEagerly()
+    {
+        // The exception surfaces from ToMorse, before Encode is called.
+        var conv = Morse.GetConverter().ForLanguage(Language.English);
+        Assert.Throws<CharacterNotPresentedException>(() => conv.ToMorse("Hi ~"));
+    }
+
+    [Fact]
+    public void EncodePreservesConsecutiveSpaces()
+    {
+        var conv = Morse.GetConverter().ForLanguage(Language.English);
+        var morse = conv.ToMorse("A  B").Encode();
+        Assert.Equal(".- / / -...", morse);
+        Assert.Equal("A  B", conv.Decode(morse));
     }
 }
