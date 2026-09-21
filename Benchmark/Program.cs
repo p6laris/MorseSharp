@@ -1,4 +1,4 @@
 ﻿using BenchmarkDotNet.Running;
 using Benchmark;
 
-BenchmarkRunner.Run<MorseSharpBenchmarks>();
+BenchmarkSwitcher.FromAssembly(typeof(MorseSharpBenchmarks).Assembly).Run(args);
