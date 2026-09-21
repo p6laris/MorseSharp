@@ -149,6 +149,17 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
     }
 
     /// <inheritdoc />
+    public string FromAudio(ReadOnlySpan<short> samples, int sampleRate = 11025, double frequency = 700, int wordsPerMinute = 20)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleRate);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(wordsPerMinute);
+        if (!(frequency > 0 && frequency < sampleRate / 2.0))
+            throw new ArgumentOutOfRangeException(nameof(frequency), frequency, $"Frequency must be greater than 0 and less than {sampleRate / 2.0} Hz.");
+
+        return MorseAudioDecoder.Decode(samples, State.Alphabet, sampleRate, frequency, wordsPerMinute);
+    }
+
+    /// <inheritdoc />
     public ICanGenerateAudioAndLight ToMorse(string text)
     {
         ArgumentException.ThrowIfNullOrEmpty(text);

@@ -149,6 +149,23 @@ The built-in alphabets live in `MorseSharp/Alphabet/Data/*.morse`, one file per 
 tables at build time, so adding or correcting a character means editing a data file, not writing code. Mistakes such
 as two characters sharing a pattern are reported as build errors on the offending line.
 
+## Decoding received audio
+
+The library can listen as well as send. Give it 16-bit PCM mono samples and the tone you expect, and it decodes them
+back to text:
+
+```C#
+string text = Morse.GetConverter()
+    .ForLanguage(Language.English)
+    .FromAudio(samples, sampleRate: 11025, frequency: 700, wordsPerMinute: 20);
+```
+
+`wordsPerMinute` only has to be in the right area. The decoder measures the real speed from the signal and keeps
+adjusting, so it follows hand-sent Morse that drifts, and it handles Farnsworth spacing where the characters are fast
+but the gaps are stretched. A sequence with no character in the selected alphabet decodes to `?`.
+
+If the frequency you ask for carries no real tone, you get an empty string rather than invented characters.
+
 ## Custom alphabets
 
 If a language is missing, or you want one of the built-in ones with a tweak, build your own rather than forking:

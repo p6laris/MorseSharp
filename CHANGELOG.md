@@ -34,6 +34,13 @@
 - **Languages load independently.** Each sits behind its own nested holder, so touching English no longer runs the
   class initialiser for all eleven.
 
+- **Audio decoding.** `FromAudio` turns received 16-bit PCM back into text, so the library can listen and not only
+  send. Goertzel detection measures the energy at the operator's tone per block, Otsu's method finds the level that
+  separates key-down from key-up, and the dit length is measured from the signal itself rather than taken on trust
+  from the caller. That last part is what lets it follow a drifting hand, a badly stated speed, and Farnsworth
+  spacing. Tested by round-tripping through the encoder at speeds from 10 to 40 wpm, tones from 400 Hz to 1.5 kHz,
+  and white noise down to 0 dB signal-to-noise.
+
 ### Breaking changes
 
 - **Exceptions identify the alphabet by name.** `CharacterNotPresentedException.Language` and

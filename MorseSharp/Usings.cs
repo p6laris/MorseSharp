@@ -4,6 +4,7 @@ global using System.Runtime.CompilerServices;
 global using System.Runtime.InteropServices;
 global using MorseSharp.Alphabet;
 global using MorseSharp.Audio;
+global using MorseSharp.Audio.Decoding;
 global using MorseSharp.Characters;
 global using MorseSharp.Core;
 global using MorseSharp.Exceptions;

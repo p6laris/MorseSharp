@@ -16,6 +16,20 @@ public interface ICanSetConversionOption
     string Decode(string morse);
 
     /// <summary>
+    /// Decodes received audio back to text.
+    /// </summary>
+    /// <param name="samples">16-bit PCM mono samples.</param>
+    /// <param name="sampleRate">Sample rate of the audio, in hertz.</param>
+    /// <param name="frequency">The tone frequency to listen for, in hertz.</param>
+    /// <param name="wordsPerMinute">
+    /// Roughly how fast the sender is keying. It only has to be close: the decoder measures the real speed as it goes
+    /// and keeps adjusting, which is what lets it follow hand-sent Morse.
+    /// </param>
+    /// <returns>The decoded text. A sequence with no character in this alphabet decodes to <c>?</c>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown for a non-positive sample rate, frequency or speed.</exception>
+    string FromAudio(ReadOnlySpan<short> samples, int sampleRate = 11025, double frequency = 700, int wordsPerMinute = 20);
+
+    /// <summary>
     /// Encodes text to Morse code. The text is validated immediately; the Morse string is produced lazily by
     /// <see cref="ICanGenerateAudioAndLight.Encode"/> or consumed directly by the audio and light generators.
     /// </summary>
