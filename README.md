@@ -2,37 +2,45 @@
 [![NuGet](https://img.shields.io/nuget/dt/MorseSharp?logo=nuget)](https://www.nuget.org/packages/MorseSharp)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/p6laris/MorseSharp)
 
-MorseSharp is a fast .NET library to encoding/decoding  **up to 10 languages** including kurdish and generating audio , blinking lights for morse dash and dots.
+MorseSharp is a fast, allocation-free .NET library that encodes and decodes Morse code in **11 languages** including
+Kurdish, and turns the dots and dashes into WAV audio or light-blink sequences.
 
 ![alt text](https://github.com/p6laris/MorseSharp/blob/master/MorseSharp.png?raw=true)
 
+Requires **.NET 10**. It has no NuGet dependencies and is trimming and native-AOT friendly.
+For .NET 8 and 9, use MorseSharp 5.x.
+
 ## Supported Languages
 
-| Language      | Enum Value   |
-|---------------|--------------|
-| English       | `Language.English` |
-| Kurdish       | `Language.Kurdish` |
+| Language      | Enum Value              |
+|---------------|-------------------------|
+| English       | `Language.English`      |
+| Kurdish       | `Language.Kurdish`      |
 | Kurdish Latin | `Language.KurdishLatin` |
-| Arabic        | `Language.Arabic` |
-| Deutsch       | `Language.Deutsch` |
-| Espanol       | `Language.Spanish` |
-| Francais      | `Language.French` |
-| Italiano      | `Language.Italian` |
-| Japanese      | `Language.Japanese` |
-| Portugues     | `Language.Portugues` |
-| Russian       | `Language.Russian` |
+| Arabic        | `Language.Arabic`       |
+| Deutsch       | `Language.Deutsch`      |
+| Espanol       | `Language.Spanish`      |
+| Francais      | `Language.French`       |
+| Italiano      | `Language.Italian`      |
+| Japanese      | `Language.Japanese`     |
+| Portugues     | `Language.Portugues`    |
+| Russian       | `Language.Russian`      |
 
-NOTE: All language sources are obtained from [MorseCoder](https://morsedecoder.com/), except for Kurdish, Kurdish Latin [More info](https://github.com/p6laris/MorseSharp/blob/master/KurdishToMorse.md) and Russian obtained from this [wiki](https://en.wikipedia.org/wiki/Russian_Morse_code).
-If you encounter any issues with the obtained characters or have suggestions for improvement, please feel free to [open an issue](https://github.com/p6laris/MorseSharp/issues) in this repository.
-
+NOTE: All language sources are obtained from [MorseCoder](https://morsedecoder.com/), except for Kurdish, Kurdish Latin
+[More info](https://github.com/p6laris/MorseSharp/blob/master/KurdishToMorse.md) and Russian obtained from this
+[wiki](https://en.wikipedia.org/wiki/Russian_Morse_code).
+If you encounter any issues with the obtained characters or have suggestions for improvement, please feel free to
+[open an issue](https://github.com/p6laris/MorseSharp/issues) in this repository.
 
 ## Installation
-Use nuget package manager to install [MorseSharp](https://www.nuget.org/packages/MorseSharp).
+
 ```bash
 Install-Package MorseSharp
 ```
+
 ## Usage
-Effortlessly decode/encode Morse code, generate audio, and control blinking lights using the fluent `Morse` class. Begin by obtaining a singleton instance through the `GetConverter()` method and specifying your desired language using the `ForLanguage` method and pass the `Language` enum to it.
+
+Start from the singleton returned by `GetConverter()` and pick a language with `ForLanguage`.
 
 ```C#
 using MorseSharp;
@@ -41,138 +49,142 @@ var conv = Morse.GetConverter()
      .ForLanguage(Language.English);
 ```
 
+The chain is thread-safe: state lives per thread, so many threads can convert at the same time. Finish a chain on the
+thread that started it.
+
 ## Text
-Once you've set the language via the `ForLanguage` method, you can decode/encode Morse code with a series of method calls.
 
 #### Encoding
-Utilize the `ToMorse` method to encode your text into Morse code, and then call the `Encode` method to obtain the Morse code as a string:
+
+`ToMorse` validates the text, `Encode` produces the string. Characters are separated by a space and words by `/`.
 
 ```C#
-using MorseSharp;
-
- var morse = Morse.GetConverter()
-     .ForLanguage(Language.English)
-     .ToMorse("Hi")
-     .Encode();
+var morse = Morse.GetConverter()
+    .ForLanguage(Language.English)
+    .ToMorse("Hi")
+    .Encode();     // ".... .."
 ```
 
-:warning: __WordNotPresentedException__ will be throw when a character in the input text does not have a corresponding Morse code representation.
-
+:warning: **CharacterNotPresentedException** is thrown when a character has no Morse representation in that language.
 
 #### Decoding
-to decode Morse code using the `Decode` method:
- > :exclamation: ``Words must be separated by ( / ), Letters by space " ".``
+
+> :exclamation: ``Words are separated by ( / ), letters by whitespace.``
 
 ```C#
-using MorseSharp;
-
 var text = Morse.GetConverter()
     .ForLanguage(Language.English)
-    .Decode(".... ..");
-
+    .Decode(".... ..");   // "HI"
 ```
-:warning: __SequenceNotFoundException__ when an invalid Morse code sequence is encountered, and the corresponding character cannot be found.
+
+:warning: **SequenceNotFoundException** is thrown when a sequence has no character in that language.
 
 ## Audio
-You have two options to generate audio:
 
-#### By Encoding The Text
-Encode your text using `ToMorse`, and then proceed through the chain to generate audio for the encoded text. After encoding the text, use the `ToAudio` method, set the audio options with `SetAudioOptions`, and finally, retrieve audio bytes using `GetBytes`:
+Audio is 16-bit PCM mono WAV at 11.025 kHz. Timing follows the ARRL Farnsworth standard: set `wordSpeed` below
+`charSpeed` to keep crisp characters while stretching the gaps for practice.
+
+Four ways to get the bytes, from most to least convenient:
 
 ```C#
-using MorseSharp;
+var audio = Morse.GetConverter()
+    .ForLanguage(Language.English)
+    .ToMorse("Hello Morse")
+    .ToAudio()
+    .SetAudioOptions(charSpeed: 25, wordSpeed: 15, frequency: 700);
 
- Morse.GetConverter()
-     .ForLanguage(Language.English)
-     .ToMorse("Hello Morse")
-     .ToAudio()
-     .SetAudioOptions(25, 25, 600)
-     .GetBytes(out Span<byte> morse);
+byte[] wav = audio.GetBytes();          // one exactly sized allocation
+
+int size = audio.GetByteCount();        // size the buffer yourself
+byte[] buffer = new byte[size];
+int written = audio.GetBytes(buffer);   // zero allocation
+
+using var file = File.Create("hi.wav");
+audio.WriteTo(file);                    // zero allocation, pooled staging buffer
 ```
 
-#### Manually
-If you already have the encoded text as a string, skip the encoding step and pass the encoded text directly to the overloaded `ToAudio` method:
-```C#
-using MorseSharp;
+If you already have the Morse string, skip the encoding step:
 
+```C#
 Morse.GetConverter()
     .ForLanguage(Language.English)
     .ToAudio(".... ..")
-    .SetAudioOptions (25, 25, 600)
-    .GetBytes(out Span<byte> morse);
-
+    .SetAudioOptions(25, 25, 600)
+    .GetBytes();
 ```
-:warning: The character speed must be greater than or equal to the word speed; otherwise, a __SmallerCharSpeedException__ will be thrown.
+
+:warning: The character speed must be greater than or equal to the word speed, otherwise a
+**SmallerCharSpeedException** is thrown. Speeds must be positive and the frequency must be below 5512.5 Hz.
 
 ## Light
-The class can also be able to blink lights to a specific morse. Just like the audio you have to options to blink lights either by Encoding it first or by set the dash and dots directly to the method and skip the encoding part:
+
+`DoBlinks` calls your action with `true` when the light goes on and `false` when it goes off, in real time.
+Timing is drift-compensated, and the callback runs on the captured synchronization context so you can touch UI directly.
+The final callback is always `false`.
 
 ```C#
-using MorseSharp;
+using var cts = new CancellationTokenSource();
 
- //By Encoding it then blink the lights.
 await Morse.GetConverter()
     .ForLanguage(Language.Kurdish)
     .ToMorse("سڵاو")
     .ToLight()
     .SetBlinkerOptions(25, 25)
-    .DoBlinks((hasToBlink) => {
-       //Do something
-    });
+    .DoBlinks(on => { /* switch the light */ }, cts.Token);
 
-//By directly pass the morse to method.
- await Morse.GetConverter()
-     .ForLanguage(Language.English)
-     .ToLight(".... ..")
-     .SetBlinkerOptions(25, 25)
-     .DoBlinks((hasToBlink) =>
-     {
-         if (hasToBlink)
-             Console.BackgroundColor = ConsoleColor.White;
-         else 
-             Console.BackgroundColor = ConsoleColor.Black;
-     });
+// Or pass the Morse directly.
+await Morse.GetConverter()
+    .ForLanguage(Language.English)
+    .ToLight(".... ..")
+    .SetBlinkerOptions(25, 25)
+    .DoBlinks(on => Console.BackgroundColor = on ? ConsoleColor.White : ConsoleColor.Black);
 ```
-You need to set the character speed and word speed using `SetBlinkerOptions`, then invoke async `DoBlinks` and subscribe to the `Action<bool> parameter`.
 
-## Example 
-This piece of code encode and decode's the morse and then show it to the console, also blinks the console background based on the light blink:
+Cancelling switches the light off before the task is cancelled.
+
+## Example
+
 ```C#
 using MorseSharp;
 
-
 try
 {
-    //Encoding
     var morse = Morse.GetConverter()
         .ForLanguage(Language.English)
         .ToMorse("Hi")
         .Encode();
 
-    //Decoding
     var text = Morse.GetConverter()
         .ForLanguage(Language.English)
         .Decode(".... ..");
 
-    //Light Blinking
+    using (var file = File.Create("hi.wav"))
+    {
+        Morse.GetConverter()
+            .ForLanguage(Language.English)
+            .ToMorse("Hi")
+            .ToAudio()
+            .SetAudioOptions(25, 25, 700)
+            .WriteTo(file);
+    }
+
     await Morse.GetConverter()
         .ForLanguage(Language.English)
         .ToLight(".... ..")
         .SetBlinkerOptions(25, 25)
-        .DoBlinks((hasToBlink) =>
-        {
-            if (hasToBlink)
-                Console.BackgroundColor = ConsoleColor.White;
-            else 
-                Console.BackgroundColor = ConsoleColor.Black;
-        });
-
+        .DoBlinks(on => Console.BackgroundColor = on ? ConsoleColor.White : ConsoleColor.Black);
 }
-catch(Exception ex)
+catch (Exception ex)
 {
     Console.WriteLine(ex.Message);
 }
 ```
+
+## Upgrading from 5.x
+
+See [CHANGELOG.md](CHANGELOG.md). The short version: `GetBytes(out Span<byte>)` handed out a span over a pooled array
+that had already been returned to the pool, so it is obsolete; use `GetBytes()`, `GetBytes(Span<byte>)` or `WriteTo`.
+Timing was also wrong in 5.x, so generated audio is shorter for the same speeds.
 
 ## License
 [MIT License](LICENSE)
