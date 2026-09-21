@@ -116,6 +116,10 @@ public sealed class MorseAlphabet
         int decodableCount,
         Func<MorseEntry[]> entriesFactory)
     {
+        // These copies are deliberate. A ReadOnlySpan cannot be a field of a class, so going zero-copy would mean
+        // holding raw pointers: into the data section here, and into pinned arrays for a runtime-built alphabet.
+        // Measured, that trades ~100ns and ~1.4KB saved once per language against custom alphabets allocating 5x
+        // slower on the pinned object heap and pressuring gen2. Copying is the cheaper end of that trade.
         ushort[] asciiTable = MemoryMarshal.Cast<byte, ushort>(ascii).ToArray();
         uint[] hashedTable = MemoryMarshal.Cast<byte, uint>(hashed).ToArray();
         char[] decodeTable = MemoryMarshal.Cast<byte, char>(decode).ToArray();
