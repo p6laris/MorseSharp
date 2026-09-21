@@ -1,3 +1,9 @@
-global using Xunit;
+global using System.Buffers.Binary;
+global using System.Diagnostics;
+global using System.Runtime.InteropServices;
+global using System.Text;
 global using MorseSharp;
+global using MorseSharp.Alphabet;
 global using MorseSharp.Exceptions;
+global using MorseSharp.Interfaces;
+global using Xunit;
