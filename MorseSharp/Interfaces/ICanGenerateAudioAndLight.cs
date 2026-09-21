@@ -1,17 +1,19 @@
-﻿namespace MorseSharp.Interfaces
+namespace MorseSharp.Interfaces;
+
+/// <summary>
+/// Step reached after <see cref="ICanSetConversionOption.ToMorse"/>: read the Morse string or continue to audio/light.
+/// </summary>
+public interface ICanGenerateAudioAndLight
 {
-    public interface ICanGenerateAudioAndLight
-    {
+    /// <summary>
+    /// Returns the Morse code for the text passed to <see cref="ICanSetConversionOption.ToMorse"/>.
+    /// Characters are separated by a single space and words by <c>/</c>.
+    /// </summary>
+    string Encode();
 
-        string Encode();
-        /// <summary>
-        /// Converts text to audio with specified options.
-        /// </summary>
-        /// <param name="text">The text to be converted to audio.</param>
-        /// <returns>An object that allows specifying audio options for the conversion.</returns>
-        ICanSetAudioOptions ToAudio();
+    /// <summary>Continues to audio generation for the encoded text.</summary>
+    ICanSetAudioOptions ToAudio();
 
-        ICanSetBlinkerOptions ToLight();
-
-    }
+    /// <summary>Continues to light blinking for the encoded text.</summary>
+    ICanSetBlinkerOptions ToLight();
 }

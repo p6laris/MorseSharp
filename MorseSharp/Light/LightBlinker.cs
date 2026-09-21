@@ -1,87 +1,59 @@
-﻿namespace MorseSharp.Light
+using System.Diagnostics;
+
+namespace MorseSharp.Light;
+
+/// <summary>
+/// Plays a recorded element stream in real time through an on/off callback.
+/// </summary>
+internal static class LightBlinker
 {
-    internal partial class LightBlinker
+    /// <summary>
+    /// Plays <paramref name="count"/> elements from <paramref name="elements"/> (rented from <see cref="ArrayPool{T}.Shared"/>,
+    /// returned when done) and switches the light off if cancelled mid-sequence.
+    /// </summary>
+    /// <remarks>
+    /// Every element is scheduled against an absolute target time measured from the start, so the coarse resolution of
+    /// <see cref="Task.Delay(TimeSpan, CancellationToken)"/> (about 15 ms on Windows) does not accumulate over a long message.
+    /// The continuation deliberately keeps the caller's synchronization context so UI code can update controls in the callback.
+    /// </remarks>
+    public static async Task BlinkAsync(byte[] elements, int count, MorseTiming timing, Action<bool> action, CancellationToken cancellationToken)
     {
-        private readonly int _characterSpeed;
-        private readonly int _wordSpeed;
-
-        private Action<bool> _blinkerAction;
-
-
-        public LightBlinker(int characterSpeed, int wordSpeed, Action<bool> blinkerAction)
+        try
         {
-            if (characterSpeed < wordSpeed)
-                throw new SmallerCharSpeedException(characterSpeed, wordSpeed);
+            long start = Stopwatch.GetTimestamp();
+            double targetSeconds = 0;
 
-            if (blinkerAction == null)
-                throw new ArgumentNullException(nameof(blinkerAction));
-
-            _characterSpeed = characterSpeed;
-            _wordSpeed = wordSpeed;
-            _blinkerAction = blinkerAction;
-        }
-        private Task GetDotDurationAsync() => GetBlinkAsync(1.2 / _characterSpeed);
-
-        private Task GetDashDurationAsync() => GetBlinkAsync(3.6 / _characterSpeed);
-
-        private Task GetElementCharDurationAsync() => GetSilenceAsync(1.2 / _characterSpeed);
-
-        private Task GetInterWordDurationAsync()
-        {
-            double delay = (60.0 / _wordSpeed) - (32.0 / _characterSpeed);
-            double spaceLength = 7 * delay / 19;
-            return GetSilenceAsync(spaceLength);
-        }
-
-        private Task GetInterCharDurationAsync()
-        {
-            double delay = (60.0 / _wordSpeed) - (32.0 / _characterSpeed);
-            double spaceLength = 3 * delay / 19;
-            return GetSilenceAsync(spaceLength);
-        }
-        private Task GetBlinkAsync(double seconds)
-        {
-            _blinkerAction?.Invoke(true);
-            return Task.Delay(TimeSpan.FromSeconds(seconds));
-        }
-
-        private Task GetSilenceAsync(double seconds)
-        {
-            _blinkerAction?.Invoke(false);
-            return Task.Delay(TimeSpan.FromSeconds(seconds));
-        }
-
-        private async Task GetCharacterDurations(string morseSymbol)
-        {
-
-            for (int i = 0; i < morseSymbol.Length; i++)
+            for (int i = 0; i < count; i++)
             {
-                if (i > 0)
-                    await GetElementCharDurationAsync();
-                if (morseSymbol[i] == '-')
-                    await GetDashDurationAsync();
-                else if (morseSymbol[i] == '.')
-                    await GetDotDurationAsync();
+                cancellationToken.ThrowIfCancellationRequested();
+
+                bool on;
+                double seconds;
+                switch (elements[i])
+                {
+                    case ElementRecorder.DotElement: on = true; seconds = timing.Dot; break;
+                    case ElementRecorder.DashElement: on = true; seconds = timing.Dash; break;
+                    case ElementRecorder.ElementGapElement: on = false; seconds = timing.ElementGap; break;
+                    case ElementRecorder.CharGapElement: on = false; seconds = timing.CharGap; break;
+                    default: on = false; seconds = timing.WordGap; break;
+                }
+
+                action(on);
+
+                targetSeconds += seconds;
+                TimeSpan remaining = TimeSpan.FromSeconds(targetSeconds) - Stopwatch.GetElapsedTime(start);
+                if (remaining > TimeSpan.Zero)
+                    await Task.Delay(remaining, cancellationToken);
             }
-
         }
-
-        public async Task BlinkLight(string morse)
+        catch (OperationCanceledException)
         {
-
-            var splitedText = morse.Split(' ');
-
-            for (int i = 0; i < splitedText.Length; i++)
-            {
-                if (i > 0)
-                    await GetInterWordDurationAsync();
-
-                await GetCharacterDurations(splitedText[i]);
-            }
-
-            // Pad the end with a little bit of silence.
-            await GetInterCharDurationAsync();
+            action(false);
+            throw;
         }
-
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(elements);
+        }
     }
 }

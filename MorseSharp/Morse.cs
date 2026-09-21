@@ -1,254 +1,334 @@
-﻿namespace MorseSharp;
-
+namespace MorseSharp;
 
 /// <summary>
-/// Provides functionality to decode/encode Morse code, convert text to Morse code,
-/// generate audio bytes, and control light blinking based on Morse code.
+/// Fluent entry point for encoding and decoding Morse code, rendering it as WAV audio and blinking a light.
 /// </summary>
-public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption,
-    ICanConvertToAudio, ICanSetAudioOptions, ICanGenerateAudioAndLight,
-    ICanSetBlinkerOptions, ICanConvertToLight
+/// <remarks>
+/// <para>
+/// <see cref="GetConverter"/> returns a stateless singleton; the state of a chain (language, text, timing) lives in
+/// thread-static storage. A chain must therefore be completed on the thread that started it, which the fluent API does
+/// naturally, and starting a new chain on the same thread replaces the previous one. Using the converter concurrently
+/// from many threads is safe.
+/// </para>
+/// <para>
+/// Encoding, decoding and audio rendering allocate nothing except the returned string or array; the span and stream
+/// overloads of the audio step allocate nothing at all.
+/// </para>
+/// </remarks>
+public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGenerateAudioAndLight,
+    ICanSetAudioOptions, ICanConvertToAudio, ICanSetBlinkerOptions, ICanConvertToLight
 {
-    private static Morse? _instance;
+    /// <summary>Longest decode output that is built on the stack rather than from the array pool.</summary>
+    private const int StackallocCharLimit = 256;
 
-    [ThreadStatic] private static MorseTable256 _morseChar;
-    [ThreadStatic] private static MorseTableReverse256 _morseCharReversed;
-    [ThreadStatic] private static Language _sLanguage;
-    [ThreadStatic] private static int _charSpeed;
-    [ThreadStatic] private static int _wordSpeed;
-    [ThreadStatic] private static double _frequency;
-    [ThreadStatic] private static StringBuilder? _builder;
+    private static readonly Morse s_instance = new();
 
-    private static StringBuilder _strBuilder
+    [ThreadStatic]
+    private static ChainState? t_state;
+
+    private static ChainState State
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _builder ??= new StringBuilder();
+        get => t_state ??= new ChainState();
+    }
+
+    private Morse()
+    {
     }
 
     /// <summary>
-    /// Gets an instance of the <see cref="Morse"/> class for conversion.
+    /// Returns the converter. Continue with <see cref="ForLanguage"/>.
     /// </summary>
-    /// <returns>An instance of the <see cref="ICanSpecifyLanguage"/> interface.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ICanSpecifyLanguage GetConverter() => _instance ??= new Morse();
+    public static ICanSpecifyLanguage GetConverter() => s_instance;
 
-    /// <summary>
-    /// Specify the language for Morse code conversion.
-    /// </summary>
-    /// <param name="language">The language for which to set conversion options.</param>
-    /// <returns>An instance of the <see cref="ICanSetConversionOption"/> interface.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    /// <inheritdoc />
     public ICanSetConversionOption ForLanguage(Language language)
     {
-        // Cache the language
-        if (language == default || language != _sLanguage)
-        {
-            _sLanguage = language;
-            _morseChar = MorseCharacters.GetLanguageCharacter(language);
-            _morseCharReversed = MorseCharacters.GetLanguageCharacterReversed(language);
-        }
-
+        State.Alphabet = Alphabets.For(language);
         return this;
     }
 
-    /// <summary>
-    /// Convert Morse code to text.
-    /// </summary>
-    /// <param name="morse">The Morse code to convert to text.</param>
-    /// <returns>The converted text.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the input Morse code is null or empty.</exception>
-    /// <exception cref="SequenceNotFoundException">
-    /// Thrown when an invalid Morse code sequence is encountered, and the corresponding character cannot be found.
-    /// </exception>
+    /// <inheritdoc />
+    [SkipLocalsInit]
     public string Decode(string morse)
     {
-        if (string.IsNullOrEmpty(morse))
-            throw new ArgumentNullException(nameof(morse));
+        ArgumentException.ThrowIfNullOrEmpty(morse);
+        MorseAlphabet alphabet = State.Alphabet;
 
-        if (_strBuilder.Length > 0)
-            _strBuilder.Clear();
+        // Every output character consumes at least one input character, so the input length is a safe upper bound.
+        char[]? rented = null;
+        Span<char> output = morse.Length <= StackallocCharLimit
+            ? stackalloc char[StackallocCharLimit]
+            : (rented = ArrayPool<char>.Shared.Rent(morse.Length));
 
-        var morseSpan = morse.AsSpan();
-
-        foreach (var range in morseSpan.Split(' '))
+        try
         {
-            var chars = morseSpan[range];
-
-            if (chars.IsWhiteSpace())
-                continue;
-
-            if (_morseCharReversed.TryGetValue(chars, out var value))
-                _strBuilder.Append(value);
-            else
-                throw new SequenceNotFoundException(chars, language: _sLanguage);
+            int written = DecodeCore(morse, alphabet, output);
+            return new string(output[..written]);
         }
-
-        return _strBuilder.ToString();
+        finally
+        {
+            if (rented is not null)
+                ArrayPool<char>.Shared.Return(rented);
+        }
     }
 
     /// <summary>
-    /// Convert text to Morse code.
+    /// Folds each whitespace-delimited sequence into its tree code and resolves it with a single table index.
     /// </summary>
-    /// <param name="text">The text to convert to Morse code.</param>
-    /// <returns>The Morse code representation of the text.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the input text is null or empty.</exception>
-    /// <exception cref="CharacterNotPresentedException">
-    /// Thrown when a character in the input text does not have a corresponding Morse code representation.
-    /// </exception>
+    private static int DecodeCore(ReadOnlySpan<char> source, MorseAlphabet alphabet, Span<char> output)
+    {
+        int written = 0;
+        int i = 0;
+        while (i < source.Length)
+        {
+            char ch = source[i];
+            if (ch == ' ' || char.IsWhiteSpace(ch))
+            {
+                i++;
+                continue;
+            }
 
+            if (ch == '/')
+            {
+                output[written++] = ' ';
+                i++;
+                continue;
+            }
+
+            int start = i;
+            int code = 1;
+            while (true)
+            {
+                if (ch == '.')
+                {
+                    // Sequences longer than the table can hold stop growing; the lookup below then fails cleanly.
+                    if (code < MorseAlphabet.CodeLimit)
+                        code <<= 1;
+                }
+                else if (ch == '-')
+                {
+                    if (code < MorseAlphabet.CodeLimit)
+                        code = (code << 1) | 1;
+                }
+                else
+                {
+                    break;
+                }
+
+                i++;
+                if (i == source.Length)
+                    break;
+                ch = source[i];
+            }
+
+            if (i < source.Length && ch != '/' && !char.IsWhiteSpace(ch))
+            {
+                // A foreign symbol inside the sequence: report the whole whitespace-delimited token.
+                while (i < source.Length && !char.IsWhiteSpace(source[i]))
+                    i++;
+                throw new SequenceNotFoundException(source[start..i], alphabet.Language);
+            }
+
+            char decoded = alphabet.Decode(code);
+            if (decoded == '\0')
+                throw new SequenceNotFoundException(source[start..i], alphabet.Language);
+
+            output[written++] = decoded;
+        }
+
+        return written;
+    }
+
+    /// <inheritdoc />
     public ICanGenerateAudioAndLight ToMorse(string text)
     {
-        if (string.IsNullOrEmpty(text))
-            throw new ArgumentNullException(nameof(text));
+        ArgumentException.ThrowIfNullOrEmpty(text);
+        ChainState state = State;
+        MorseAlphabet alphabet = state.Alphabet;
 
-        if (_strBuilder.Length > 0)
-            _strBuilder.Clear();
-
-        var span = text.AsSpan();
-        int lastCharIndex = span.Length - 1;
-
-        for (int i = 0; i < span.Length; i++)
+        long length = text.Length - 1; // one separator between every pair of characters
+        foreach (char ch in text)
         {
-            char ch = span[i];
-            if (!_morseChar.TryGetValue(ch, out var morse))
-                throw new CharacterNotPresentedException(ch, language: _sLanguage);
-
-            _strBuilder.Append(morse);
-
-            // Append space except last character
-            if (i < lastCharIndex)
-                _strBuilder.Append(' ');
+            if (!alphabet.TryGetCode(ch, out int code))
+                throw new CharacterNotPresentedException(ch, alphabet.Language);
+            length += MorseAlphabet.WrittenLength(code);
         }
 
+        state.Text = text;
+        state.Morse = null;
+        state.EncodedLength = checked((int)length);
         return this;
     }
 
-
-    /// <summary>
-    /// Generate audio bytes based on the set options.
-    /// </summary>
-    /// <param name="destination">The destination span to store the audio bytes.</param>
-    public void GetBytes(out Span<byte> destination)
+    /// <inheritdoc />
+    public string Encode()
     {
-        using AudioConverter converter = new AudioConverter(_charSpeed, _wordSpeed, _frequency);
-        converter.ConvertToAudio(_strBuilder!.ToString().AsSpan(), out Span<byte> bytes);
-        destination = bytes;
+        ChainState state = State;
+        if (state.Text is null)
+            return state.Morse ?? throw new InvalidOperationException("Call ToMorse(text) before Encode().");
+
+        return string.Create(state.EncodedLength, (state.Text, state.Alphabet), static (destination, tuple) =>
+        {
+            (string text, MorseAlphabet alphabet) = tuple;
+            int position = 0;
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (i > 0)
+                    destination[position++] = ' ';
+
+                if (!alphabet.TryGetCode(text[i], out int code))
+                    throw new CharacterNotPresentedException(text[i], alphabet.Language);
+
+                MorseAlphabet.WriteCode(destination, ref position, code);
+            }
+        });
     }
 
-    /// <summary>
-    ///
-    /// Set audio conversion options.
-    /// </summary>
-    /// <param name="charSpeed">The character speed for audio.</param>
-    /// <param name="wordSpeed">The word speed for audio.</param>
-    /// <param name="frequency">The frequency for audio.</param>
-    /// <returns>An instance of the <see cref="ICanConvertToAudio"/> interface.</returns>
-    /// <exception cref="SmallerCharSpeedException">
-    /// Thrown when the character speed is less than the word speed, which is invalid for audio conversion.
-    /// </exception>
-    public ICanConvertToAudio SetAudioOptions(int charSpeed = 25, int wordSpeed = 25, double frequency = 700)
-    {
-        if (charSpeed < wordSpeed)
-            throw new SmallerCharSpeedException(charSpeed, wordSpeed);
-
-        _charSpeed = charSpeed;
-        _wordSpeed = wordSpeed;
-        _frequency = frequency;
-
-        return this;
-    }
-
-
-    /// <summary>
-    /// Encode the Morse code.
-    /// </summary>
-    /// <returns>The encoded Morse code as a string.</returns>
-    public string Encode() => _strBuilder.ToString();
-
-
-    /// <summary>
-    /// Switch to audio conversion mode.
-    /// </summary>
-    /// <returns>An instance of the <see cref="ICanSetAudioOptions"/> interface.</returns>
+    /// <inheritdoc />
     public ICanSetAudioOptions ToAudio() => this;
 
-    /// <summary>
-    /// Switch to light blinking mode.
-    /// </summary>
-    /// <returns>An instance of the <see cref="ICanSetBlinkerOptions"/> interface.</returns>
+    /// <inheritdoc />
     public ICanSetBlinkerOptions ToLight() => this;
 
-    /// <summary>
-    /// Switch to audio conversion mode with a specified Morse code.
-    /// </summary>
-    /// <param name="morse">The Morse code to convert to audio.</param>
-    /// <returns>An instance of the <see cref="ICanSetAudioOptions"/> interface.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the input Morse code is null or empty.</exception>
+    /// <inheritdoc />
     public ICanSetAudioOptions ToAudio(string morse)
     {
-        if (string.IsNullOrEmpty(morse))
-            throw new ArgumentNullException(nameof(morse));
-
-
-        if (_strBuilder.Length > 0)
-            _strBuilder.Length = 0;
-
-        _strBuilder.Append(morse);
+        SetMorse(morse);
         return this;
     }
 
-    /// <summary>
-    /// Switch to light blinking mode with a specified Morse code.
-    /// </summary>
-    /// <param name="morse">The Morse code to convert to light blinking.</param>
-    /// <returns>An instance of the <see cref="ICanSetBlinkerOptions"/> interface.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the input Morse code is null or empty.</exception>
-
+    /// <inheritdoc />
     public ICanSetBlinkerOptions ToLight(string morse)
     {
-        if (string.IsNullOrEmpty(morse))
-            throw new ArgumentNullException(nameof(morse));
-
-
-        if (_strBuilder.Length > 0)
-            _strBuilder.Length = 0;
-
-        _strBuilder.Append(morse);
+        SetMorse(morse);
         return this;
     }
 
-    /// <summary>
-    /// Set light blinking options.
-    /// </summary>
-    /// <param name="charSpeed">The character speed for light blinking.</param>
-    /// <param name="wordSpeed">The word speed for light blinking.</param>
-    /// <returns>An instance of the <see cref="ICanConvertToLight"/> interface.</returns>
-    /// <exception cref="SmallerCharSpeedException">
-    /// Thrown when the character speed is less than the word speed, which is invalid for light blinking.
-    /// </exception>
+    private static void SetMorse(string morse)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(morse);
+        int invalid = MorseWalker.IndexOfInvalidSymbol(morse);
+        if (invalid >= 0)
+            throw new ArgumentException(MorseWalker.InvalidSymbolMessage(morse[invalid], invalid), nameof(morse));
+
+        ChainState state = State;
+        state.Morse = morse;
+        state.Text = null;
+    }
+
+    /// <inheritdoc />
+    public ICanConvertToAudio SetAudioOptions(int charSpeed = 25, int wordSpeed = 25, double frequency = 700)
+    {
+        MorseTiming.Validate(charSpeed, wordSpeed);
+        WavSynthesizer.ValidateFrequency(frequency);
+
+        ChainState state = State;
+        state.CharSpeed = charSpeed;
+        state.WordSpeed = wordSpeed;
+        state.Frequency = frequency;
+        return this;
+    }
+
+    /// <inheritdoc />
     public ICanConvertToLight SetBlinkerOptions(int charSpeed = 25, int wordSpeed = 25)
     {
-        if (charSpeed < wordSpeed)
-            throw new SmallerCharSpeedException(charSpeed, wordSpeed);
+        MorseTiming.Validate(charSpeed, wordSpeed);
 
-        _charSpeed = charSpeed;
-        _wordSpeed = wordSpeed;
-
+        ChainState state = State;
+        state.CharSpeed = charSpeed;
+        state.WordSpeed = wordSpeed;
         return this;
     }
 
-    /// <summary>
-    /// Perform light blinking based on the set options.
-    /// </summary>
-    /// <param name="blinkerAction">The action to perform for each blink (true for on, false for off).</param>
-    /// <returns>An asynchronous task.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the blinker action is null.</exception>
-    public async Task DoBlinks(Action<bool> blinkerAction)
+    /// <inheritdoc />
+    public int GetByteCount()
     {
-        if (blinkerAction is null)
-            throw new ArgumentNullException(nameof(blinkerAction));
+        ChainState state = State;
+        return WavSynthesizer.ByteCount(WavSynthesizer.CountSamples(state.SampleTiming, state.Source));
+    }
 
-        LightBlinker lightBlinker = new LightBlinker(_charSpeed, _wordSpeed, blinkerAction);
-        await lightBlinker.BlinkLight(_strBuilder.ToString());
+    /// <inheritdoc />
+    public byte[] GetBytes()
+    {
+        ChainState state = State;
+        SampleTiming timing = state.SampleTiming;
+        ElementSource source = state.Source;
+
+        int size = WavSynthesizer.ByteCount(WavSynthesizer.CountSamples(timing, source));
+        byte[] result = GC.AllocateUninitializedArray<byte>(size);
+        WavSynthesizer.Render(result, timing, state.Frequency, source);
+        return result;
+    }
+
+    /// <inheritdoc />
+    public int GetBytes(Span<byte> destination)
+    {
+        ChainState state = State;
+        SampleTiming timing = state.SampleTiming;
+        ElementSource source = state.Source;
+
+        int size = WavSynthesizer.ByteCount(WavSynthesizer.CountSamples(timing, source));
+        if (destination.Length < size)
+            throw new ArgumentException($"The destination holds {destination.Length} bytes but the WAV file needs {size}. Call GetByteCount() to size it.", nameof(destination));
+
+        WavSynthesizer.Render(destination[..size], timing, state.Frequency, source);
+        return size;
+    }
+
+    /// <inheritdoc />
+    public void WriteTo(Stream destination)
+    {
+        ArgumentNullException.ThrowIfNull(destination);
+
+        ChainState state = State;
+        SampleTiming timing = state.SampleTiming;
+        ElementSource source = state.Source;
+
+        int size = WavSynthesizer.ByteCount(WavSynthesizer.CountSamples(timing, source));
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
+        try
+        {
+            WavSynthesizer.Render(buffer.AsSpan(0, size), timing, state.Frequency, source);
+            destination.Write(buffer, 0, size);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+    }
+
+    /// <inheritdoc />
+    [Obsolete("Use GetBytes() (returns byte[]) or GetBytes(Span<byte>) to fill your own buffer. This overload allocates a new array on every call.")]
+    public void GetBytes(out Span<byte> destination) => destination = GetBytes();
+
+    /// <inheritdoc />
+    public async Task DoBlinks(Action<bool> blinkerAction, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(blinkerAction);
+
+        ChainState state = State;
+        MorseTiming timing = state.Timing;
+        ElementSource source = state.Source;
+
+        ElementCounter counter = default;
+        source.Walk(ref counter);
+
+        byte[] elements = ArrayPool<byte>.Shared.Rent(counter.Count);
+        int count;
+        try
+        {
+            ElementRecorder recorder = new(elements);
+            source.Walk(ref recorder);
+            count = recorder.Count;
+        }
+        catch
+        {
+            ArrayPool<byte>.Shared.Return(elements);
+            throw;
+        }
+
+        // BlinkAsync owns the buffer from here and returns it to the pool when the sequence ends.
+        await LightBlinker.BlinkAsync(elements, count, timing, blinkerAction, cancellationToken);
     }
 }

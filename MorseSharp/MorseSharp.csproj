@@ -1,43 +1,47 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <IsAotCompatible>true</IsAotCompatible>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true' or '$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>MorseSharp</PackageId>
     <Title>MorseSharp</Title>
+    <Version>6.0.0</Version>
     <Authors>p0laris</Authors>
-    <Description>A .NET library to encode/decode morse up to 9+ lanuages and generating dash and dots in wav audio with light blinking support.</Description>
+    <Description>A fast, allocation-free .NET library to encode/decode Morse code in 11 languages (including Kurdish) and to generate 16-bit PCM WAV audio or light-blink sequences for the dots and dashes.</Description>
     <PackageProjectUrl>https://github.com/p6laris/MorseSharp</PackageProjectUrl>
     <RepositoryUrl>https://github.com/p6laris/MorseSharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>MorseCode Morse Converter MorseKurdish KurdishLanguage MorseSharp</PackageTags>
-    <PackAsTool>False</PackAsTool>
+    <PackageTags>MorseCode;Morse;Converter;MorseKurdish;KurdishLanguage;MorseSharp;Wav;Audio;Farnsworth</PackageTags>
     <NeutralLanguage>en-GB</NeutralLanguage>
-    <Copyright>2022</Copyright>
-    <IncludeSymbols>False</IncludeSymbols>
-    <Version>5.0.0$(VersionPrefix)</Version>
+    <Copyright>Copyright (c) 2022-2026 p0laris</Copyright>
     <PackageIcon>MorseSharp.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>See CHANGELOG.md in the repository.</PackageReleaseNotes>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
   <ItemGroup>
-    <None Include="..\MorseSharp.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+    <None Include="..\MorseSharp.png" Pack="true" PackagePath="\" />
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.3.2" />
-    <PackageReference Include="coverlet.collector" Version="6.0.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="ListPool" Version="2.3.6" />
+    <InternalsVisibleTo Include="MorseTest" />
+    <InternalsVisibleTo Include="Benchmark" />
   </ItemGroup>
 </Project>

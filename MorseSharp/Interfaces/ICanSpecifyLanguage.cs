@@ -1,15 +1,14 @@
-﻿namespace MorseSharp.Interfaces
+namespace MorseSharp.Interfaces;
+
+/// <summary>
+/// First step of the fluent chain: choose the alphabet.
+/// </summary>
+public interface ICanSpecifyLanguage
 {
     /// <summary>
-    /// Represents an interface that allows specifying a target language for conversion.
+    /// Selects the alphabet used for the rest of the chain.
     /// </summary>
-    public interface ICanSpecifyLanguage
-    {
-        /// <summary>
-        /// Specifies the target language for conversion.
-        /// </summary>
-        /// <param name="language">The target language to be set.</param>
-        /// <returns>An object that allows setting conversion options for the specified language.</returns>
-        ICanSetConversionOption ForLanguage(Language language);
-    }
+    /// <param name="language">One of the supported languages.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="language"/> is not a defined value.</exception>
+    ICanSetConversionOption ForLanguage(Language language);
 }

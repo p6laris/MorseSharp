@@ -1,24 +1,43 @@
-﻿namespace MorseSharp.Interfaces
+namespace MorseSharp.Interfaces;
+
+/// <summary>
+/// Step reached after choosing a language: pick what to convert.
+/// </summary>
+public interface ICanSetConversionOption
 {
     /// <summary>
-    /// Represents an interface that allows setting conversion options for Morse code.
+    /// Decodes Morse code to text. Characters are separated by whitespace and words by <c>/</c>.
     /// </summary>
-    public interface ICanSetConversionOption
-    {
-        /// <summary>
-        /// Converts Morse code to text.
-        /// </summary>
-        /// <param name="morse">The Morse code to be converted to text.</param>
-        /// <returns>The converted text.</returns>
-        string Decode(string morse);
+    /// <param name="morse">The Morse code, for example <c>.... .. / - .... . .-. .</c></param>
+    /// <returns>The decoded text (letters are upper case).</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="morse"/> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="morse"/> is empty.</exception>
+    /// <exception cref="Exceptions.SequenceNotFoundException">Thrown when a sequence has no character in the selected language.</exception>
+    string Decode(string morse);
 
-        /// <summary>
-        /// Converts text to Morse code.
-        /// </summary>
-        /// <param name="text">The text to be converted to Morse code.</param>
-        /// <returns>The converted Morse code.</returns>
-        ICanGenerateAudioAndLight ToMorse(string text);
-        ICanSetAudioOptions ToAudio(string morse);
-        ICanSetBlinkerOptions ToLight(string morse);
-    }
+    /// <summary>
+    /// Encodes text to Morse code. The text is validated immediately; the Morse string is produced lazily by
+    /// <see cref="ICanGenerateAudioAndLight.Encode"/> or consumed directly by the audio and light generators.
+    /// </summary>
+    /// <param name="text">The text to encode. Letter case is ignored.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="text"/> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="text"/> is empty.</exception>
+    /// <exception cref="Exceptions.CharacterNotPresentedException">Thrown when a character has no Morse code in the selected language.</exception>
+    ICanGenerateAudioAndLight ToMorse(string text);
+
+    /// <summary>
+    /// Skips encoding and generates audio for Morse code you already have.
+    /// </summary>
+    /// <param name="morse">Dots, dashes, whitespace between characters and <c>/</c> between words.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="morse"/> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="morse"/> is empty or contains a symbol other than dot, dash, slash or whitespace.</exception>
+    ICanSetAudioOptions ToAudio(string morse);
+
+    /// <summary>
+    /// Skips encoding and blinks a light for Morse code you already have.
+    /// </summary>
+    /// <param name="morse">Dots, dashes, whitespace between characters and <c>/</c> between words.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="morse"/> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="morse"/> is empty or contains a symbol other than dot, dash, slash or whitespace.</exception>
+    ICanSetBlinkerOptions ToLight(string morse);
 }

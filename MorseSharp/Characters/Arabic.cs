@@ -1,158 +1,39 @@
 namespace MorseSharp.Characters;
 
+/*
+ * Sourced from https://morsedecoder.com/.
+ * If you notice an incorrect character please open an issue at https://github.com/p6laris/MorseSharp.
+ */
 internal static class ArabicCharacters
 {
-    internal static MorseTable256 ArabicTable()
-    {
-        MorseTable256 table = new MorseTable256();
+    private static readonly (char Char, string Code)[] Letters =
+    [
+        ('ا', ".-"),   ('ب', "-..."), ('ت', "-"),    ('ث', "-.-."), ('ج', ".---"),  ('ح', "...."),
+        ('خ', "---"),  ('د', "-.."),  ('ذ', "--.."), ('ر', ".-."),  ('ز', "---."),  ('س', "..."),
+        ('ش', "----"), ('ص', "-..-"), ('ض', "...-"), ('ط', "..-"),  ('ظ', "-.--"),  ('ع', ".-.-"),
+        ('غ', "--."),  ('ف', "..-."), ('ق', "--.-"), ('ك', "-.-"),  ('ل', ".-.."),  ('م', "--"),
+        ('ن', "-."),   ('ه', "..-.."), ('و', ".--"),  ('ي', ".."),   ('ء', "."),
+    ];
 
-        // Arabic Alphabet
-        table.Add('ا', ".-");
-        table.Add('ب', "-...");
-        table.Add('ت', "-");
-        table.Add('ث', "-.-.");
-        table.Add('ج', ".---");
-        table.Add('ح', "....");
-        table.Add('خ', "---");
-        table.Add('د', "-..");
-        table.Add('ذ', "--..");
-        table.Add('ر', ".-.");
-        table.Add('ز', "---.");
-        table.Add('س', "...");
-        table.Add('ش', "----");
-        table.Add('ص', "-..-");
-        table.Add('ض', "...-");
-        table.Add('ط', "..-");
-        table.Add('ظ', "-.--");
-        table.Add('ع', ".-.-");
-        table.Add('غ', "--.");
-        table.Add('ف', "..-.");
-        table.Add('ق', "--.-");
-        table.Add('ك', "-.-");
-        table.Add('ل', ".-..");
-        table.Add('م', "--");
-        table.Add('ن', "-.");
-        table.Add('ه', "..-..");
-        table.Add('و', ".--");
-        table.Add('ي', "..");
-        table.Add('ء', ".");
+    /// <summary>Arabic punctuation marks plus the ITU symbols.</summary>
+    internal static readonly (char Char, string Code)[] Punctuation =
+    [
+        ('.', ".-.-.-"), ('،', "--..--"), ('؟', "..--.."), ('؛', "-.-.-."), (':', "---..."),
+        ('/', "-..-."),  ('‘', ".----."), ('"', ".-..-."), ('_', "..--.-"), ('+', ".-.-."),
+        ('-', "-....-"), ('=', "-...-"),  (')', "-.--.-"), ('(', "-.--."),  ('$', "...-..-"),
+        ('¿', "..-.-"),  ('¡', "--...-"), ('&', ".-..."),  ('@', ".--.-."), ('!', "-.-.--"),
+    ];
 
-        // Numbers
-        table.Add('١', ".----");
-        table.Add('٢', "..---");
-        table.Add('٣', "...--");
-        table.Add('٤', "....-");
-        table.Add('٥', ".....");
-        table.Add('٦', "-....");
-        table.Add('٧', "--...");
-        table.Add('٨', "---..");
-        table.Add('٩', "----.");
-        table.Add('٠', "-----");
+    /// <summary>Entries whose pattern is unique; every one of them round-trips through encode and decode.</summary>
+    internal static readonly (char Char, string Code)[][] Primaries =
+    [
+        Letters,
+        SharedCharacters.ArabicIndicDigits,
+        Punctuation,
+    ];
 
-        // Space
-        table.Add(' ', "/");
+    /// <summary>Encode-only entries that share a pattern with a primary entry.</summary>
+    internal static readonly (char Char, string Code)[] Aliases = SharedCharacters.None;
 
-        // Punctuation
-        table.Add('.', ".-.-.-");
-        table.Add('،', "--..--");
-        table.Add('؟', "..--..");
-        table.Add('؛', "-.-.-.");
-        table.Add(':', "---...");
-        table.Add('/', "-..-.");
-        table.Add('‘', ".----.");
-        table.Add('\"', ".-..-.");
-
-        // Special Characters
-        table.Add('_', "..--.-");
-        table.Add('+', ".-.-.");
-        table.Add('-', "-....-");
-        table.Add('=', "-...-");
-        table.Add(')', "-.--.-");
-        table.Add('(', "-.--.");
-        table.Add('$', "...-..-");
-        table.Add('¿', "..-.-");
-        table.Add('¡', "--...-");
-        table.Add('&', ".-...");
-        table.Add('@', ".--.-.");
-        table.Add('!', "-.-.--");
-
-        return table;
-    }
-
-    internal static MorseTableReverse256 ArabicReversedTable()
-    {
-        MorseTableReverse256 reversed = new MorseTableReverse256();
-
-        // Arabic Alphabet
-        reversed.Add(".-", 'ا');
-        reversed.Add("-...", 'ب');
-        reversed.Add("-", 'ت');
-        reversed.Add("-.-.", 'ث');
-        reversed.Add(".---", 'ج');
-        reversed.Add("....", 'ح');
-        reversed.Add("---", 'خ');
-        reversed.Add("-..", 'د');
-        reversed.Add("--..", 'ذ');
-        reversed.Add(".-.", 'ر');
-        reversed.Add("---.", 'ز');
-        reversed.Add("...", 'س');
-        reversed.Add("----", 'ش');
-        reversed.Add("-..-", 'ص');
-        reversed.Add("...-", 'ض');
-        reversed.Add("..-", 'ط');
-        reversed.Add("-.--", 'ظ');
-        reversed.Add(".-.-", 'ع');
-        reversed.Add("--.", 'غ');
-        reversed.Add("..-.", 'ف');
-        reversed.Add("--.-", 'ق');
-        reversed.Add("-.-", 'ك');
-        reversed.Add(".-..", 'ل');
-        reversed.Add("--", 'م');
-        reversed.Add("-.", 'ن');
-        reversed.Add("..-..", 'ه');
-        reversed.Add(".--", 'و');
-        reversed.Add("..", 'ي');
-        reversed.Add(".", 'ء');
-
-        // Numbers
-        reversed.Add(".----", '١');
-        reversed.Add("..---", '٢');
-        reversed.Add("...--", '٣');
-        reversed.Add("....-", '٤');
-        reversed.Add(".....", '٥');
-        reversed.Add("-....", '٦');
-        reversed.Add("--...", '٧');
-        reversed.Add("---..", '٨');
-        reversed.Add("----.", '٩');
-        reversed.Add("-----", '٠');
-
-        // Space
-        reversed.Add("/", ' ');
-
-        // Punctuation
-        reversed.Add(".-.-.-", '.');
-        reversed.Add("--..--", '،');
-        reversed.Add("..--..", '؟');
-        reversed.Add("-.-.-.", '؛');
-        reversed.Add("---...", ':');
-        reversed.Add("-..-.", '/');
-        reversed.Add(".----.", '‘');
-        reversed.Add(".-..-.", '\"');
-
-        // Special Characters
-        reversed.Add("..--.-", '_');
-        reversed.Add(".-.-.", '+');
-        reversed.Add("-....-", '-');
-        reversed.Add("-...-", '=');
-        reversed.Add("-.--.-", ')');
-        reversed.Add("-.--.", '(');
-        reversed.Add("...-..-", '$');
-        reversed.Add("..-.-", '¿');
-        reversed.Add("--...-", '¡');
-        reversed.Add(".-...", '&');
-        reversed.Add(".--.-.", '@');
-        reversed.Add("-.-.--", '!');
-
-        return reversed;
-    }
+    internal static MorseAlphabet Build() => MorseAlphabet.Build(Language.Arabic, Primaries, Aliases);
 }

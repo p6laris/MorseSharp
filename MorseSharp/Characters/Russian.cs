@@ -1,175 +1,39 @@
 namespace MorseSharp.Characters;
 
+/*
+ * Sourced from https://en.wikipedia.org/wiki/Russian_Morse_code.
+ * If you notice an incorrect character please open an issue at https://github.com/p6laris/MorseSharp.
+ */
 internal static class RussianCharacters
 {
-    internal static MorseTable256 RussianTable()
-    {
-        var table = new MorseTable256();
+    private static readonly (char Char, string Code)[] Letters =
+    [
+        ('А', ".-"),   ('Б', "-..."), ('В', ".--"),  ('Г', "--."),   ('Д', "-.."),  ('Е', "."),
+        ('Ж', "...-"), ('З', "--.."), ('И', ".."),   ('Й', ".---"),  ('К', "-.-"),  ('Л', ".-.."),
+        ('М', "--"),   ('Н', "-."),   ('О', "---"),  ('П', ".--."),  ('Р', ".-."),  ('С', "..."),
+        ('Т', "-"),    ('У', "..-"),  ('Ф', "..-."), ('Х', "...."),  ('Ц', "-.-."), ('Ч', "---."),
+        ('Ш', "----"), ('Щ', "--.-"), ('Ъ', "-..-"), ('Ы', "-.--"),  ('Э', "..-.."), ('Ю', "..--"),
+        ('Я', ".-.-"),
+        ('Ї', ".---."), // Ukrainian
+    ];
 
-        // Russian Cyrillic
-        table.Add('А', ".-");
-        table.Add('Б', "-...");
-        table.Add('В', ".--");
-        table.Add('Г', "--.");
-        table.Add('Д', "-..");
-        table.Add('Е', ".");
-        table.Add('Ё', ".");
-        table.Add('Ж', "...-");
-        table.Add('З', "--..");
-        table.Add('И', "..");
-        table.Add('Й', ".---");
-        table.Add('К', "-.-");
-        table.Add('Л', ".-..");
-        table.Add('М', "--");
-        table.Add('Н', "-.");
-        table.Add('О', "---");
-        table.Add('П', ".--.");
-        table.Add('Р', ".-.");
-        table.Add('С', "...");
-        table.Add('Т', "-");
-        table.Add('У', "..-");
-        table.Add('Ф', "..-.");
-        table.Add('Х', "....");
-        table.Add('Ц', "-.-.");
-        table.Add('Ч', "---.");
-        table.Add('Ш', "----");
-        table.Add('Щ', "--.-");
-        table.Add('Ъ', "-..-"); // same as Ь
-        table.Add('Ы', "-.--");
-        table.Add('Ь', "-..-");
-        table.Add('Э', "..-..");
-        table.Add('Ю', "..--");
-        table.Add('Я', ".-.-");
+    /// <summary>Entries whose pattern is unique; every one of them round-trips through encode and decode.</summary>
+    internal static readonly (char Char, string Code)[][] Primaries =
+    [
+        Letters,
+        SharedCharacters.Digits,
+        SharedCharacters.Punctuation,
+    ];
 
-        // Other Cyrillic (non-Russian)
-        table.Add('Ї', ".---.");
-        table.Add('Є', "..-..");
-        table.Add('І', "..");
-        table.Add('Ґ', "--.");
+    /// <summary>Encode-only entries that share a pattern with a primary entry.</summary>
+    internal static readonly (char Char, string Code)[] Aliases =
+    [
+        ('Ё', "."),     // same as Е
+        ('Ь', "-..-"),  // same as Ъ
+        ('Є', "..-.."), // Ukrainian, same as Э
+        ('І', ".."),    // Ukrainian, same as И
+        ('Ґ', "--."),   // Ukrainian, same as Г
+    ];
 
-        // Numerics
-        table.Add('1', ".----");
-        table.Add('2', "..---");
-        table.Add('3', "...--");
-        table.Add('4', "....-");
-        table.Add('5', ".....");
-        table.Add('6', "-....");
-        table.Add('7', "--...");
-        table.Add('8', "---..");
-        table.Add('9', "----.");
-        table.Add('0', "-----");
-
-        // Space
-        table.Add(' ', "/");
-
-        // Punctuation
-        table.Add('.', ".-.-.-");
-        table.Add(',', "--..--");
-        table.Add('?', "..--..");
-        table.Add(';', "-.-.-.");
-        table.Add(':', "---...");
-        table.Add('/', "-..-.");
-        table.Add('\'', ".----.");
-        table.Add('\"', ".-..-.");
-
-        table.Add('&', ".-...");
-        table.Add('$', "...-..-");
-        table.Add('@', ".--.-.");
-        table.Add('¿', "..-.-");
-        table.Add('¡', "--...-");
-        table.Add('!', "-.-.--");
-
-        // Special Characters
-        table.Add('_', "..--.-");
-        table.Add('+', ".-.-.");
-        table.Add('-', "-....-");
-        table.Add('=', "-...-");
-        table.Add(')', "-.--.-");
-        table.Add('(', "-.--.");
-
-        return table;
-    }
-
-    internal static MorseTableReverse256 RussianReversedTable()
-    {
-        var table = new MorseTableReverse256();
-
-        // Russian Cyrillic
-        table.Add(".-", 'А');
-        table.Add("-...", 'Б');
-        table.Add(".--", 'В');
-        table.Add("--.", 'Г');
-        table.Add("-..", 'Д');
-        table.Add(".", 'Е');
-        table.Add("...-", 'Ж');
-        table.Add("--..", 'З');
-        table.Add("..", 'И');
-        table.Add(".---", 'Й');
-        table.Add("-.-", 'К');
-        table.Add(".-..", 'Л');
-        table.Add("--", 'М');
-        table.Add("-.", 'Н');
-        table.Add("---", 'О');
-        table.Add(".--.", 'П');
-        table.Add(".-.", 'Р');
-        table.Add("...", 'С');
-        table.Add("-", 'Т');
-        table.Add("..-", 'У');
-        table.Add("..-.", 'Ф');
-        table.Add("....", 'Х');
-        table.Add("-.-.", 'Ц');
-        table.Add("---.", 'Ч');
-        table.Add("----", 'Ш');
-        table.Add("--.-", 'Щ');
-        table.Add("-..-", 'Ъ'); // shared with Ь but included here only once
-        table.Add("-.--", 'Ы');
-        table.Add("..-..", 'Э');
-        table.Add("..--", 'Ю');
-        table.Add(".-.-", 'Я');
-
-        // Other Cyrillic (non-Russian)
-        table.Add(".---.", 'Ї');
-
-        // Numerics
-        table.Add(".----", '1');
-        table.Add("..---", '2');
-        table.Add("...--", '3');
-        table.Add("....-", '4');
-        table.Add(".....", '5');
-        table.Add("-....", '6');
-        table.Add("--...", '7');
-        table.Add("---..", '8');
-        table.Add("----.", '9');
-        table.Add("-----", '0');
-
-        // Space
-        table.Add("/", ' ');
-
-        // Punctuation
-        table.Add(".-.-.-", '.');
-        table.Add("--..--", ',');
-        table.Add("..--..", '?');
-        table.Add("-.-.-.", ';');
-        table.Add("---...", ':');
-        table.Add("-..-.", '/');
-        table.Add(".----.", '\'');
-        table.Add(".-..-.", '\"');
-
-        table.Add(".-...", '&');
-        table.Add("...-..-", '$');
-        table.Add(".--.-.", '@');
-        table.Add("..-.-", '¿');
-        table.Add("--...-", '¡');
-        table.Add("-.-.--", '!');
-
-        // Special Characters
-        table.Add("..--.-", '_');
-        table.Add(".-.-.", '+');
-        table.Add("-....-", '-');
-        table.Add("-...-", '=');
-        table.Add("-.--.-", ')');
-        table.Add("-.--.", '(');
-
-        return table;
-    }
+    internal static MorseAlphabet Build() => MorseAlphabet.Build(Language.Russian, Primaries, Aliases);
 }
