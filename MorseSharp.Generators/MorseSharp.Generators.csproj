@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Source generators run inside the compiler, which pins them to netstandard2.0. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoWarn>$(NoWarn);RS2008</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!--
+    The packing algorithm is compiled into both this generator and the library rather than duplicated.
+    A generator cannot reference the net10 library, so linking the source is the only way to guarantee that a
+    table baked at build time is exactly what the runtime would have produced.
+  -->
+  <ItemGroup>
+    <Compile Include="..\MorseSharp\Alphabet\TablePacker.cs" Link="Shared\TablePacker.cs" />
+    <Compile Include="..\MorseSharp\Alphabet\PackedTables.cs" Link="Shared\PackedTables.cs" />
+    <Compile Include="..\MorseSharp\Alphabet\MorseEntry.cs" Link="Shared\MorseEntry.cs" />
+  </ItemGroup>
+
+</Project>

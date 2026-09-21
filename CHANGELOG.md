@@ -25,6 +25,15 @@
   `Remove` drops a character (promoting an alias to own the pattern if one was waiting). The built-in languages are
   now built through this same builder, so there is one packing path rather than two that could drift apart.
 
+- **Alphabet tables are packed at build time.** A Roslyn source generator reads the `.morse` data files and emits
+  the finished lookup tables as `ReadOnlySpan<byte>` blobs, which the compiler stores in the assembly's data section.
+  Selecting a language no longer runs the hashing and probing loops at all. The generator shares the packing code
+  with the runtime through a linked source file rather than reimplementing it, and a test asserts the two agree for
+  every language, so they cannot drift. A malformed table is now a compiler error against the offending line instead
+  of an exception the first time that language is used.
+- **Languages load independently.** Each sits behind its own nested holder, so touching English no longer runs the
+  class initialiser for all eleven.
+
 ### Breaking changes
 
 - **Exceptions identify the alphabet by name.** `CharacterNotPresentedException.Language` and

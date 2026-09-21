@@ -1,3 +1,5 @@
+using System.Buffers.Binary;
+
 namespace MorseSharp;
 
 /// <summary>
@@ -15,169 +17,129 @@ namespace MorseSharp;
 /// Patterns of up to <see cref="MaxSymbols"/> symbols fit in 9 bits, so decoding is a single array index.
 /// </para>
 /// <para>
-/// Encoding uses a direct 128-entry table for ASCII and an open-addressing hash table for everything else. That
-/// second table is sized to the alphabet actually being built rather than to a fixed capacity, so a small alphabet
-/// stays small and a large custom one still fits. Both letter cases are inserted while packing, so lookups never
-/// need a case conversion.
+/// Encoding uses a direct 128-entry table for ASCII and an open-addressing hash table for everything else, sized to
+/// the alphabet rather than to a fixed capacity. The tables come from <see cref="Alphabet.TablePacker"/>, packed at
+/// run time for a custom alphabet or at build time for a built-in one, which arrives ready made via
+/// <see cref="FromBlobs"/>.
 /// </para>
 /// </remarks>
 public sealed class MorseAlphabet
 {
     /// <summary>The longest pattern an alphabet may contain, in symbols.</summary>
-    public const int MaxSymbols = 8;
+    public const int MaxSymbols = TablePacker.MaxSymbols;
 
     /// <summary>Exclusive upper bound of valid tree codes.</summary>
-    internal const int CodeLimit = 1 << (MaxSymbols + 1);
+    internal const int CodeLimit = TablePacker.CodeLimit;
 
     /// <summary>Tree code of the empty pattern; used as the code of the word separator.</summary>
-    internal const int WordSpaceCode = 1;
+    internal const int WordSpaceCode = TablePacker.WordSpaceCode;
 
     private readonly ushort[] _ascii;
     private readonly uint[] _hashed;  // (code << 16) | key, 0 = empty; may be zero-length
-    private readonly int _hashShift;  // 32 - log2(_hashed.Length), so the top bits of the hash pick the slot
+    private readonly int _hashShift;  // reduces the hash to the table size by keeping its top bits
     private readonly int _hashMask;   // _hashed.Length - 1
     private readonly char[] _decode;  // '\0' = no character
+
+    private readonly Func<MorseEntry[]>? _entriesFactory;
+    private MorseEntry[]? _entries;
 
     /// <summary>The name of this alphabet, used in error messages.</summary>
     public string Name { get; }
 
-    /// <summary>The entries this alphabet was packed from, in order, so it can be extended or inspected.</summary>
-    internal MorseEntry[] Entries { get; }
-
     /// <summary>Longest probe sequence in the non-ASCII hash table (diagnostics/tests).</summary>
-    internal int MaxProbeLength { get; private set; }
+    internal int MaxProbeLength { get; }
+
+    /// <summary>Number of distinct patterns that decode to a character (word separator included).</summary>
+    internal int DecodableCount { get; }
 
     /// <summary>Slots allocated for the non-ASCII hash table; zero for a pure ASCII alphabet (diagnostics/tests).</summary>
     internal int HashedSlots => _hashed.Length;
 
-    /// <summary>Number of distinct patterns that decode to a character (word separator included).</summary>
-    internal int DecodableCount { get; private set; }
+    /// <summary>
+    /// The entries this alphabet was packed from, so it can be extended. A built-in alphabet rebuilds them on demand
+    /// rather than at startup, because only <see cref="MorseAlphabetBuilder.From(Language)"/> ever needs them.
+    /// </summary>
+    internal MorseEntry[] Entries => _entries ??= _entriesFactory!();
 
-    private MorseAlphabet(string name, int hashedSize, MorseEntry[] entries)
+    private MorseAlphabet(
+        string name,
+        ushort[] ascii,
+        uint[] hashed,
+        char[] decode,
+        int hashShift,
+        int maxProbeLength,
+        int decodableCount,
+        MorseEntry[]? entries,
+        Func<MorseEntry[]>? entriesFactory)
     {
         Name = name;
-        Entries = entries;
-        _ascii = new ushort[128];
-        _decode = new char[CodeLimit];
-
-        if (hashedSize == 0)
-        {
-            _hashed = [];
-            _hashMask = 0;
-            _hashShift = 32;
-        }
-        else
-        {
-            _hashed = new uint[hashedSize];
-            _hashMask = hashedSize - 1;
-            _hashShift = 32 - BitOperations.Log2((uint)hashedSize);
-        }
+        _ascii = ascii;
+        _hashed = hashed;
+        _decode = decode;
+        _hashShift = hashShift;
+        _hashMask = hashed.Length - 1;
+        MaxProbeLength = maxProbeLength;
+        DecodableCount = decodableCount;
+        _entries = entries;
+        _entriesFactory = entriesFactory;
     }
 
-    /// <summary>
-    /// Packs <paramref name="entries"/> into lookup tables. Primaries are inserted first and claim their pattern for
-    /// decoding; aliases follow and only claim a pattern no primary took, so the result never depends on whether
-    /// <c>Add</c> or <c>AddAlias</c> was called first.
-    /// </summary>
+    /// <summary>Packs entries into an alphabet at run time. Used by <see cref="MorseAlphabetBuilder"/>.</summary>
     /// <exception cref="InvalidOperationException">
     /// Thrown when two primaries share a pattern, or when one character is mapped to two patterns.
     /// </exception>
     internal static MorseAlphabet Pack(string name, List<MorseEntry> entries)
     {
-        int slots = 0;
-        foreach (MorseEntry entry in entries)
-            slots += CountNonAsciiSlots(entry.Character);
-
-        MorseAlphabet alphabet = new(name, ComputeHashedSize(slots), entries.ToArray());
-
-        // The word separator is reserved, so a space can never be remapped.
-        alphabet.InsertChar(' ', WordSpaceCode);
-        alphabet._decode[WordSpaceCode] = ' ';
-        alphabet.DecodableCount = 1;
-
-        foreach (MorseEntry entry in entries)
-        {
-            if (entry.IsAlias)
-                continue;
-
-            int code = ParseCode(entry.Pattern);
-            if (alphabet._decode[code] != '\0')
-                throw new InvalidOperationException(
-                    $"{name}: pattern '{entry.Pattern}' is used by both '{alphabet._decode[code]}' and '{entry.Character}'. Add one of them with AddAlias instead.");
-
-            alphabet._decode[code] = entry.Character;
-            alphabet.DecodableCount++;
-            alphabet.InsertChar(entry.Character, code);
-        }
-
-        foreach (MorseEntry entry in entries)
-        {
-            if (!entry.IsAlias)
-                continue;
-
-            int code = ParseCode(entry.Pattern);
-            if (alphabet._decode[code] == '\0')
-            {
-                alphabet._decode[code] = entry.Character;
-                alphabet.DecodableCount++;
-            }
-            alphabet.InsertChar(entry.Character, code);
-        }
-
-        return alphabet;
+        PackedTables tables = TablePacker.Pack(name, entries);
+        return new MorseAlphabet(
+            name, tables.Ascii, tables.Hashed, tables.Decode, tables.HashShift,
+            tables.MaxProbeLength, tables.DecodableCount, entries.ToArray(), entriesFactory: null);
     }
 
     /// <summary>
-    /// Chooses the hash table size for a given number of non-ASCII slots: a power of two keeping the load factor at
-    /// or below one half, or zero when the alphabet is pure ASCII and needs no table at all.
+    /// Builds an alphabet from tables already packed at compile time by the source generator, skipping the hashing
+    /// and probing entirely. The blobs live in the assembly's data section, so this only copies them into arrays.
     /// </summary>
-    internal static int ComputeHashedSize(int nonAsciiSlots)
+    /// <param name="name">The alphabet name.</param>
+    /// <param name="ascii">The ASCII table, 128 little-endian <see cref="ushort"/> values.</param>
+    /// <param name="hashed">The non-ASCII table as little-endian <see cref="uint"/> values; may be empty.</param>
+    /// <param name="decode">The decode table, <see cref="CodeLimit"/> little-endian <see cref="char"/> values.</param>
+    /// <param name="maxProbeLength">Longest probe run recorded while packing.</param>
+    /// <param name="decodableCount">How many patterns decode to a character.</param>
+    /// <param name="entriesFactory">Rebuilds the entry list on demand, for extending the alphabet.</param>
+    internal static MorseAlphabet FromBlobs(
+        string name,
+        ReadOnlySpan<byte> ascii,
+        ReadOnlySpan<byte> hashed,
+        ReadOnlySpan<byte> decode,
+        int maxProbeLength,
+        int decodableCount,
+        Func<MorseEntry[]> entriesFactory)
     {
-        if (nonAsciiSlots == 0)
-            return 0;
+        ushort[] asciiTable = MemoryMarshal.Cast<byte, ushort>(ascii).ToArray();
+        uint[] hashedTable = MemoryMarshal.Cast<byte, uint>(hashed).ToArray();
+        char[] decodeTable = MemoryMarshal.Cast<byte, char>(decode).ToArray();
 
-        int size = 4;
-        while (size < nonAsciiSlots * 2)
-            size <<= 1;
-        return size;
-    }
+        // The blobs are emitted little-endian so they can be embedded verbatim.
+        if (!BitConverter.IsLittleEndian)
+        {
+            BinaryPrimitives.ReverseEndianness(asciiTable, asciiTable);
+            BinaryPrimitives.ReverseEndianness(hashedTable, hashedTable);
+            Span<ushort> decodeAsUInt16 = MemoryMarshal.Cast<char, ushort>(decodeTable.AsSpan());
+            BinaryPrimitives.ReverseEndianness(decodeAsUInt16, decodeAsUInt16);
+        }
 
-    /// <summary>
-    /// Counts the hash slots a character will occupy, matching what <see cref="InsertChar"/> inserts. Used to size
-    /// the table before anything is written to it, so the count must never be lower than the real one.
-    /// </summary>
-    private static int CountNonAsciiSlots(char ch)
-    {
-        char lower = char.ToLowerInvariant(ch);
-        char upper = char.ToUpperInvariant(ch);
-
-        int count = ch >= 128 ? 1 : 0;
-        if (lower != ch && lower >= 128)
-            count++;
-        if (upper != ch && upper != lower && upper >= 128)
-            count++;
-        return count;
+        return new MorseAlphabet(
+            name, asciiTable, hashedTable, decodeTable, TablePacker.HashShiftFor(hashedTable.Length),
+            maxProbeLength, decodableCount, entries: null, entriesFactory);
     }
 
     /// <summary>Converts a dot/dash string to its tree code.</summary>
     /// <exception cref="ArgumentException">Thrown for an empty or over-long pattern, or one containing another symbol.</exception>
-    internal static int ParseCode(ReadOnlySpan<char> pattern)
-    {
-        if (pattern.Length is 0 or > MaxSymbols)
-            throw new ArgumentException($"Pattern '{pattern}' must have between 1 and {MaxSymbols} symbols.", nameof(pattern));
+    internal static int ParseCode(string pattern) => TablePacker.ParseCode(pattern);
 
-        int code = 1;
-        foreach (char c in pattern)
-        {
-            code = c switch
-            {
-                '.' => code << 1,
-                '-' => (code << 1) | 1,
-                _ => throw new ArgumentException($"Pattern '{pattern}' contains '{c}'; only '.' and '-' are allowed.", nameof(pattern)),
-            };
-        }
-        return code;
-    }
+    /// <summary>Chooses the hash table size for a number of non-ASCII slots.</summary>
+    internal static int ComputeHashedSize(int nonAsciiSlots) => TablePacker.ComputeHashedSize(nonAsciiSlots);
 
     /// <summary>Number of symbols in a tree code (0 for the word separator).</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -208,63 +170,6 @@ public sealed class MorseAlphabet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int WrittenLength(int code) => code == WordSpaceCode ? 1 : SymbolCount(code);
 
-    private void InsertChar(char ch, int code)
-    {
-        InsertExact(ch, code);
-
-        char lower = char.ToLowerInvariant(ch);
-        if (lower != ch)
-            InsertExact(lower, code);
-
-        char upper = char.ToUpperInvariant(ch);
-        if (upper != ch)
-            InsertExact(upper, code);
-    }
-
-    private void InsertExact(char ch, int code)
-    {
-        if (ch < 128)
-        {
-            ref ushort slot = ref _ascii[ch];
-            if (slot != 0 && slot != code)
-                throw new InvalidOperationException($"{Name}: character '{ch}' is mapped to two different patterns.");
-            slot = (ushort)code;
-            return;
-        }
-
-        uint[] table = _hashed;
-        uint key = ch;
-        uint entry = ((uint)code << 16) | key;
-        int index = Hash(key);
-
-        for (int probe = 1; probe <= table.Length; probe++)
-        {
-            ref uint existing = ref table[index];
-            if (existing == 0)
-            {
-                existing = entry;
-                if (probe > MaxProbeLength)
-                    MaxProbeLength = probe;
-                return;
-            }
-            if ((ushort)existing == key)
-            {
-                if (existing != entry)
-                    throw new InvalidOperationException($"{Name}: character '{ch}' is mapped to two different patterns.");
-                return;
-            }
-            index = (index + 1) & _hashMask;
-        }
-
-        throw new InvalidOperationException($"{Name}: hash table is full.");
-    }
-
-    /// <summary>
-    /// Fibonacci hash reduced to the table size by keeping its top bits, which are the well distributed ones.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int Hash(uint key) => (int)((key * 0x9E3779B1u) >> _hashShift);
-
     /// <summary>
     /// Looks up the tree code of a character.
     /// </summary>
@@ -291,7 +196,7 @@ public sealed class MorseAlphabet
         }
 
         uint key = ch;
-        int index = Hash(key);
+        int index = TablePacker.Hash(key, _hashShift);
         while (true)
         {
             uint entry = table[index];

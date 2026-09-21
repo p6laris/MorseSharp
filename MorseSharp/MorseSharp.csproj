@@ -44,4 +44,12 @@
     <InternalsVisibleTo Include="MorseTest" />
     <InternalsVisibleTo Include="Benchmark" />
   </ItemGroup>
+
+  <!-- The alphabet tables are packed at build time from the .morse files by the generator. -->
+  <ItemGroup>
+    <ProjectReference Include="..\MorseSharp.Generators\MorseSharp.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+    <AdditionalFiles Include="Alphabet\Data\*.morse" />
+  </ItemGroup>
 </Project>

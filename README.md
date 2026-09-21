@@ -142,6 +142,13 @@ await Morse.GetConverter()
 
 Cancelling switches the light off before the task is cancelled.
 
+## Adding a language
+
+The built-in alphabets live in `MorseSharp/Alphabet/Data/*.morse`, one file per language, as plain
+`character<tab>pattern` lines under `[PRIMARY]` and `[ALIAS]` sections. A source generator packs them into lookup
+tables at build time, so adding or correcting a character means editing a data file, not writing code. Mistakes such
+as two characters sharing a pattern are reported as build errors on the offending line.
+
 ## Custom alphabets
 
 If a language is missing, or you want one of the built-in ones with a tweak, build your own rather than forking:
