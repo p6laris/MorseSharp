@@ -43,7 +43,7 @@ public class TextMorseConverterTest
                 .Encode());
 
         Assert.Equal('~', ex.Character);
-        Assert.Equal(Language.Kurdish, ex.Language);
+        Assert.Equal("Kurdish", ex.AlphabetName);
     }
 
     [Fact]

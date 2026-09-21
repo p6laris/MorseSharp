@@ -49,6 +49,14 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
     }
 
     /// <inheritdoc />
+    public ICanSetConversionOption ForAlphabet(MorseAlphabet alphabet)
+    {
+        ArgumentNullException.ThrowIfNull(alphabet);
+        State.Alphabet = alphabet;
+        return this;
+    }
+
+    /// <inheritdoc />
     [SkipLocalsInit]
     public string Decode(string morse)
     {
@@ -127,12 +135,12 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
                 // A foreign symbol inside the sequence: report the whole whitespace-delimited token.
                 while (i < source.Length && !char.IsWhiteSpace(source[i]))
                     i++;
-                throw new SequenceNotFoundException(source[start..i], alphabet.Language);
+                throw new SequenceNotFoundException(source[start..i], alphabet.Name);
             }
 
             char decoded = alphabet.Decode(code);
             if (decoded == '\0')
-                throw new SequenceNotFoundException(source[start..i], alphabet.Language);
+                throw new SequenceNotFoundException(source[start..i], alphabet.Name);
 
             output[written++] = decoded;
         }
@@ -151,7 +159,7 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
         foreach (char ch in text)
         {
             if (!alphabet.TryGetCode(ch, out int code))
-                throw new CharacterNotPresentedException(ch, alphabet.Language);
+                throw new CharacterNotPresentedException(ch, alphabet.Name);
             length += MorseAlphabet.WrittenLength(code);
         }
 
@@ -178,7 +186,7 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
                     destination[position++] = ' ';
 
                 if (!alphabet.TryGetCode(text[i], out int code))
-                    throw new CharacterNotPresentedException(text[i], alphabet.Language);
+                    throw new CharacterNotPresentedException(text[i], alphabet.Name);
 
                 MorseAlphabet.WriteCode(destination, ref position, code);
             }

@@ -25,6 +25,4 @@ internal static class ItalianCharacters
     [
         ('Ò', "---."), // same as Ó
     ];
-
-    internal static MorseAlphabet Build() => MorseAlphabet.Build(Language.Italian, Primaries, Aliases);
 }

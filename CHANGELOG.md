@@ -2,8 +2,36 @@
 
 ## 6.0.0
 
+### Added
+
+- **Custom alphabets.** `MorseAlphabetBuilder` lets callers define their own alphabet, or extend and trim a built-in
+  one, without forking the library:
+
+  ```csharp
+  var klingon = new MorseAlphabetBuilder("Klingon")
+      .Add('a', ".-")
+      .Add('b', "-...")
+      .Build();
+
+  var extended = MorseAlphabetBuilder.From(Language.Deutsch)
+      .Add('Ə', "..--.")
+      .Remove('$')
+      .Build();
+
+  string morse = Morse.GetConverter().ForAlphabet(klingon).ToMorse("ab").Encode();
+  ```
+
+  `Add` claims a pattern for decoding, `AddAlias` adds an encode-only character that shares an existing pattern, and
+  `Remove` drops a character (promoting an alias to own the pattern if one was waiting). The built-in languages are
+  now built through this same builder, so there is one packing path rather than two that could drift apart.
+
 ### Breaking changes
 
+- **Exceptions identify the alphabet by name.** `CharacterNotPresentedException.Language` and
+  `SequenceNotFoundException.Language` are replaced by `AlphabetName`, because a custom alphabet has no `Language`
+  value. Message text is unchanged for the built-in languages.
+- `MorseAlphabet` is now public, but opaque: it exposes only `Name`. Obtain one from `MorseAlphabetBuilder`.
+- `ICanSpecifyLanguage` gained `ForAlphabet(MorseAlphabet)` alongside `ForLanguage(Language)`.
 - **Targets .NET 10** (`net10.0`). .NET 8/9 consumers must stay on 5.x.
 - **Audio API.** `GetBytes(out Span<byte>)` handed out a span over a pooled array that had already been returned to
   `ArrayPool<byte>.Shared`, so the caller's audio could be overwritten by any later rent. It is kept as an `[Obsolete]`
@@ -41,11 +69,15 @@
 
 ### Performance
 
+- The non-ASCII lookup table is sized to the alphabet instead of a fixed 256 slots, which removes the hard ceiling
+  that capped how many characters an alphabet could hold, and drops the eleven built-in tables from 11 264 to
+  3 728 bytes in total. The hash reduction now keeps the top bits of the Fibonacci hash, so the worst probe length
+  across all languages moves only from 2 to 3.
 - Zero NuGet dependencies (dropped `CommunityToolkit.HighPerformance` and `ListPool`).
 - Alphabet tables are built once per process and shared (previously an 8 KB pair of structs was rebuilt and copied into
   thread-static storage on every language switch).
 - Encoding: patterns are stored as 9-bit "tree codes"; ASCII characters are a direct table lookup, other scripts use a
-  256-slot hash table with both letter cases pre-inserted (no `ToUpperInvariant` per character). `Encode()` writes
+  right-sized hash table with both letter cases pre-inserted (no `ToUpperInvariant` per character). `Encode()` writes
   straight into the result string via `string.Create` – one allocation, no `StringBuilder`.
 - Decoding: a sequence is folded into its tree code and decoded with a single array index – no hashing, no string
   comparison. Output goes to a stack buffer (or a pooled one for long inputs) and then into the result string.

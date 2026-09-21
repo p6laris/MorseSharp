@@ -25,6 +25,4 @@ internal static class DeutschCharacters
     [
         ('ß', "......"), // lower-case sharp s has no single-character upper case, so list it explicitly
     ];
-
-    internal static MorseAlphabet Build() => MorseAlphabet.Build(Language.Deutsch, Primaries, Aliases);
 }

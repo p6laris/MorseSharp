@@ -29,6 +29,4 @@ internal static class FrenchCharacters
         ('Ê', "-..-."), // same as /
         ('Ù', "..--"),  // same as Ü
     ];
-
-    internal static MorseAlphabet Build() => MorseAlphabet.Build(Language.French, Primaries, Aliases);
 }

@@ -142,6 +142,41 @@ await Morse.GetConverter()
 
 Cancelling switches the light off before the task is cancelled.
 
+## Custom alphabets
+
+If a language is missing, or you want one of the built-in ones with a tweak, build your own rather than forking:
+
+```C#
+var klingon = new MorseAlphabetBuilder("Klingon")
+    .Add('a', ".-")
+    .Add('b', "-...")
+    .Build();
+
+string morse = Morse.GetConverter()
+    .ForAlphabet(klingon)
+    .ToMorse("ab")
+    .Encode();
+```
+
+`From` starts with an existing language so you can extend or trim it:
+
+```C#
+var extended = MorseAlphabetBuilder.From(Language.Deutsch)
+    .Add('Ə', "..--.")
+    .Remove('$')
+    .Build();
+```
+
+- `Add` maps a character to a pattern and claims that pattern for decoding.
+- `AddAlias` maps a character that shares an existing pattern. It encodes, but the pattern keeps decoding to the
+  character added with `Add`, which is how `ß` and `ẞ` both work in German.
+- `Remove` drops every entry for a character. If an alias was sharing the removed character's pattern, it takes
+  the pattern over.
+
+Patterns may be up to 8 symbols of `.` and `-`. Both letter cases are accepted when encoding, and decoding returns
+the character exactly as you registered it. Alphabets are immutable once built and safe to share between threads,
+so hold one in a static field and reuse it.
+
 ## Example
 
 ```C#

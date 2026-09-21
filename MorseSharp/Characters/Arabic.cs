@@ -34,6 +34,4 @@ internal static class ArabicCharacters
 
     /// <summary>Encode-only entries that share a pattern with a primary entry.</summary>
     internal static readonly (char Char, string Code)[] Aliases = SharedCharacters.None;
-
-    internal static MorseAlphabet Build() => MorseAlphabet.Build(Language.Arabic, Primaries, Aliases);
 }

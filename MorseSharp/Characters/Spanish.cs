@@ -27,6 +27,4 @@ internal static class SpanishCharacters
         ('Ù', "..-"), // same as U
         ('Ü', "..-"), // same as U
     ];
-
-    internal static MorseAlphabet Build() => MorseAlphabet.Build(Language.Spanish, Primaries, Aliases);
 }

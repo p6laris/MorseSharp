@@ -29,6 +29,4 @@ internal static class PortuguesCharacters
         ('Ê', "-..-."), // same as /
         ('Ô', "---."),  // same as Ó
     ];
-
-    internal static MorseAlphabet Build() => MorseAlphabet.Build(Language.Portugues, Primaries, Aliases);
 }

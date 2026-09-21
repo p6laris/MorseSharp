@@ -23,16 +23,15 @@ public class AlphabetTests
     [MemberData(nameof(AllLanguages))]
     public void EveryPrimaryEntryRoundTrips(Language language)
     {
-        var (primaries, _) = Alphabets.DataFor(language);
         var conv = Morse.GetConverter().ForLanguage(language);
 
-        foreach (var group in primaries)
+        foreach (MorseEntry entry in Alphabets.For(language).Entries)
         {
-            foreach (var (ch, code) in group)
-            {
-                Assert.Equal(code, conv.ToMorse(ch.ToString()).Encode());
-                Assert.Equal(ch, Assert.Single(conv.Decode(code)));
-            }
+            if (entry.IsAlias)
+                continue;
+
+            Assert.Equal(entry.Pattern, conv.ToMorse(entry.Character.ToString()).Encode());
+            Assert.Equal(entry.Character, Assert.Single(conv.Decode(entry.Pattern)));
         }
     }
 
@@ -40,11 +39,13 @@ public class AlphabetTests
     [MemberData(nameof(AllLanguages))]
     public void EveryAliasEncodes(Language language)
     {
-        var (_, aliases) = Alphabets.DataFor(language);
         var conv = Morse.GetConverter().ForLanguage(language);
 
-        foreach (var (ch, code) in aliases)
-            Assert.Equal(code, conv.ToMorse(ch.ToString()).Encode());
+        foreach (MorseEntry entry in Alphabets.For(language).Entries)
+        {
+            if (entry.IsAlias)
+                Assert.Equal(entry.Pattern, conv.ToMorse(entry.Character.ToString()).Encode());
+        }
     }
 
     [Theory]
@@ -140,7 +141,10 @@ public class AlphabetTests
     [Fact]
     public void DuplicatePrimaryPatternIsRejectedAtBuildTime()
     {
-        (char, string)[] group = [('A', ".-"), ('B', ".-")];
-        Assert.Throws<InvalidOperationException>(() => MorseAlphabet.Build(Language.English, [group], []));
+        MorseAlphabetBuilder builder = new MorseAlphabetBuilder("Duplicate")
+            .Add('A', ".-")
+            .Add('B', ".-");
+
+        Assert.Throws<InvalidOperationException>(() => builder.Build());
     }
 }

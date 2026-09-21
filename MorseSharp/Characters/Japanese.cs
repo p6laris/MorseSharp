@@ -46,6 +46,4 @@ internal static class JapaneseCharacters
         ('+', ".-.-."),  // same as ン
         ('=', "-...-"),  // same as メ
     ];
-
-    internal static MorseAlphabet Build() => MorseAlphabet.Build(Language.Japanese, Primaries, Aliases);
 }

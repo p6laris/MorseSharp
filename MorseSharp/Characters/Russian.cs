@@ -34,6 +34,4 @@ internal static class RussianCharacters
         ('І', ".."),    // Ukrainian, same as И
         ('Ґ', "--."),   // Ukrainian, same as Г
     ];
-
-    internal static MorseAlphabet Build() => MorseAlphabet.Build(Language.Russian, Primaries, Aliases);
 }

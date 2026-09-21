@@ -18,7 +18,7 @@ internal static class MorseWalker
         foreach (char ch in text)
         {
             if (!alphabet.TryGetCode(ch, out int code))
-                throw new CharacterNotPresentedException(ch, alphabet.Language);
+                throw new CharacterNotPresentedException(ch, alphabet.Name);
 
             if (code == MorseAlphabet.WordSpaceCode)
             {

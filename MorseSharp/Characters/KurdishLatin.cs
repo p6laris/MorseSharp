@@ -29,6 +29,4 @@ internal static class KurdishLatinCharacters
     [
         ('*', "-..-"), // ITU multiplication sign, same as X
     ];
-
-    internal static MorseAlphabet Build() => MorseAlphabet.Build(Language.KurdishLatin, Primaries, Aliases);
 }

@@ -27,7 +27,7 @@ public class DecodeTests
     {
         var ex = Assert.Throws<SequenceNotFoundException>(() => English.Decode(".... ......... .."));
         Assert.Equal(".........", ex.Sequence);
-        Assert.Equal(Language.English, ex.Language);
+        Assert.Equal("English", ex.AlphabetName);
     }
 
     [Fact]
