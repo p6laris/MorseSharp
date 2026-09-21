@@ -30,6 +30,15 @@ public interface ICanSetConversionOption
     string FromAudio(ReadOnlySpan<short> samples, int sampleRate = 11025, double frequency = 700, int wordsPerMinute = 20);
 
     /// <summary>
+    /// Creates a decoder for audio that arrives a piece at a time, such as from a microphone or a receiver.
+    /// </summary>
+    /// <param name="sampleRate">Sample rate of the incoming audio, in hertz.</param>
+    /// <param name="frequency">The tone frequency to listen for, in hertz.</param>
+    /// <param name="wordsPerMinute">Roughly how fast the sender is keying. The real speed is measured from the signal.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown for a non-positive sample rate or speed, or an out-of-range frequency.</exception>
+    StreamingMorseDecoder CreateAudioDecoder(int sampleRate = 11025, double frequency = 700, int wordsPerMinute = 20);
+
+    /// <summary>
     /// Encodes text to Morse code. The text is validated immediately; the Morse string is produced lazily by
     /// <see cref="ICanGenerateAudioAndLight.Encode"/> or consumed directly by the audio and light generators.
     /// </summary>

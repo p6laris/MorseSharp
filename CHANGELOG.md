@@ -41,6 +41,12 @@
   spacing. Tested by round-tripping through the encoder at speeds from 10 to 40 wpm, tones from 400 Hz to 1.5 kHz,
   and white noise down to 0 dB signal-to-noise.
 
+- **Streaming audio decoding.** `CreateAudioDecoder` returns a `StreamingMorseDecoder` for live input. Push samples
+  with `Write`, take characters with `TryRead`, and call `Flush` at the end of a transmission. Chunk sizes are
+  arbitrary; anything short of a whole analysis block is carried to the next call. Since it cannot look ahead, both
+  the tone threshold and the timing are re-measured from a sliding window, and the opening blocks are held back and
+  replayed once there is enough signal to judge them, so the first character is not lost.
+
 ### Breaking changes
 
 - **Exceptions identify the alphabet by name.** `CharacterNotPresentedException.Language` and

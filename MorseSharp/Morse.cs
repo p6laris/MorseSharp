@@ -160,6 +160,10 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
     }
 
     /// <inheritdoc />
+    public StreamingMorseDecoder CreateAudioDecoder(int sampleRate = 11025, double frequency = 700, int wordsPerMinute = 20)
+        => new(State.Alphabet, sampleRate, frequency, wordsPerMinute);
+
+    /// <inheritdoc />
     public ICanGenerateAudioAndLight ToMorse(string text)
     {
         ArgumentException.ThrowIfNullOrEmpty(text);

@@ -166,6 +166,32 @@ but the gaps are stretched. A sequence with no character in the selected alphabe
 
 If the frequency you ask for carries no real tone, you get an empty string rather than invented characters.
 
+### Live audio
+
+For audio arriving a piece at a time, from a microphone or a receiver, use the streaming decoder. Buffer sizes need
+not line up with anything:
+
+```C#
+var decoder = Morse.GetConverter()
+    .ForLanguage(Language.English)
+    .CreateAudioDecoder(sampleRate: 11025, frequency: 700, wordsPerMinute: 20);
+
+while (recording)
+{
+    int read = microphone.Read(buffer);
+    decoder.Write(buffer.AsSpan(0, read));
+
+    while (decoder.TryRead(out char character))
+        Console.Write(character);
+}
+
+decoder.Flush();   // the last character has no gap after it to announce it finished
+```
+
+A streaming decoder cannot see ahead, so it re-measures the tone threshold and the sender's timing from a sliding
+window of what it heard recently. That makes the stated speed matter a little more than it does for a whole
+recording: it seeds the first few characters before enough signal has arrived to measure the real speed.
+
 ## Custom alphabets
 
 If a language is missing, or you want one of the built-in ones with a tweak, build your own rather than forking:
