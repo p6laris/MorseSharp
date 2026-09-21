@@ -61,3 +61,18 @@ $	...-..-
 !	-.-.--
 
 [ALIAS]
+
+# Procedural signals: letters keyed as one unbroken sequence, written in text as <NAME>.
+# These own a pattern nothing else uses, so they appear when decoding too.
+[PROSIGN]
+SK	...-.-
+SN	...-.
+CT	-.-.-
+HH	........
+
+# These are the same on-air signal as a punctuation mark, which keeps the pattern for decoding.
+[PROSIGN ALIAS]
+AR	.-.-.
+BT	-...-
+KN	-.--.
+AS	.-...

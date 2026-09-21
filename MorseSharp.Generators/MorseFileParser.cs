@@ -17,12 +17,25 @@ namespace MorseSharp.Generators;
 /// A&#9;.-
 /// [ALIAS]
 /// ß&#9;......
+/// [PROSIGN]
+/// SK&#9;...-.-
+/// [PROSIGN ALIAS]
+/// AR&#9;.-.-.
 /// </code>
-/// One entry per line, the character and its pattern separated by a tab. A character that would confuse the parser
-/// can be written as <c>\uXXXX</c>.
+/// One entry per line, the name and its pattern separated by a tab. A character that would confuse the parser can be
+/// written as <c>\uXXXX</c>. The alias sections hold entries whose pattern something else already owns.
 /// </remarks>
 internal static class MorseFileParser
 {
+    private enum Section
+    {
+        None,
+        Primary,
+        Alias,
+        Prosign,
+        ProsignAlias,
+    }
+
     /// <summary>Parses the text of one file.</summary>
     /// <param name="name">The alphabet name, taken from the file name.</param>
     /// <param name="filePath">Path of the file, for diagnostics.</param>
@@ -30,10 +43,10 @@ internal static class MorseFileParser
     public static ParsedAlphabet Parse(string name, string filePath, string text)
     {
         List<MorseEntry> entries = new List<MorseEntry>();
+        List<MorseProsign> prosigns = new List<MorseProsign>();
         List<AlphabetError> errors = new List<AlphabetError>();
 
-        bool isAlias = false;
-        bool sawSection = false;
+        Section section = Section.None;
         int lineNumber = -1;
 
         using (StringReader reader = new StringReader(text))
@@ -49,44 +62,27 @@ internal static class MorseFileParser
 
                 if (line[0] == '[')
                 {
-                    if (string.Equals(line, "[PRIMARY]", StringComparison.OrdinalIgnoreCase))
-                    {
-                        isAlias = false;
-                        sawSection = true;
-                    }
-                    else if (string.Equals(line, "[ALIAS]", StringComparison.OrdinalIgnoreCase))
-                    {
-                        isAlias = true;
-                        sawSection = true;
-                    }
-                    else
-                    {
-                        errors.Add(new AlphabetError(lineNumber, "Unknown section '" + line + "'. Expected [PRIMARY] or [ALIAS]."));
-                    }
+                    section = ReadSection(line);
+                    if (section == Section.None)
+                        errors.Add(new AlphabetError(lineNumber, "Unknown section '" + line + "'. Expected [PRIMARY], [ALIAS], [PROSIGN] or [PROSIGN ALIAS]."));
                     continue;
                 }
 
-                if (!sawSection)
+                if (section == Section.None)
                 {
-                    errors.Add(new AlphabetError(lineNumber, "Entry appears before any [PRIMARY] or [ALIAS] section."));
+                    errors.Add(new AlphabetError(lineNumber, "Entry appears before any section header."));
                     continue;
                 }
 
                 int tab = raw.IndexOf('\t');
                 if (tab <= 0)
                 {
-                    errors.Add(new AlphabetError(lineNumber, "Expected 'character<tab>pattern'."));
+                    errors.Add(new AlphabetError(lineNumber, "Expected 'name<tab>pattern'."));
                     continue;
                 }
 
-                string charField = raw.Substring(0, tab);
+                string nameField = raw.Substring(0, tab).Trim();
                 string pattern = raw.Substring(tab + 1).Trim();
-
-                if (!TryDecodeChar(charField, out char character))
-                {
-                    errors.Add(new AlphabetError(lineNumber, "'" + charField + "' is not a single character or a \\uXXXX escape."));
-                    continue;
-                }
 
                 try
                 {
@@ -98,14 +94,45 @@ internal static class MorseFileParser
                     continue;
                 }
 
-                entries.Add(new MorseEntry(character, pattern, isAlias));
+                if (section == Section.Prosign || section == Section.ProsignAlias)
+                {
+                    if (nameField.Length < 2)
+                    {
+                        errors.Add(new AlphabetError(lineNumber, "A prosign needs at least two letters; '" + nameField + "' has one."));
+                        continue;
+                    }
+
+                    prosigns.Add(new MorseProsign(nameField, pattern, section == Section.ProsignAlias));
+                    continue;
+                }
+
+                if (!TryDecodeChar(raw.Substring(0, tab), out char character))
+                {
+                    errors.Add(new AlphabetError(lineNumber, "'" + nameField + "' is not a single character or a \\uXXXX escape."));
+                    continue;
+                }
+
+                entries.Add(new MorseEntry(character, pattern, section == Section.Alias));
             }
         }
 
         if (entries.Count == 0 && errors.Count == 0)
             errors.Add(new AlphabetError(-1, "The file declares no characters."));
 
-        return new ParsedAlphabet(name, filePath, entries, errors);
+        return new ParsedAlphabet(name, filePath, entries, prosigns, errors);
+    }
+
+    private static Section ReadSection(string line)
+    {
+        if (string.Equals(line, "[PRIMARY]", StringComparison.OrdinalIgnoreCase))
+            return Section.Primary;
+        if (string.Equals(line, "[ALIAS]", StringComparison.OrdinalIgnoreCase))
+            return Section.Alias;
+        if (string.Equals(line, "[PROSIGN]", StringComparison.OrdinalIgnoreCase))
+            return Section.Prosign;
+        if (string.Equals(line, "[PROSIGN ALIAS]", StringComparison.OrdinalIgnoreCase))
+            return Section.ProsignAlias;
+        return Section.None;
     }
 
     private static bool TryDecodeChar(string field, out char character)
@@ -116,7 +143,7 @@ internal static class MorseFileParser
             return true;
         }
 
-        if (field.Length == 6 && (field[0] == '\\') && (field[1] == 'u' || field[1] == 'U') &&
+        if (field.Length == 6 && field[0] == '\\' && (field[1] == 'u' || field[1] == 'U') &&
             ushort.TryParse(field.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ushort value))
         {
             character = (char)value;

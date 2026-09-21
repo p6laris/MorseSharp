@@ -26,6 +26,7 @@
     <Compile Include="..\MorseSharp\Alphabet\TablePacker.cs" Link="Shared\TablePacker.cs" />
     <Compile Include="..\MorseSharp\Alphabet\PackedTables.cs" Link="Shared\PackedTables.cs" />
     <Compile Include="..\MorseSharp\Alphabet\MorseEntry.cs" Link="Shared\MorseEntry.cs" />
+    <Compile Include="..\MorseSharp\Alphabet\MorseProsign.cs" Link="Shared\MorseProsign.cs" />
   </ItemGroup>
 
 </Project>

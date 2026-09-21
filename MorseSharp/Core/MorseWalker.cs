@@ -15,10 +15,9 @@ internal static class MorseWalker
         where TSink : struct, IElementSink, allows ref struct
     {
         bool needCharGap = false;
-        foreach (char ch in text)
+        for (int position = 0; position < text.Length;)
         {
-            if (!alphabet.TryGetCode(ch, out int code))
-                throw new CharacterNotPresentedException(ch, alphabet.Name);
+            int code = MorseTextScanner.Next(text, ref position, alphabet);
 
             if (code == MorseAlphabet.WordSpaceCode)
             {

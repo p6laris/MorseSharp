@@ -3,7 +3,7 @@ using System;
 namespace MorseSharp.Alphabet;
 
 /// <summary>
-/// The three lookup tables an alphabet is made of, in the exact layout <see cref="MorseAlphabet"/> reads at runtime
+/// The lookup tables an alphabet is made of, in the exact layout <see cref="MorseAlphabet"/> reads at runtime
 /// and the source generator serialises at build time.
 /// </summary>
 /// <remarks>
@@ -18,6 +18,8 @@ internal sealed class PackedTables
         Hashed = hashedSize == 0 ? Array.Empty<uint>() : new uint[hashedSize];
         Decode = new char[TablePacker.CodeLimit];
         HashShift = TablePacker.HashShiftFor(hashedSize);
+        ProsignNames = Array.Empty<string>();
+        ProsignCodes = Array.Empty<int>();
     }
 
     /// <summary>Direct lookup for characters below U+0080, indexed by the character itself. 0 means absent.</summary>
@@ -26,7 +28,7 @@ internal sealed class PackedTables
     /// <summary>Open-addressed table for the rest, holding <c>(code &lt;&lt; 16) | key</c>. 0 means empty.</summary>
     public uint[] Hashed { get; }
 
-    /// <summary>Tree code to character. <c>'\0'</c> means the pattern decodes to nothing.</summary>
+    /// <summary>Tree code to character. <c>'\0'</c> means the pattern decodes to no character.</summary>
     public char[] Decode { get; }
 
     /// <summary>Right shift that reduces the hash to the table size, keeping its top bits.</summary>
@@ -37,4 +39,17 @@ internal sealed class PackedTables
 
     /// <summary>How many distinct patterns decode to a character, the word separator included.</summary>
     public int DecodableCount { get; set; }
+
+    /// <summary>
+    /// Prosign names, those that own their pattern first, then the encode-only aliases. Kept alongside
+    /// <see cref="ProsignCodes"/> rather than in the decode table, which holds one character per entry and so
+    /// cannot represent a multi-letter signal.
+    /// </summary>
+    public string[] ProsignNames { get; set; }
+
+    /// <summary>Tree codes matching <see cref="ProsignNames"/> position for position.</summary>
+    public int[] ProsignCodes { get; set; }
+
+    /// <summary>How many of the prosigns own their pattern, and so appear when decoding.</summary>
+    public int DecodableProsigns { get; set; }
 }

@@ -60,6 +60,31 @@ internal static class AlphabetEmitter
               .AppendLine("),");
         }
         sb.AppendLine("    ];");
+        sb.AppendLine();
+
+        sb.AppendLine("    /// <summary>Prosign names, those owning their pattern first, then the encode-only aliases.</summary>");
+        sb.Append("    public static readonly string[] ProsignNames = [");
+        for (int i = 0; i < tables.ProsignNames.Length; i++)
+        {
+            sb.Append(i == 0 ? " " : ", ");
+            sb.Append('"').Append(tables.ProsignNames[i]).Append('"');
+        }
+        sb.AppendLine(tables.ProsignNames.Length == 0 ? "];" : " ];");
+        sb.AppendLine();
+
+        sb.AppendLine("    /// <summary>Tree codes matching ProsignNames position for position.</summary>");
+        sb.Append("    public static readonly int[] ProsignCodes = [");
+        for (int i = 0; i < tables.ProsignCodes.Length; i++)
+        {
+            sb.Append(i == 0 ? " " : ", ");
+            sb.Append(tables.ProsignCodes[i].ToString(CultureInfo.InvariantCulture));
+        }
+        sb.AppendLine(tables.ProsignCodes.Length == 0 ? "];" : " ];");
+        sb.AppendLine();
+
+        sb.AppendLine("    /// <summary>How many of the prosigns own their pattern, and so appear when decoding.</summary>");
+        sb.AppendLine("    public const int DecodableProsigns = " + tables.DecodableProsigns.ToString(CultureInfo.InvariantCulture) + ";");
+
         sb.AppendLine("}");
         return sb.ToString();
     }
@@ -97,7 +122,10 @@ internal static class AlphabetEmitter
             sb.AppendLine("            " + name + "Characters.DecodeBlob,");
             sb.AppendLine("            " + name + "Characters.MaxProbeLength,");
             sb.AppendLine("            " + name + "Characters.DecodableCount,");
-            sb.AppendLine("            " + name + "Characters.CreateEntries);");
+            sb.AppendLine("            " + name + "Characters.CreateEntries,");
+            sb.AppendLine("            " + name + "Characters.ProsignNames,");
+            sb.AppendLine("            " + name + "Characters.ProsignCodes,");
+            sb.AppendLine("            " + name + "Characters.DecodableProsigns);");
             sb.AppendLine("    }");
             sb.AppendLine();
         }

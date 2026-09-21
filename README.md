@@ -192,6 +192,40 @@ A streaming decoder cannot see ahead, so it re-measures the tone threshold and t
 window of what it heard recently. That makes the stated speed matter a little more than it does for a whole
 recording: it seeds the first few characters before enough signal has arrived to measure the real speed.
 
+## Prosigns
+
+Prosigns are procedural signals: two or more letters keyed as one unbroken sequence, with no gap between them. They
+are instructions rather than text. Write them in angle brackets:
+
+```C#
+var morse = Morse.GetConverter()
+    .ForLanguage(Language.English)
+    .ToMorse("CQ CQ <AR>")
+    .Encode();
+```
+
+`<AR>` keys as one signal, which is what makes it different from sending `A` then `R`.
+
+English defines these:
+
+| Prosign | Meaning | Pattern | |
+|---|---|---|---|
+| `<SK>` | end of contact | `...-.-` | decodes back as `<SK>` |
+| `<SN>` | understood | `...-.` | decodes back as `<SN>` |
+| `<CT>` | attention, starting | `-.-.-` | decodes back as `<CT>` |
+| `<HH>` | correction | `........` | decodes back as `<HH>` |
+| `<AR>` | end of message | `.-.-.` | same signal as `+`, which keeps the pattern |
+| `<BT>` | break | `-...-` | same signal as `=` |
+| `<KN>` | go ahead, named station | `-.--.` | same signal as `(` |
+| `<AS>` | wait | `.-...` | same signal as `&` |
+
+The last four genuinely are the same on-air signal as the punctuation beside them, so they encode from either
+spelling while the punctuation keeps ownership of the pattern for decoding. Add your own with
+`MorseAlphabetBuilder.AddProsign`, or `AddProsignAlias` when the pattern is already taken.
+
+One limit worth knowing: patterns are capped at 8 symbols, so `SOS` keyed as a single 9-symbol prosign does not fit.
+Sent as the three separate letters `SOS`, which is what nearly everyone means, it works normally.
+
 ## Custom alphabets
 
 If a language is missing, or you want one of the built-in ones with a tweak, build your own rather than forking:

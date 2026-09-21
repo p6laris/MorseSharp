@@ -151,22 +151,34 @@ internal static class MorseAudioDecoder
                 if (gap == MorseGap.Element)
                     continue;
 
-                if (symbols.TryResolve(alphabet, out char character))
-                    text.Append(character);
+                Append(text, ref symbols, alphabet);
 
                 if (gap == MorseGap.Word)
                     text.Append(' ');
             }
 
-            if (symbols.TryResolve(alphabet, out char last))
-                text.Append(last);
-
+            Append(text, ref symbols, alphabet);
             return text.ToString().Trim();
         }
         finally
         {
             ArrayPool<int>.Shared.Return(rented);
         }
+    }
+
+    /// <summary>Appends whatever the accumulator resolved to, bracketing it when it is a prosign.</summary>
+    private static void Append(StringBuilder text, ref MorseSymbolAccumulator symbols, MorseAlphabet alphabet)
+    {
+        if (!symbols.TryResolve(alphabet, out char character, out string? prosign))
+            return;
+
+        if (prosign is null)
+        {
+            text.Append(character);
+            return;
+        }
+
+        text.Append(MorseTextScanner.ProsignStart).Append(prosign).Append(MorseTextScanner.ProsignEnd);
     }
 
     /// <summary>Walks the gate and records each unbroken stretch, positive for key down and negative for key up.</summary>

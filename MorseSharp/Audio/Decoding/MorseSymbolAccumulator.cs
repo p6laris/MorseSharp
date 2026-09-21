@@ -10,6 +10,9 @@ namespace MorseSharp.Audio.Decoding;
 /// </remarks>
 internal struct MorseSymbolAccumulator
 {
+    /// <summary>Stands in for a sequence the alphabet does not define.</summary>
+    public const char Unknown = '?';
+
     private int _code;
 
     /// <summary>Creates an accumulator with no symbols collected.</summary>
@@ -31,19 +34,44 @@ internal struct MorseSymbolAccumulator
     /// Resolves the collected symbols and starts a new character.
     /// </summary>
     /// <param name="alphabet">Alphabet to resolve against.</param>
-    /// <param name="character">The decoded character, or <c>?</c> when the sequence is not in the alphabet.</param>
-    /// <returns><c>false</c> when nothing had been collected, in which case there is no character to emit.</returns>
-    public bool TryResolve(MorseAlphabet alphabet, out char character)
+    /// <param name="character">
+    /// The decoded character, or <see cref="Unknown"/> when the alphabet defines nothing for the sequence. Not
+    /// meaningful when <paramref name="prosign"/> is set.
+    /// </param>
+    /// <param name="prosign">
+    /// The prosign letters when a procedural signal owns the pattern, otherwise <c>null</c>. Reported separately
+    /// because a prosign is several characters and cannot be returned as one.
+    /// </param>
+    /// <returns><c>false</c> when nothing had been collected, in which case there is nothing to emit.</returns>
+    public bool TryResolve(MorseAlphabet alphabet, out char character, out string? prosign)
     {
         if (!HasSymbols)
         {
             character = '\0';
+            prosign = null;
             return false;
         }
 
-        char decoded = alphabet.Decode(_code);
-        character = decoded == '\0' ? '?' : decoded;
+        int code = _code;
         _code = MorseAlphabet.WordSpaceCode;
+
+        char decoded = alphabet.Decode(code);
+        if (decoded != '\0')
+        {
+            character = decoded;
+            prosign = null;
+            return true;
+        }
+
+        if (alphabet.TryGetProsignName(code, out string name))
+        {
+            character = '\0';
+            prosign = name;
+            return true;
+        }
+
+        character = Unknown;
+        prosign = null;
         return true;
     }
 

@@ -41,6 +41,18 @@ internal static class TablePacker
     /// Thrown when two primaries share a pattern, or when one character is mapped to two patterns.
     /// </exception>
     public static PackedTables Pack(string name, IReadOnlyList<MorseEntry> entries)
+        => Pack(name, entries, EmptyProsigns);
+
+    /// <summary>No prosigns, for an alphabet that declares none.</summary>
+    private static readonly MorseProsign[] EmptyProsigns = Array.Empty<MorseProsign>();
+
+    /// <summary>
+    /// Packs entries and prosigns into lookup tables.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when two primaries share a pattern, or when one character is mapped to two patterns.
+    /// </exception>
+    public static PackedTables Pack(string name, IReadOnlyList<MorseEntry> entries, IReadOnlyList<MorseProsign> prosigns)
     {
         int slots = 0;
         for (int i = 0; i < entries.Count; i++)
@@ -85,7 +97,60 @@ internal static class TablePacker
             }
         }
 
+        PackProsigns(name, tables, prosigns);
         return tables;
+    }
+
+    /// <summary>
+    /// Records the prosigns, letting the ones that own a free pattern be decodable and the rest encode only.
+    /// </summary>
+    private static void PackProsigns(string name, PackedTables tables, IReadOnlyList<MorseProsign> prosigns)
+    {
+        if (prosigns.Count == 0)
+            return;
+
+        List<string> names = new List<string>(prosigns.Count);
+        List<int> codes = new List<int>(prosigns.Count);
+
+        // Owners first, so decoding can stop at the end of them.
+        for (int pass = 0; pass < 2; pass++)
+        {
+            bool aliasPass = pass == 1;
+            for (int i = 0; i < prosigns.Count; i++)
+            {
+                MorseProsign prosign = prosigns[i];
+                if (prosign.IsAlias != aliasPass)
+                    continue;
+
+                int code = ParseCode(prosign.Pattern);
+
+                if (!aliasPass)
+                {
+                    if (tables.Decode[code] != '\0')
+                    {
+                        throw new InvalidOperationException(
+                            name + ": prosign '<" + prosign.Name + ">' uses the pattern of '" + tables.Decode[code] +
+                            "'. Declare it as an alias instead.");
+                    }
+
+                    int existing = codes.IndexOf(code);
+                    if (existing >= 0)
+                    {
+                        throw new InvalidOperationException(
+                            name + ": prosigns '<" + names[existing] + ">' and '<" + prosign.Name +
+                            "'> share the pattern '" + prosign.Pattern + "'. Declare one as an alias.");
+                    }
+
+                    tables.DecodableProsigns++;
+                }
+
+                names.Add(prosign.Name);
+                codes.Add(code);
+            }
+        }
+
+        tables.ProsignNames = names.ToArray();
+        tables.ProsignCodes = codes.ToArray();
     }
 
     /// <summary>Converts a dot/dash string to its tree code.</summary>

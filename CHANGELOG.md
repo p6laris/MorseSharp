@@ -47,6 +47,12 @@
   the tone threshold and the timing are re-measured from a sliding window, and the opening blocks are held back and
   replayed once there is enough signal to judge them, so the first character is not lost.
 
+- **Prosigns.** Procedural signals such as `<AR>` and `<SK>` are keyed as one unbroken sequence and written in text
+  with angle brackets. English ships eight; four own a free pattern and decode back into brackets, and four share a
+  pattern with punctuation, so they encode while the punctuation keeps the pattern. `MorseAlphabetBuilder.AddProsign`
+  and `AddProsignAlias` add them to any alphabet. Patterns remain capped at 8 symbols, so `SOS` as a single 9-symbol
+  signal does not fit; as three letters it is unaffected.
+
 ### Breaking changes
 
 - **Exceptions identify the alphabet by name.** `CharacterNotPresentedException.Language` and

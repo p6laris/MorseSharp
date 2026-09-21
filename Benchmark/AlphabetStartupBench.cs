@@ -28,7 +28,8 @@ public class AlphabetStartupBenchmarks
     [Benchmark(Description = "Load English from blobs (the new startup path)")]
     public MorseAlphabet BlobEnglish() => MorseAlphabet.FromBlobs(
         "English", EnglishCharacters.AsciiBlob, EnglishCharacters.HashedBlob, EnglishCharacters.DecodeBlob,
-        EnglishCharacters.MaxProbeLength, EnglishCharacters.DecodableCount, EnglishCharacters.CreateEntries);
+        EnglishCharacters.MaxProbeLength, EnglishCharacters.DecodableCount, EnglishCharacters.CreateEntries,
+        EnglishCharacters.ProsignNames, EnglishCharacters.ProsignCodes, EnglishCharacters.DecodableProsigns);
 
     [Benchmark(Description = "Pack Russian at run time (largest table)")]
     public MorseAlphabet PackRussian() => MorseAlphabet.Pack("Russian", _russianEntries);
@@ -36,7 +37,8 @@ public class AlphabetStartupBenchmarks
     [Benchmark(Description = "Load Russian from blobs")]
     public MorseAlphabet BlobRussian() => MorseAlphabet.FromBlobs(
         "Russian", RussianCharacters.AsciiBlob, RussianCharacters.HashedBlob, RussianCharacters.DecodeBlob,
-        RussianCharacters.MaxProbeLength, RussianCharacters.DecodableCount, RussianCharacters.CreateEntries);
+        RussianCharacters.MaxProbeLength, RussianCharacters.DecodableCount, RussianCharacters.CreateEntries,
+        RussianCharacters.ProsignNames, RussianCharacters.ProsignCodes, RussianCharacters.DecodableProsigns);
 
     [Benchmark(Description = "Pack Japanese at run time (most entries)")]
     public MorseAlphabet PackJapanese() => MorseAlphabet.Pack("Japanese", _japaneseEntries);
@@ -44,5 +46,6 @@ public class AlphabetStartupBenchmarks
     [Benchmark(Description = "Load Japanese from blobs")]
     public MorseAlphabet BlobJapanese() => MorseAlphabet.FromBlobs(
         "Japanese", JapaneseCharacters.AsciiBlob, JapaneseCharacters.HashedBlob, JapaneseCharacters.DecodeBlob,
-        JapaneseCharacters.MaxProbeLength, JapaneseCharacters.DecodableCount, JapaneseCharacters.CreateEntries);
+        JapaneseCharacters.MaxProbeLength, JapaneseCharacters.DecodableCount, JapaneseCharacters.CreateEntries,
+        JapaneseCharacters.ProsignNames, JapaneseCharacters.ProsignCodes, JapaneseCharacters.DecodableProsigns);
 }

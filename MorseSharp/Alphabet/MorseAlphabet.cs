@@ -40,6 +40,13 @@ public sealed class MorseAlphabet
     private readonly int _hashMask;   // _hashed.Length - 1
     private readonly char[] _decode;  // '\0' = no character
 
+    // Prosigns sit beside the decode table rather than in it: that table holds one character per
+    // entry and cannot represent a multi-letter signal. Owners come first, so decoding stops at
+    // _decodableProsigns.
+    private readonly string[] _prosignNames;
+    private readonly int[] _prosignCodes;
+    private readonly int _decodableProsigns;
+
     private readonly Func<MorseEntry[]>? _entriesFactory;
     private MorseEntry[]? _entries;
 
@@ -70,7 +77,10 @@ public sealed class MorseAlphabet
         int maxProbeLength,
         int decodableCount,
         MorseEntry[]? entries,
-        Func<MorseEntry[]>? entriesFactory)
+        Func<MorseEntry[]>? entriesFactory,
+        string[] prosignNames,
+        int[] prosignCodes,
+        int decodableProsigns)
     {
         Name = name;
         _ascii = ascii;
@@ -82,18 +92,107 @@ public sealed class MorseAlphabet
         DecodableCount = decodableCount;
         _entries = entries;
         _entriesFactory = entriesFactory;
+        _prosignNames = prosignNames;
+        _prosignCodes = prosignCodes;
+        _decodableProsigns = decodableProsigns;
+    }
+
+    /// <summary>
+    /// The most characters one decoded token can occupy, used to size the decode buffer. One for a plain character,
+    /// or the widest bracketed prosign name plus its two brackets.
+    /// </summary>
+    internal int MaxDecodedTokenLength
+    {
+        get
+        {
+            int widest = 1;
+            for (int i = 0; i < _decodableProsigns; i++)
+            {
+                int length = _prosignNames[i].Length + 2;
+                if (length > widest)
+                    widest = length;
+            }
+
+            return widest;
+        }
+    }
+
+    /// <summary>How many prosigns this alphabet defines.</summary>
+    internal int ProsignCount => _prosignNames.Length;
+
+    /// <summary>The prosigns this alphabet was built from, so it can be extended.</summary>
+    internal MorseProsign[] Prosigns
+    {
+        get
+        {
+            MorseProsign[] prosigns = new MorseProsign[_prosignNames.Length];
+            Span<char> buffer = stackalloc char[MaxSymbols];
+            for (int i = 0; i < prosigns.Length; i++)
+            {
+                int position = 0;
+                WriteCode(buffer, ref position, _prosignCodes[i]);
+                prosigns[i] = new MorseProsign(_prosignNames[i], buffer[..position].ToString(), i >= _decodableProsigns);
+            }
+
+            return prosigns;
+        }
+    }
+
+    /// <summary>
+    /// Looks up the tree code of a prosign, given its letters without brackets.
+    /// </summary>
+    /// <remarks>
+    /// A linear scan, because an alphabet defines a handful of prosigns at most and this only runs when the text
+    /// actually contains a bracketed token.
+    /// </remarks>
+    internal bool TryGetProsignCode(ReadOnlySpan<char> name, out int code)
+    {
+        for (int i = 0; i < _prosignNames.Length; i++)
+        {
+            if (name.Equals(_prosignNames[i].AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                code = _prosignCodes[i];
+                return true;
+            }
+        }
+
+        code = 0;
+        return false;
+    }
+
+    /// <summary>Returns the prosign that owns a tree code, if one does.</summary>
+    internal bool TryGetProsignName(int code, out string name)
+    {
+        for (int i = 0; i < _decodableProsigns; i++)
+        {
+            if (_prosignCodes[i] == code)
+            {
+                name = _prosignNames[i];
+                return true;
+            }
+        }
+
+        name = string.Empty;
+        return false;
     }
 
     /// <summary>Packs entries into an alphabet at run time. Used by <see cref="MorseAlphabetBuilder"/>.</summary>
     /// <exception cref="InvalidOperationException">
     /// Thrown when two primaries share a pattern, or when one character is mapped to two patterns.
     /// </exception>
-    internal static MorseAlphabet Pack(string name, List<MorseEntry> entries)
+    internal static MorseAlphabet Pack(string name, List<MorseEntry> entries) => Pack(name, entries, []);
+
+    /// <summary>Packs entries and prosigns into an alphabet at run time. Used by <see cref="MorseAlphabetBuilder"/>.</summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when two primaries share a pattern, or when one character is mapped to two patterns.
+    /// </exception>
+    internal static MorseAlphabet Pack(string name, List<MorseEntry> entries, List<MorseProsign> prosigns)
     {
-        PackedTables tables = TablePacker.Pack(name, entries);
+        PackedTables tables = TablePacker.Pack(name, entries, prosigns);
         return new MorseAlphabet(
             name, tables.Ascii, tables.Hashed, tables.Decode, tables.HashShift,
-            tables.MaxProbeLength, tables.DecodableCount, entries.ToArray(), entriesFactory: null);
+            tables.MaxProbeLength, tables.DecodableCount, entries.ToArray(), entriesFactory: null,
+            tables.ProsignNames, tables.ProsignCodes, tables.DecodableProsigns);
     }
 
     /// <summary>
@@ -107,6 +206,9 @@ public sealed class MorseAlphabet
     /// <param name="maxProbeLength">Longest probe run recorded while packing.</param>
     /// <param name="decodableCount">How many patterns decode to a character.</param>
     /// <param name="entriesFactory">Rebuilds the entry list on demand, for extending the alphabet.</param>
+    /// <param name="prosignNames">Prosign names, those owning their pattern first.</param>
+    /// <param name="prosignCodes">Tree codes matching <paramref name="prosignNames"/> position for position.</param>
+    /// <param name="decodableProsigns">How many prosigns own their pattern, and so appear when decoding.</param>
     internal static MorseAlphabet FromBlobs(
         string name,
         ReadOnlySpan<byte> ascii,
@@ -114,7 +216,10 @@ public sealed class MorseAlphabet
         ReadOnlySpan<byte> decode,
         int maxProbeLength,
         int decodableCount,
-        Func<MorseEntry[]> entriesFactory)
+        Func<MorseEntry[]> entriesFactory,
+        string[] prosignNames,
+        int[] prosignCodes,
+        int decodableProsigns)
     {
         // These copies are deliberate. A ReadOnlySpan cannot be a field of a class, so going zero-copy would mean
         // holding raw pointers: into the data section here, and into pinned arrays for a runtime-built alphabet.
@@ -135,7 +240,8 @@ public sealed class MorseAlphabet
 
         return new MorseAlphabet(
             name, asciiTable, hashedTable, decodeTable, TablePacker.HashShiftFor(hashedTable.Length),
-            maxProbeLength, decodableCount, entries: null, entriesFactory);
+            maxProbeLength, decodableCount, entries: null, entriesFactory,
+            prosignNames, prosignCodes, decodableProsigns);
     }
 
     /// <summary>Converts a dot/dash string to its tree code.</summary>

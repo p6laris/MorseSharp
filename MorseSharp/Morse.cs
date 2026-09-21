@@ -64,10 +64,13 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
         MorseAlphabet alphabet = State.Alphabet;
 
         // Every output character consumes at least one input character, so the input length is a safe upper bound.
+        // A character never outgrows its sequence, but a prosign does: two symbols can come back as <AR>.
+        int capacity = morse.Length * alphabet.MaxDecodedTokenLength;
+
         char[]? rented = null;
-        Span<char> output = morse.Length <= StackallocCharLimit
+        Span<char> output = capacity <= StackallocCharLimit
             ? stackalloc char[StackallocCharLimit]
-            : (rented = ArrayPool<char>.Shared.Rent(morse.Length));
+            : (rented = ArrayPool<char>.Shared.Rent(capacity));
 
         try
         {
@@ -139,10 +142,23 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
             }
 
             char decoded = alphabet.Decode(code);
-            if (decoded == '\0')
-                throw new SequenceNotFoundException(source[start..i], alphabet.Name);
+            if (decoded != '\0')
+            {
+                output[written++] = decoded;
+                continue;
+            }
 
-            output[written++] = decoded;
+            // No character owns this pattern, so a prosign may. It is written back the way it was keyed in.
+            if (alphabet.TryGetProsignName(code, out string prosign))
+            {
+                output[written++] = MorseTextScanner.ProsignStart;
+                prosign.AsSpan().CopyTo(output[written..]);
+                written += prosign.Length;
+                output[written++] = MorseTextScanner.ProsignEnd;
+                continue;
+            }
+
+            throw new SequenceNotFoundException(source[start..i], alphabet.Name);
         }
 
         return written;
@@ -170,13 +186,13 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
         ChainState state = State;
         MorseAlphabet alphabet = state.Alphabet;
 
-        long length = text.Length - 1; // one separator between every pair of characters
-        foreach (char ch in text)
-        {
-            if (!alphabet.TryGetCode(ch, out int code))
-                throw new CharacterNotPresentedException(ch, alphabet.Name);
-            length += MorseAlphabet.WrittenLength(code);
-        }
+        // Counted in tokens rather than characters: a bracketed prosign is one keyed signal, however long it reads.
+        long length = 0;
+        int tokens = 0;
+        for (int position = 0; position < text.Length; tokens++)
+            length += MorseAlphabet.WrittenLength(MorseTextScanner.Next(text, ref position, alphabet));
+
+        length += tokens - 1; // one separator between every pair of tokens
 
         state.Text = text;
         state.Morse = null;
@@ -194,16 +210,19 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
         return string.Create(state.EncodedLength, (state.Text, state.Alphabet), static (destination, tuple) =>
         {
             (string text, MorseAlphabet alphabet) = tuple;
-            int position = 0;
-            for (int i = 0; i < text.Length; i++)
+            int read = 0;
+            int written = 0;
+            bool first = true;
+
+            while (read < text.Length)
             {
-                if (i > 0)
-                    destination[position++] = ' ';
+                int code = MorseTextScanner.Next(text, ref read, alphabet);
 
-                if (!alphabet.TryGetCode(text[i], out int code))
-                    throw new CharacterNotPresentedException(text[i], alphabet.Name);
+                if (!first)
+                    destination[written++] = ' ';
+                first = false;
 
-                MorseAlphabet.WriteCode(destination, ref position, code);
+                MorseAlphabet.WriteCode(destination, ref written, code);
             }
         });
     }

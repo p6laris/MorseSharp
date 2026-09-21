@@ -9,11 +9,17 @@ namespace MorseSharp.Generators;
 internal sealed class ParsedAlphabet
 {
     /// <summary>Creates a parse result.</summary>
-    public ParsedAlphabet(string name, string filePath, List<MorseEntry> entries, List<AlphabetError> errors)
+    public ParsedAlphabet(
+        string name,
+        string filePath,
+        List<MorseEntry> entries,
+        List<MorseProsign> prosigns,
+        List<AlphabetError> errors)
     {
         Name = name;
         FilePath = filePath;
         Entries = entries;
+        Prosigns = prosigns;
         Errors = errors;
     }
 
@@ -23,8 +29,11 @@ internal sealed class ParsedAlphabet
     /// <summary>Path of the file this came from, for diagnostics.</summary>
     public string FilePath { get; }
 
-    /// <summary>The entries, in declaration order, primaries and aliases together.</summary>
+    /// <summary>The characters, in declaration order, primaries and aliases together.</summary>
     public List<MorseEntry> Entries { get; }
+
+    /// <summary>The prosigns, in declaration order.</summary>
+    public List<MorseProsign> Prosigns { get; }
 
     /// <summary>Problems found while parsing. When this is non-empty nothing is emitted for the file.</summary>
     public List<AlphabetError> Errors { get; }

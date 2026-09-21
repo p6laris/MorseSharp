@@ -47,7 +47,7 @@ public sealed class AlphabetSourceGenerator : IIncrementalGenerator
                 string name = Path.GetFileNameWithoutExtension(file.Path);
                 SourceText? text = file.GetText(cancellationToken);
                 return text is null
-                    ? new ParsedAlphabet(name, file.Path, new List<MorseEntry>(), [new AlphabetError(-1, "The file could not be read.")])
+                    ? new ParsedAlphabet(name, file.Path, new List<MorseEntry>(), new List<MorseProsign>(), [new AlphabetError(-1, "The file could not be read.")])
                     : MorseFileParser.Parse(name, file.Path, text.ToString());
             });
 
@@ -63,7 +63,7 @@ public sealed class AlphabetSourceGenerator : IIncrementalGenerator
         PackedTables tables;
         try
         {
-            tables = TablePacker.Pack(alphabet.Name, alphabet.Entries);
+            tables = TablePacker.Pack(alphabet.Name, alphabet.Entries, alphabet.Prosigns);
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
         {

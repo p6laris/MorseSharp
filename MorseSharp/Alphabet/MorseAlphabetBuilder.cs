@@ -30,6 +30,7 @@ namespace MorseSharp;
 public sealed class MorseAlphabetBuilder
 {
     private readonly List<MorseEntry> _entries = [];
+    private readonly List<MorseProsign> _prosigns = [];
 
     /// <summary>The name the built alphabet will carry, used in error messages.</summary>
     public string Name { get; }
@@ -55,6 +56,7 @@ public sealed class MorseAlphabetBuilder
 
         MorseAlphabetBuilder builder = new(alphabet.Name);
         builder._entries.AddRange(alphabet.Entries);
+        builder._prosigns.AddRange(alphabet.Prosigns);
         return builder;
     }
 
@@ -86,6 +88,30 @@ public sealed class MorseAlphabetBuilder
         return this;
     }
 
+    /// <summary>
+    /// Adds a prosign: two or more letters keyed as one unbroken signal, written in text as <c>&lt;NAME&gt;</c>.
+    /// </summary>
+    /// <param name="name">The letters, without brackets, such as <c>AR</c>.</param>
+    /// <param name="pattern">Dots and dashes, at most <see cref="MorseAlphabet.MaxSymbols"/> of them.</param>
+    /// <exception cref="ArgumentException">Thrown when the name is blank, or the pattern is empty, too long or malformed.</exception>
+    public MorseAlphabetBuilder AddProsign(string name, string pattern) => AddProsignEntry(name, pattern, isAlias: false);
+
+    /// <summary>
+    /// Adds an encode-only prosign, for one whose pattern a character already owns. <c>AR</c> and <c>+</c> are the
+    /// same signal, so the punctuation keeps the pattern for decoding and the prosign still encodes.
+    /// </summary>
+    /// <param name="name">The letters, without brackets, such as <c>AR</c>.</param>
+    /// <param name="pattern">Dots and dashes, at most <see cref="MorseAlphabet.MaxSymbols"/> of them.</param>
+    /// <exception cref="ArgumentException">Thrown when the name is blank, or the pattern is empty, too long or malformed.</exception>
+    public MorseAlphabetBuilder AddProsignAlias(string name, string pattern) => AddProsignEntry(name, pattern, isAlias: true);
+
+    /// <summary>Drops every prosign with the given name.</summary>
+    public MorseAlphabetBuilder RemoveProsign(string name)
+    {
+        _prosigns.RemoveAll(prosign => string.Equals(prosign.Name, name, StringComparison.OrdinalIgnoreCase));
+        return this;
+    }
+
     /// <summary>Packs the entries collected so far into an alphabet.</summary>
     /// <exception cref="InvalidOperationException">
     /// Thrown when the alphabet is empty, when two characters added with <see cref="Add"/> share a pattern, or when
@@ -96,7 +122,22 @@ public sealed class MorseAlphabetBuilder
         if (_entries.Count == 0)
             throw new InvalidOperationException($"{Name}: an alphabet needs at least one character.");
 
-        return MorseAlphabet.Pack(Name, _entries);
+        return MorseAlphabet.Pack(Name, _entries, _prosigns);
+    }
+
+    private MorseAlphabetBuilder AddProsignEntry(string name, string pattern, bool isAlias)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentException.ThrowIfNullOrEmpty(pattern);
+
+        if (name.Contains(MorseTextScanner.ProsignEnd))
+            throw new ArgumentException($"Prosign name '{name}' cannot contain '{MorseTextScanner.ProsignEnd}'.", nameof(name));
+
+        // Validate here rather than at Build, so a bad pattern is reported at the call that introduced it.
+        MorseAlphabet.ParseCode(pattern);
+
+        _prosigns.Add(new MorseProsign(name, pattern, isAlias));
+        return this;
     }
 
     private MorseAlphabetBuilder AddEntry(char character, string pattern, bool isAlias)

@@ -173,9 +173,7 @@ public sealed class StreamingMorseDecoder
             _runLength = 0;
         }
 
-        if (_symbols.TryResolve(_alphabet, out char character))
-            Enqueue(character);
-
+        EnqueueResolved();
         _carryCount = 0;
     }
 
@@ -280,8 +278,7 @@ public sealed class StreamingMorseDecoder
             MorseGap gap = _timing.ClassifyGap(-run);
             if (gap != MorseGap.Element)
             {
-                if (_symbols.TryResolve(_alphabet, out char character))
-                    Enqueue(character);
+                EnqueueResolved();
 
                 if (gap == MorseGap.Word)
                     Enqueue(' ');
@@ -313,6 +310,24 @@ public sealed class StreamingMorseDecoder
             wordGap = dit * DefaultWordGapDits;
 
         _timing = new MorseTimingModel(dit, wordGap);
+    }
+
+    /// <summary>Queues whatever the accumulator resolved to, bracketing it when it is a prosign.</summary>
+    private void EnqueueResolved()
+    {
+        if (!_symbols.TryResolve(_alphabet, out char character, out string? prosign))
+            return;
+
+        if (prosign is null)
+        {
+            Enqueue(character);
+            return;
+        }
+
+        Enqueue(MorseTextScanner.ProsignStart);
+        foreach (char letter in prosign)
+            Enqueue(letter);
+        Enqueue(MorseTextScanner.ProsignEnd);
     }
 
     private void Enqueue(char character)
