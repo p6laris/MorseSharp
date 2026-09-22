@@ -27,6 +27,9 @@ internal sealed class ChainState
     /// <summary>Tone frequency in hertz.</summary>
     public double Frequency = 700;
 
+    /// <summary>How the audio is rendered and stored.</summary>
+    public AudioFormat Format = AudioFormat.Default;
+
     /// <summary>The element source for the current chain.</summary>
     /// <exception cref="InvalidOperationException">Thrown when no input has been supplied yet.</exception>
     public ElementSource Source => Text is not null
@@ -37,5 +40,5 @@ internal sealed class ChainState
     public MorseTiming Timing => new(CharSpeed, WordSpeed);
 
     /// <summary>Element durations in samples at the WAV sample rate.</summary>
-    public SampleTiming SampleTiming => new(Timing, WavSynthesizer.SampleRate);
+    public SampleTiming SampleTiming => new(Timing, Format.SampleRate);
 }

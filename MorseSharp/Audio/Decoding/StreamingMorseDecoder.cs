@@ -259,7 +259,8 @@ public sealed class StreamingMorseDecoder
             return;
         }
 
-        if (_runLength > 0)
+        // Silence before the first tone separates nothing, and its length would distort the timing.
+        if (_runLength > 0 && (_keyDown || _runCount > 0))
             CompleteRun(_keyDown ? _runLength : -_runLength);
 
         _keyDown = nowDown;

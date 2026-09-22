@@ -114,7 +114,26 @@ Morse.GetConverter()
 ```
 
 :warning: The character speed must be greater than or equal to the word speed, otherwise a
-**SmallerCharSpeedException** is thrown. Speeds must be positive and the frequency must be below 5512.5 Hz.
+**SmallerCharSpeedException** is thrown. Speeds must be positive and the frequency must be below half the sample rate.
+
+#### Output format
+
+Pass an `AudioFormat` to change the sample rate, channels, bit depth, or how long each element fades:
+
+```C#
+.SetAudioOptions(25, 25, 700, new AudioFormat(
+    SampleRate: 44100,
+    Channels: 2,
+    BitDepth: AudioBitDepth.Float32,
+    EdgeMilliseconds: 5))
+```
+
+Defaults are 11.025 kHz mono 16-bit, which is what earlier versions produced.
+
+`EdgeMilliseconds` is the one that changes what you hear. Switching a tone on and off instantly makes the waveform
+jump from full amplitude to nothing between one sample and the next, and that step is audible as a click at both ends
+of every dot and dash. Fading over a few milliseconds removes it. It defaults to 5 ms; set it to 0 for the old
+behaviour.
 
 ## Light
 

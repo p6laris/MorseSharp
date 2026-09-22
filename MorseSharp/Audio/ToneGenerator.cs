@@ -1,111 +1,103 @@
+using System.Buffers.Binary;
+
 namespace MorseSharp.Audio;
 
 /// <summary>
-/// Fills a buffer with a sine wave of a given frequency, vectorised where the hardware allows it.
+/// Renders one keyed element as audio, already in the format it will be written in.
 /// </summary>
 /// <remarks>
 /// <para>
 /// No <see cref="Math.Sin(double)"/> call is made per sample. A unit vector is rotated by the phase increment using
-/// the angle-addition identities, which costs four multiplies and two adds per sample.
+/// the angle-addition identities, which costs a handful of multiplies and adds per sample, and the SIMD path rotates
+/// several phases at once.
 /// </para>
 /// <para>
-/// The SIMD path rotates <see cref="Vector{T}"/> lanes that hold four consecutive blocks of phases and advances all of
-/// them by the width of those blocks at once, then narrows the four <see cref="double"/> vectors down to a single
-/// <see cref="short"/> vector in two steps. With 256-bit vectors that is sixteen samples per iteration.
+/// Each element fades in and out. Without that the waveform jumps from full amplitude to silence between one sample
+/// and the next, and an instant jump like that spreads energy across the whole spectrum rather than staying at the
+/// tone frequency. That is heard as a click at both ends of every dot and dash.
 /// </para>
 /// </remarks>
 internal static class ToneGenerator
 {
-    /// <summary>Peak amplitude, just below <see cref="short.MaxValue"/> to leave headroom against rounding.</summary>
-    public const short Amplitude = 32760;
+    /// <summary>Peak amplitude, just below full scale to leave headroom against rounding.</summary>
+    public const double Amplitude = 32760.0 / 32768.0;
 
     /// <summary>
-    /// Writes a sine wave of <paramref name="frequency"/> hertz, starting at phase zero, into <paramref name="tone"/>.
+    /// Fills <paramref name="destination"/> with one element: a tone of <paramref name="samples"/> frames, faded in
+    /// and out, interleaved across the channels and encoded at the requested depth.
     /// </summary>
-    /// <param name="tone">Destination buffer; every element is written.</param>
+    /// <param name="destination">Exactly <paramref name="samples"/> frames' worth of bytes.</param>
+    /// <param name="samples">Length of the element, in frames.</param>
     /// <param name="frequency">Tone frequency in hertz.</param>
-    /// <param name="sampleRate">Sample rate in hertz.</param>
-    public static void Fill(Span<short> tone, double frequency, int sampleRate)
+    /// <param name="format">How the audio is stored, and how long the fade lasts.</param>
+    public static void Render(Span<byte> destination, int samples, double frequency, AudioFormat format)
     {
-        double increment = 2 * Math.PI * frequency / sampleRate;
+        double increment = 2 * Math.PI * frequency / format.SampleRate;
 
-        int written = Vector.IsHardwareAccelerated && Vector<double>.Count >= 2
-            ? FillVectorized(tone, increment)
-            : 0;
+        // The fade cannot take more than half the element, or the two ends would overlap.
+        int edge = (int)Math.Round(format.EdgeMilliseconds / 1000.0 * format.SampleRate);
+        edge = Math.Clamp(edge, 0, samples / 2);
 
-        FillScalar(tone[written..], increment, written);
-    }
+        double sin = 0;
+        double cos = 1;
+        double cosInc = Math.Cos(increment);
+        double sinInc = Math.Sin(increment);
 
-    /// <summary>Rotates four vectors of phases at a time and narrows them into one vector of samples.</summary>
-    private static int FillVectorized(Span<short> tone, double increment)
-    {
-        int lanes = Vector<double>.Count;
-        int block = 4 * lanes;              // doubles produced per iteration == Vector<short>.Count
-        int iterations = tone.Length / block;
-        if (iterations == 0)
-            return 0;
+        int bytesPerSample = format.BytesPerSample;
+        int position = 0;
 
-        Span<double> seedSin = stackalloc double[Vector<short>.Count];
-        Span<double> seedCos = stackalloc double[Vector<short>.Count];
-        for (int i = 0; i < block; i++)
+        for (int i = 0; i < samples; i++)
         {
-            (seedSin[i], seedCos[i]) = Math.SinCos(i * increment);
-        }
+            double value = Amplitude * sin * Gain(i, samples, edge);
 
-        Vector<double> sin0 = new(seedSin), cos0 = new(seedCos);
-        Vector<double> sin1 = new(seedSin[lanes..]), cos1 = new(seedCos[lanes..]);
-        Vector<double> sin2 = new(seedSin[(2 * lanes)..]), cos2 = new(seedCos[(2 * lanes)..]);
-        Vector<double> sin3 = new(seedSin[(3 * lanes)..]), cos3 = new(seedCos[(3 * lanes)..]);
+            for (int channel = 0; channel < format.Channels; channel++)
+            {
+                WriteSample(destination[position..], value, format.BitDepth);
+                position += bytesPerSample;
+            }
 
-        // One iteration advances every lane by a whole block.
-        (double stepSin, double stepCos) = Math.SinCos(block * increment);
-        Vector<double> sinStep = new(stepSin);
-        Vector<double> cosStep = new(stepCos);
-        Vector<double> amplitude = new(Amplitude);
-
-        Span<short> destination = tone;
-        for (int i = 0; i < iterations; i++)
-        {
-            Vector<long> l0 = Vector.ConvertToInt64(sin0 * amplitude);
-            Vector<long> l1 = Vector.ConvertToInt64(sin1 * amplitude);
-            Vector<long> l2 = Vector.ConvertToInt64(sin2 * amplitude);
-            Vector<long> l3 = Vector.ConvertToInt64(sin3 * amplitude);
-
-            Vector.Narrow(Vector.Narrow(l0, l1), Vector.Narrow(l2, l3)).CopyTo(destination);
-            destination = destination[block..];
-
-            Rotate(ref sin0, ref cos0, sinStep, cosStep);
-            Rotate(ref sin1, ref cos1, sinStep, cosStep);
-            Rotate(ref sin2, ref cos2, sinStep, cosStep);
-            Rotate(ref sin3, ref cos3, sinStep, cosStep);
-        }
-
-        return iterations * block;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Rotate(ref Vector<double> sin, ref Vector<double> cos, Vector<double> sinStep, Vector<double> cosStep)
-    {
-        Vector<double> nextSin = sin * cosStep + cos * sinStep;
-        cos = cos * cosStep - sin * sinStep;
-        sin = nextSin;
-    }
-
-    /// <summary>Fills the remainder that does not make up a whole vector, starting at sample <paramref name="offset"/>.</summary>
-    private static void FillScalar(Span<short> tone, double increment, int offset)
-    {
-        if (tone.IsEmpty)
-            return;
-
-        (double sin, double cos) = Math.SinCos(offset * increment);
-        (double sinInc, double cosInc) = Math.SinCos(increment);
-
-        for (int i = 0; i < tone.Length; i++)
-        {
-            tone[i] = (short)(Amplitude * sin);
             double nextSin = sin * cosInc + cos * sinInc;
             cos = cos * cosInc - sin * sinInc;
             sin = nextSin;
+        }
+    }
+
+    /// <summary>
+    /// The envelope: a raised cosine rising over the first <paramref name="edge"/> samples and falling over the last,
+    /// flat in between. Raised cosine rather than a straight line because its slope starts and ends at zero, so there
+    /// is no corner anywhere for the ear to hear.
+    /// </summary>
+    private static double Gain(int index, int samples, int edge)
+    {
+        if (edge == 0)
+            return 1.0;
+
+        if (index < edge)
+            return 0.5 - (0.5 * Math.Cos(Math.PI * index / edge));
+
+        int fromEnd = samples - 1 - index;
+        if (fromEnd < edge)
+            return 0.5 - (0.5 * Math.Cos(Math.PI * fromEnd / edge));
+
+        return 1.0;
+    }
+
+    private static void WriteSample(Span<byte> destination, double value, AudioBitDepth depth)
+    {
+        switch (depth)
+        {
+            case AudioBitDepth.Pcm8:
+                // 8-bit WAV samples are unsigned, so silence sits at 128 rather than 0.
+                destination[0] = (byte)Math.Clamp(128 + (value * 127), byte.MinValue, byte.MaxValue);
+                break;
+
+            case AudioBitDepth.Float32:
+                BinaryPrimitives.WriteSingleLittleEndian(destination, (float)value);
+                break;
+
+            default:
+                BinaryPrimitives.WriteInt16LittleEndian(destination, (short)Math.Clamp(value * short.MaxValue, short.MinValue, short.MaxValue));
+                break;
         }
     }
 }

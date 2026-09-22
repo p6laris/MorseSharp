@@ -198,14 +198,16 @@ internal static class MorseAudioDecoder
                 continue;
             }
 
-            if (runLength > 0)
+            // Silence before the first tone separates nothing. Recording it would feed the timing a run whose length
+            // is just where the recording happened to start, and the shortest run is what sets the dit.
+            if (runLength > 0 && (keyDown || count > 0))
                 runs[count++] = keyDown ? runLength : -runLength;
 
             keyDown = nowDown;
             runLength = 1;
         }
 
-        if (runLength > 0)
+        if (runLength > 0 && (keyDown || count > 0))
             runs[count++] = keyDown ? runLength : -runLength;
 
         return count;

@@ -1,21 +1,35 @@
 namespace MorseSharp.Audio;
 
 /// <summary>
-/// Writes an element stream straight into the output buffer: tones are block copies from a precomputed sine buffer
-/// and gaps are cleared in place, so each output byte is touched exactly once.
+/// Writes an element stream straight into the output buffer: tones are block copies from prerendered element
+/// buffers and gaps are filled in place, so each output byte is touched exactly once.
 /// </summary>
-internal ref struct SampleWriter(Span<byte> destination, ReadOnlySpan<byte> toneBytes, SampleTiming timing) : IElementSink
+/// <remarks>
+/// A dot used to be the first third of the dash buffer, which meant one buffer served both. Fading each element in
+/// and out ends that: a dot's fade-out falls a third of the way into a dash, so the two are now different waveforms
+/// and each is rendered once up front.
+/// </remarks>
+internal ref struct SampleWriter(
+    Span<byte> destination,
+    ReadOnlySpan<byte> dot,
+    ReadOnlySpan<byte> dash,
+    SampleTiming timing,
+    int bytesPerFrame,
+    byte silence) : IElementSink
 {
     private readonly Span<byte> _destination = destination;
-    private readonly ReadOnlySpan<byte> _toneBytes = toneBytes;
+    private readonly ReadOnlySpan<byte> _dot = dot;
+    private readonly ReadOnlySpan<byte> _dash = dash;
     private readonly SampleTiming _timing = timing;
+    private readonly int _bytesPerFrame = bytesPerFrame;
+    private readonly byte _silence = silence;
     private int _position;
 
     /// <inheritdoc />
-    public void Dot() => Tone(_timing.Dot);
+    public void Dot() => Copy(_dot);
 
     /// <inheritdoc />
-    public void Dash() => Tone(_timing.Dash);
+    public void Dash() => Copy(_dash);
 
     /// <inheritdoc />
     public void ElementGap() => Silence(_timing.ElementGap);
@@ -34,18 +48,17 @@ internal ref struct SampleWriter(Span<byte> destination, ReadOnlySpan<byte> tone
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void Tone(int samples)
+    private void Copy(ReadOnlySpan<byte> element)
     {
-        int bytes = samples * WavHeader.BytesPerSample;
-        _toneBytes[..bytes].CopyTo(_destination.Slice(_position, bytes));
-        _position += bytes;
+        element.CopyTo(_destination.Slice(_position, element.Length));
+        _position += element.Length;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Silence(int samples)
     {
-        int bytes = samples * WavHeader.BytesPerSample;
-        _destination.Slice(_position, bytes).Clear();
+        int bytes = samples * _bytesPerFrame;
+        _destination.Slice(_position, bytes).Fill(_silence);
         _position += bytes;
     }
 }

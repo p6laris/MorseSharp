@@ -53,6 +53,13 @@
   and `AddProsignAlias` add them to any alphabet. Patterns remain capped at 8 symbols, so `SOS` as a single 9-symbol
   signal does not fit; as three letters it is unaffected.
 
+- **Audio output format.** `SetAudioOptions` takes an optional `AudioFormat` covering sample rate, mono or stereo,
+  8-bit, 16-bit or 32-bit float, and how long each element fades in and out. Elements now fade over 5 ms by default,
+  which removes the click that an instant switch to silence produced at both ends of every dot and dash. Pass
+  `EdgeMilliseconds: 0` for the previous behaviour.
+- All enums are byte-backed. `Language` members are renumbered sequentially from 1 to fit, having previously used
+  bit-shifted values up to 1024; they were never combinable, so only code persisting the numeric values is affected.
+
 ### Breaking changes
 
 - **Exceptions identify the alphabet by name.** `CharacterNotPresentedException.Language` and

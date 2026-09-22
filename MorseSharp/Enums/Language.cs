@@ -4,31 +4,41 @@ namespace MorseSharp;
 /// The alphabets supported for Morse encoding/decoding.
 /// </summary>
 /// <remarks>
-/// The numeric values are kept stable between releases so they can be persisted safely.
-/// The enum is not a flags enum: exactly one language must be passed to <see cref="Morse.ForLanguage"/>.
+/// Exactly one language is passed to <see cref="Morse.ForLanguage"/>; these were never combinable. The values are
+/// numbered sequentially so the enum fits in a byte, and are stable from 6.0 onwards, so they can be persisted.
 /// </remarks>
-public enum Language
+public enum Language : byte
 {
     /// <summary>English (ITU international Morse).</summary>
     English = 1,
+
     /// <summary>Kurdish, Arabic script (Sorani).</summary>
-    Kurdish = 1 << 1,
+    Kurdish = 2,
+
     /// <summary>Kurdish, Latin script (Hawar).</summary>
-    KurdishLatin = 1 << 2,
+    KurdishLatin = 3,
+
     /// <summary>Arabic.</summary>
-    Arabic = 1 << 3,
+    Arabic = 4,
+
     /// <summary>German (Deutsch).</summary>
-    Deutsch = 1 << 4,
+    Deutsch = 5,
+
     /// <summary>Spanish (Español).</summary>
-    Spanish = 1 << 5,
+    Spanish = 6,
+
     /// <summary>French (Français).</summary>
-    French = 1 << 6,
+    French = 7,
+
     /// <summary>Italian (Italiano).</summary>
-    Italian = 1 << 7,
+    Italian = 8,
+
     /// <summary>Japanese (Wabun code, katakana).</summary>
-    Japanese = 1 << 8,
+    Japanese = 9,
+
     /// <summary>Portuguese (Português).</summary>
-    Portugues = 1 << 9,
+    Portugues = 10,
+
     /// <summary>Russian (Cyrillic).</summary>
-    Russian = 1 << 10,
+    Russian = 11,
 }

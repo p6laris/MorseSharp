@@ -260,15 +260,18 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
     }
 
     /// <inheritdoc />
-    public ICanConvertToAudio SetAudioOptions(int charSpeed = 25, int wordSpeed = 25, double frequency = 700)
+    public ICanConvertToAudio SetAudioOptions(int charSpeed = 25, int wordSpeed = 25, double frequency = 700, AudioFormat? format = null)
     {
+        AudioFormat chosen = format ?? AudioFormat.Default;
+        chosen.Validate();
         MorseTiming.Validate(charSpeed, wordSpeed);
-        WavSynthesizer.ValidateFrequency(frequency);
+        WavSynthesizer.ValidateFrequency(frequency, chosen.SampleRate);
 
         ChainState state = State;
         state.CharSpeed = charSpeed;
         state.WordSpeed = wordSpeed;
         state.Frequency = frequency;
+        state.Format = chosen;
         return this;
     }
 
@@ -287,7 +290,7 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
     public int GetByteCount()
     {
         ChainState state = State;
-        return WavSynthesizer.ByteCount(WavSynthesizer.CountSamples(state.SampleTiming, state.Source));
+        return WavSynthesizer.ByteCount(WavSynthesizer.CountSamples(state.SampleTiming, state.Source), state.Format);
     }
 
     /// <inheritdoc />
@@ -297,9 +300,9 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
         SampleTiming timing = state.SampleTiming;
         ElementSource source = state.Source;
 
-        int size = WavSynthesizer.ByteCount(WavSynthesizer.CountSamples(timing, source));
+        int size = WavSynthesizer.ByteCount(WavSynthesizer.CountSamples(timing, source), state.Format);
         byte[] result = GC.AllocateUninitializedArray<byte>(size);
-        WavSynthesizer.Render(result, timing, state.Frequency, source);
+        WavSynthesizer.Render(result, timing, state.Frequency, state.Format, source);
         return result;
     }
 
@@ -310,11 +313,11 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
         SampleTiming timing = state.SampleTiming;
         ElementSource source = state.Source;
 
-        int size = WavSynthesizer.ByteCount(WavSynthesizer.CountSamples(timing, source));
+        int size = WavSynthesizer.ByteCount(WavSynthesizer.CountSamples(timing, source), state.Format);
         if (destination.Length < size)
             throw new ArgumentException($"The destination holds {destination.Length} bytes but the WAV file needs {size}. Call GetByteCount() to size it.", nameof(destination));
 
-        WavSynthesizer.Render(destination[..size], timing, state.Frequency, source);
+        WavSynthesizer.Render(destination[..size], timing, state.Frequency, state.Format, source);
         return size;
     }
 
@@ -327,11 +330,11 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
         SampleTiming timing = state.SampleTiming;
         ElementSource source = state.Source;
 
-        int size = WavSynthesizer.ByteCount(WavSynthesizer.CountSamples(timing, source));
+        int size = WavSynthesizer.ByteCount(WavSynthesizer.CountSamples(timing, source), state.Format);
         byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
         try
         {
-            WavSynthesizer.Render(buffer.AsSpan(0, size), timing, state.Frequency, source);
+            WavSynthesizer.Render(buffer.AsSpan(0, size), timing, state.Frequency, state.Format, source);
             destination.Write(buffer, 0, size);
         }
         finally

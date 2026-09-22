@@ -102,7 +102,7 @@ public class AlphabetTests
     public void UnsupportedLanguageThrows()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => Morse.GetConverter().ForLanguage((Language)0));
-        Assert.Throws<ArgumentOutOfRangeException>(() => Morse.GetConverter().ForLanguage(Language.English | Language.Kurdish));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Morse.GetConverter().ForLanguage((Language)99));
     }
 
     [Fact]

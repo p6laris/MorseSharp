@@ -10,8 +10,12 @@ public interface ICanSetAudioOptions
     /// </summary>
     /// <param name="charSpeed">Speed at which individual characters are keyed, in words per minute (PARIS standard).</param>
     /// <param name="wordSpeed">Overall speed including stretched gaps, in words per minute. Must not exceed <paramref name="charSpeed"/>.</param>
-    /// <param name="frequency">Tone frequency in hertz. Must be positive and below half the sample rate (5512.5 Hz).</param>
+    /// <param name="frequency">Tone frequency in hertz. Must be positive and below half the sample rate.</param>
+    /// <param name="format">
+    /// Sample rate, channels, bit depth and how long each element fades in and out. Defaults to 11.025 kHz mono
+    /// 16-bit with a 5 ms fade, which is what stops the elements clicking.
+    /// </param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when a speed is not positive or the frequency is out of range.</exception>
     /// <exception cref="Exceptions.SmallerCharSpeedException">Thrown when <paramref name="charSpeed"/> is smaller than <paramref name="wordSpeed"/>.</exception>
-    ICanConvertToAudio SetAudioOptions(int charSpeed = 25, int wordSpeed = 25, double frequency = 700);
+    ICanConvertToAudio SetAudioOptions(int charSpeed = 25, int wordSpeed = 25, double frequency = 700, AudioFormat? format = null);
 }
