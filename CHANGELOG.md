@@ -1,5 +1,24 @@
 # Changelog
 
+## 6.1.0
+
+### Added
+
+- **Inspecting a built-in alphabet.** `MorseAlphabet.ForLanguage(Language)` returns the built-in alphabet for a
+  language directly, and `MorseAlphabet.Characters` lists every character it maps alongside the pattern each is
+  keyed as and whether it is alias (encode-only, sharing a pattern another character owns for decoding):
+
+  ```csharp
+  MorseAlphabet english = MorseAlphabet.ForLanguage(Language.English);
+  foreach (MorseCharacterEntry entry in english.Characters)
+      Console.WriteLine($"{entry.Character}: {entry.Pattern}");
+  ```
+
+  Previously the only public way to obtain a `MorseAlphabet` for a built-in language was
+  `MorseAlphabetBuilder.From(Language).Build()`, which repacks the tables at runtime; `ForLanguage` returns the
+  same cached instance the fluent chain uses, with no rebuild. `Characters` also works on alphabets built with
+  `MorseAlphabetBuilder`, built-in or custom.
+
 ## 6.0.1
 
 - The logo in the README pointed at a GitHub blob URL, which NuGet's renderer doesn't follow, so it never displayed

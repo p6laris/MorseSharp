@@ -31,6 +31,7 @@ For .NET 8 and 9, use MorseSharp 5.x.
   - [Live audio](#live-audio)
 - [Prosigns](#prosigns)
 - [Custom alphabets](#custom-alphabets)
+- [Inspecting an alphabet](#inspecting-an-alphabet)
 - [Example](#example)
 - [Upgrading from 5.x](#upgrading-from-5x)
 - [License](#license)
@@ -409,6 +410,22 @@ var extended = MorseAlphabetBuilder.From(Language.Deutsch)
 Patterns may be up to 8 symbols of `.` and `-`. Both letter cases are accepted when encoding, and decoding returns
 the character exactly as you registered it. Alphabets are immutable once built and safe to share between threads,
 so hold one in a static field and reuse it.
+
+## Inspecting an alphabet
+
+`MorseAlphabet.ForLanguage` returns a built-in alphabet directly, without going through the conversion chain or a
+builder, and `Characters` lists what it maps:
+
+```C#
+MorseAlphabet english = MorseAlphabet.ForLanguage(Language.English);
+
+foreach (MorseCharacterEntry entry in english.Characters)
+    Console.WriteLine($"{entry.Character}: {entry.Pattern}");
+```
+
+`IsAlias` on an entry marks a character that shares another's pattern for encoding only, such as `ß`/`ẞ` in German;
+decoding that pattern still yields the character that owns it. `Characters` also works on an alphabet from
+`MorseAlphabetBuilder`, built-in or custom.
 
 ## Example
 

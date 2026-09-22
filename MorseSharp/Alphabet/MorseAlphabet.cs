@@ -8,8 +8,9 @@ namespace MorseSharp;
 /// <remarks>
 /// <para>
 /// Obtain one either from a built-in language, through <see cref="Morse.ForLanguage"/>, or by building your own
-/// with <see cref="MorseAlphabetBuilder"/> and passing it to <see cref="Morse.ForAlphabet"/>. The type is opaque:
-/// it exposes only its <see cref="Name"/>, because callers never look characters up themselves.
+/// with <see cref="MorseAlphabetBuilder"/> and passing it to <see cref="Morse.ForAlphabet"/>. Conversion itself
+/// never looks characters up through <see cref="Name"/> or <see cref="Characters"/>; those exist purely for callers
+/// who want to inspect or list an alphabet's mappings.
 /// </para>
 /// <para>
 /// A Morse pattern is stored as a <b>tree code</b>: start at 1 and, for every symbol, shift left and add 1 for a dash
@@ -49,9 +50,17 @@ public sealed class MorseAlphabet
 
     private readonly Func<MorseEntry[]>? _entriesFactory;
     private MorseEntry[]? _entries;
+    private MorseCharacterEntry[]? _characters;
 
     /// <summary>The name of this alphabet, used in error messages.</summary>
     public string Name { get; }
+
+    /// <summary>The characters this alphabet maps, and the pattern each is keyed as.</summary>
+    public IReadOnlyList<MorseCharacterEntry> Characters => _characters ??= BuildCharacters();
+
+    /// <summary>Returns the built-in alphabet for a language.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="language"/> is not a defined value.</exception>
+    public static MorseAlphabet ForLanguage(Language language) => Alphabets.For(language);
 
     /// <summary>Longest probe sequence in the non-ASCII hash table (diagnostics/tests).</summary>
     internal int MaxProbeLength { get; }
@@ -67,6 +76,16 @@ public sealed class MorseAlphabet
     /// rather than at startup, because only <see cref="MorseAlphabetBuilder.From(Language)"/> ever needs them.
     /// </summary>
     internal MorseEntry[] Entries => _entries ??= _entriesFactory!();
+
+    private MorseCharacterEntry[] BuildCharacters()
+    {
+        MorseEntry[] entries = Entries;
+        MorseCharacterEntry[] characters = new MorseCharacterEntry[entries.Length];
+        for (int i = 0; i < entries.Length; i++)
+            characters[i] = new MorseCharacterEntry(entries[i].Character, entries[i].Pattern, entries[i].IsAlias);
+
+        return characters;
+    }
 
     private MorseAlphabet(
         string name,
