@@ -7,7 +7,7 @@ MorseSharp is a fast, allocation-free .NET library for Morse code in **11 langua
 and decodes text, generates or decodes 16-bit PCM WAV audio, drives or reads a blinking light, keys input from an
 iambic paddle, lets you define your own alphabet, and generates Koch-method lessons and practice traffic.
 
-![alt text](https://github.com/p6laris/MorseSharp/blob/master/MorseSharp.png?raw=true)
+![MorseSharp logo](https://raw.githubusercontent.com/p6laris/MorseSharp/master/MorseSharp.png)
 
 Requires **.NET 10**. It has no NuGet dependencies and is trimming and native-AOT friendly.
 For .NET 8 and 9, use MorseSharp 5.x.
