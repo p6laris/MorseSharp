@@ -57,6 +57,14 @@
   8-bit, 16-bit or 32-bit float, and how long each element fades in and out. Elements now fade over 5 ms by default,
   which removes the click that an instant switch to silence produced at both ends of every dot and dash. Pass
   `EdgeMilliseconds: 0` for the previous behaviour.
+- **Elements as a stream.** `PlayAsync` returns the sequence as an `IAsyncEnumerable<MorseElement>` paced in real
+  time, and `GetElements` returns it all at once for callers that do their own timing. Each element says whether the
+  key is down, which of the five kinds it is, and how long it lasts, so a dot can be told from a dash and the loop
+  belongs to the caller: it can await inside it and stop early, neither of which an `Action<bool>` allows. The walk is
+  now a pull enumerator rather than a recording pass, so `GetElements` allocates nothing at all and `PlayAsync` costs
+  a fixed handful of allocations however long the message is, instead of a task and a timer per element. `DoBlinks` is
+  unchanged, and is now a loop over `PlayAsync`.
+
 - All enums are byte-backed. `Language` members are renumbered sequentially from 1 to fit, having previously used
   bit-shifted values up to 1024; they were never combinable, so only code persisting the numeric values is affected.
 

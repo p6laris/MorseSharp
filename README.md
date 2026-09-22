@@ -161,6 +161,37 @@ await Morse.GetConverter()
 
 Cancelling switches the light off before the task is cancelled.
 
+### Elements
+
+`DoBlinks` drives the loop for you, which is all an LED needs. When you want the loop yourself, take the elements.
+
+```C#
+await foreach (var element in Morse.GetConverter()
+    .ForLanguage(Language.English)
+    .ToMorse("SOS")
+    .ToLight()
+    .SetBlinkerOptions(25, 25)
+    .PlayAsync(cts.Token))
+{
+    await relay.SetAsync(element.KeyDown);   // await inside the loop, unlike a callback
+}
+```
+
+Each `MorseElement` carries its `Kind` (`Dot`, `Dash`, `ElementGap`, `CharGap`, `WordGap`), its `Duration`, and
+`KeyDown` for the on/off state. `PlayAsync` paces them in real time with the same drift compensation as `DoBlinks`;
+`GetElements()` hands over the whole sequence at once for anything that does its own timing, such as drawing a
+timeline or a game loop, and enumerating it allocates nothing.
+
+```C#
+foreach (var element in Morse.GetConverter()
+    .ForLanguage(Language.English).ToLight("... --- ...").SetBlinkerOptions(25, 25).GetElements())
+{
+    Console.WriteLine($"{element.Kind} for {element.Duration.TotalMilliseconds} ms");
+}
+```
+
+A sequence is a snapshot, so it outlives the chain that produced it and can be walked as often as you like.
+
 ## Adding a language
 
 The built-in alphabets live in `MorseSharp/Alphabet/Data/*.morse`, one file per language, as plain

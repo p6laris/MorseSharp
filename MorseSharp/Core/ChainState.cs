@@ -36,6 +36,13 @@ internal sealed class ChainState
         ? ElementSource.FromText(Text, Alphabet)
         : ElementSource.FromMorse(Morse ?? throw new InvalidOperationException("Call ToMorse(text), ToAudio(morse) or ToLight(morse) first."));
 
+    /// <summary>The element sequence for the current chain, as a snapshot independent of this state.</summary>
+    /// <exception cref="InvalidOperationException">Thrown when no input has been supplied yet.</exception>
+    public MorseElementSequence Elements => new(
+        Text ?? Morse ?? throw new InvalidOperationException("Call ToMorse(text), ToAudio(morse) or ToLight(morse) first."),
+        Text is not null ? Alphabet : null,
+        Timing);
+
     /// <summary>Element durations in seconds.</summary>
     public MorseTiming Timing => new(CharSpeed, WordSpeed);
 

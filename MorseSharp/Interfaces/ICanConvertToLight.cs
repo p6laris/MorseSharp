@@ -18,4 +18,21 @@ public interface ICanConvertToLight
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="blinkerAction"/> is <c>null</c>.</exception>
     /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is cancelled.</exception>
     Task DoBlinks(Action<bool> blinkerAction, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Returns the sequence as elements, without playing it. Enumerating is immediate and allocates nothing, so this
+    /// suits anything that does its own timing: drawing a timeline, a game loop, a hardware driver with its own clock.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when no input has been supplied yet.</exception>
+    MorseElementSequence GetElements();
+
+    /// <summary>
+    /// Plays the sequence as an async stream, yielding each element at the moment it starts. Timing is
+    /// drift-compensated and continuations keep the caller's synchronization context, exactly as
+    /// <see cref="DoBlinks"/> does; unlike <see cref="DoBlinks"/> the loop is yours, so you can await inside it,
+    /// stop early, or tell a dot from a dash.
+    /// </summary>
+    /// <param name="cancellationToken">Stops the sequence early.</param>
+    /// <exception cref="InvalidOperationException">Thrown when no input has been supplied yet.</exception>
+    /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is cancelled.</exception>
+    IAsyncEnumerable<MorseElement> PlayAsync(CancellationToken cancellationToken = default);
 }

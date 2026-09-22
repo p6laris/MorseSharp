@@ -48,6 +48,16 @@ internal readonly struct MorseTiming
         WordGap = 7 * stretch / 19;
     }
 
+    /// <summary>Duration in seconds of one element of the given kind.</summary>
+    public double For(MorseElementKind kind) => kind switch
+    {
+        MorseElementKind.Dot => Dot,
+        MorseElementKind.Dash => Dash,
+        MorseElementKind.ElementGap => ElementGap,
+        MorseElementKind.CharGap => CharGap,
+        _ => WordGap,
+    };
+
     /// <summary>Throws for non-positive speeds or a word speed above the character speed.</summary>
     public static void Validate(int charSpeed, int wordSpeed)
     {

@@ -9,4 +9,3 @@ global using MorseSharp.Characters;
 global using MorseSharp.Core;
 global using MorseSharp.Exceptions;
 global using MorseSharp.Interfaces;
-global using MorseSharp.Light;

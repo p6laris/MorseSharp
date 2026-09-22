@@ -348,32 +348,26 @@ public sealed class Morse : ICanSpecifyLanguage, ICanSetConversionOption, ICanGe
     public void GetBytes(out Span<byte> destination) => destination = GetBytes();
 
     /// <inheritdoc />
+    public MorseElementSequence GetElements() => State.Elements;
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<MorseElement> PlayAsync(CancellationToken cancellationToken = default)
+        => new MorseElementStream(State.Elements, TimeProvider.System, cancellationToken);
+
+    /// <inheritdoc />
     public async Task DoBlinks(Action<bool> blinkerAction, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(blinkerAction);
 
-        ChainState state = State;
-        MorseTiming timing = state.Timing;
-        ElementSource source = state.Source;
-
-        ElementCounter counter = default;
-        source.Walk(ref counter);
-
-        byte[] elements = ArrayPool<byte>.Shared.Rent(counter.Count);
-        int count;
         try
         {
-            ElementRecorder recorder = new(elements);
-            source.Walk(ref recorder);
-            count = recorder.Count;
+            await foreach (MorseElement element in PlayAsync(cancellationToken))
+                blinkerAction(element.KeyDown);
         }
-        catch
+        catch (OperationCanceledException)
         {
-            ArrayPool<byte>.Shared.Return(elements);
+            blinkerAction(false);
             throw;
         }
-
-        // BlinkAsync owns the buffer from here and returns it to the pool when the sequence ends.
-        await LightBlinker.BlinkAsync(elements, count, timing, blinkerAction, cancellationToken);
     }
 }
