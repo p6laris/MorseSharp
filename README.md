@@ -153,7 +153,7 @@ Pass an `AudioFormat` to change the sample rate, channels, bit depth, or how lon
     EdgeMilliseconds: 5))
 ```
 
-Defaults are 11.025 kHz mono 16-bit, which is what earlier versions produced.
+Defaults are 11.025 kHz mono 16-bit, matching what earlier versions produced.
 
 `EdgeMilliseconds` is the one that changes what you hear. Switching a tone on and off instantly makes the waveform
 jump from full amplitude to nothing between one sample and the next, and that step is audible as a click at both ends
@@ -215,7 +215,7 @@ foreach (var element in Morse.GetConverter()
 }
 ```
 
-A sequence is a snapshot, so it outlives the chain that produced it and can be walked as often as you like.
+A sequence is a snapshot. It outlives the chain that produced it, and you can walk it as many times as you like.
 
 ## Keying
 
@@ -241,11 +241,12 @@ while (decoder.TryRead(out char character, out string? prosign))
     Console.Write(prosign ?? character.ToString());
 ```
 
-Holding one contact repeats that element; squeezing both alternates, which is what makes the keying iambic. A tap on
-the opposite contact during an element is remembered, so short taps are not swallowed.
+Holding one contact repeats that element. Squeezing both alternates between them; that's the iambic part. A tap on
+the opposite contact during an element is remembered rather than dropped, so a short tap isn't swallowed.
 
-`KeyerMode` is the one setting worth knowing. Let go of a squeeze and mode A stops after the element in progress,
-while mode B sends one more of the opposite kind. Operators build muscle memory around one or the other.
+`KeyerMode` matters more than the other settings here. Let go of a squeeze and mode A stops after the element in
+progress, while mode B sends one more of the opposite kind. Most operators build muscle memory around one or the
+other and stick with it.
 
 There is no clock inside the keyer. It says what to send and for how long; you decide when. That keeps it usable from
 a game loop, a GPIO interrupt or a test, and `Paddles` is safe to call from a different thread than `TryRead`.
@@ -266,8 +267,9 @@ if (score.ClearsThreshold)
     level++;
 ```
 
-Scoring ignores spacing and case, and is positional, so a dropped character shifts what follows and counts against
-you. `Koch.Order` is the sequence characters are introduced in, and `Koch.MaxLevel` is how many there are.
+Scoring ignores spacing and case. It's positional though: drop a character and everything after it shifts out of
+line, which counts against you. `Koch.Order` is the sequence characters are introduced in; `Koch.MaxLevel` is how
+many there are.
 
 `Callsign` and `Qso` produce practice material shaped like real traffic rather than random letters.
 
@@ -284,17 +286,17 @@ foreach (string transmission in Qso.Generate())
 // 9A6TN DE YO3WF = TNX FER QSO = 73 ES CUL = 9A6TN DE YO3WF <SK>
 ```
 
-Every transmission is ready to pass to `ToMorse` as it stands, including `=` and the closing `<SK>`, both of which
-are keyed as single unbroken signals. Each generator takes an optional `Random`, so seeding one reproduces the same
-lesson, callsign or contact; `Koch.Generate` and `Callsign.Next` also have `Span<char>` overloads that allocate
-nothing.
+Every transmission is ready to pass straight to `ToMorse`, `=` and the closing `<SK>` included; both are keyed as
+single unbroken signals. Each generator takes an optional `Random` too. Seed one and you'll get the same lesson,
+callsign or contact back. `Koch.Generate` and `Callsign.Next` also have `Span<char>` overloads if you don't want the
+allocation.
 
 ## Adding a language
 
 The built-in alphabets live in `MorseSharp/Alphabet/Data/*.morse`, one file per language, as plain
 `character<tab>pattern` lines under `[PRIMARY]` and `[ALIAS]` sections. A source generator packs them into lookup
-tables at build time, so adding or correcting a character means editing a data file, not writing code. Mistakes such
-as two characters sharing a pattern are reported as build errors on the offending line.
+tables at build time. Adding or correcting a character means editing a data file, not writing code, and a mistake
+like two characters sharing a pattern shows up as a build error on the offending line.
 
 ## Decoding received audio
 
@@ -307,9 +309,9 @@ string text = Morse.GetConverter()
     .FromAudio(samples, sampleRate: 11025, frequency: 700, wordsPerMinute: 20);
 ```
 
-`wordsPerMinute` only has to be in the right area. The decoder measures the real speed from the signal and keeps
-adjusting, so it follows hand-sent Morse that drifts, and it handles Farnsworth spacing where the characters are fast
-but the gaps are stretched. A sequence with no character in the selected alphabet decodes to `?`.
+`wordsPerMinute` only has to be roughly right; the decoder measures the real speed from the signal and keeps
+adjusting as it goes. That's what lets it follow hand-sent Morse that drifts, and handle Farnsworth spacing where the
+characters are fast but the gaps are stretched. A sequence with no character in the selected alphabet decodes to `?`.
 
 If the frequency you ask for carries no real tone, you get an empty string rather than invented characters.
 
@@ -335,9 +337,9 @@ while (recording)
 decoder.Flush();   // the last character has no gap after it to announce it finished
 ```
 
-A streaming decoder cannot see ahead, so it re-measures the tone threshold and the sender's timing from a sliding
-window of what it heard recently. That makes the stated speed matter a little more than it does for a whole
-recording: it seeds the first few characters before enough signal has arrived to measure the real speed.
+A streaming decoder can't see ahead. Instead it re-measures the tone threshold and the sender's timing from a
+sliding window of what it heard recently, which means the stated speed matters a little more here than it does for a
+whole recording, since it's what seeds the first few characters before there's enough signal to measure the real one.
 
 ## Prosigns
 
@@ -351,7 +353,7 @@ var morse = Morse.GetConverter()
     .Encode();
 ```
 
-`<AR>` keys as one signal, which is what makes it different from sending `A` then `R`.
+`<AR>` keys as a single signal; it isn't the same as sending `A` then `R`.
 
 English defines these:
 
@@ -366,12 +368,12 @@ English defines these:
 | `<KN>` | go ahead, named station | `-.--.` | same signal as `(` |
 | `<AS>` | wait | `.-...` | same signal as `&` |
 
-The last four genuinely are the same on-air signal as the punctuation beside them, so they encode from either
-spelling while the punctuation keeps ownership of the pattern for decoding. Add your own with
-`MorseAlphabetBuilder.AddProsign`, or `AddProsignAlias` when the pattern is already taken.
+The last four genuinely are the same on-air signal as the punctuation beside them. Either spelling encodes, but the
+punctuation keeps ownership of the pattern for decoding. Add your own with `MorseAlphabetBuilder.AddProsign`, or
+`AddProsignAlias` when the pattern is already taken.
 
-One limit worth knowing: patterns are capped at 8 symbols, so `SOS` keyed as a single 9-symbol prosign does not fit.
-Sent as the three separate letters `SOS`, which is what nearly everyone means, it works normally.
+:warning: Patterns are capped at 8 symbols, so `SOS` doesn't fit as a single 9-symbol prosign. Sent as the three
+separate letters `S`, `O`, `S` (what nearly everyone means anyway) it's unaffected.
 
 ## Custom alphabets
 
@@ -448,10 +450,10 @@ catch (Exception ex)
 }
 ```
 
-For everything else — custom alphabets, prosigns, decoding audio (buffered and streaming), the element stream, the
-iambic keyer, and the Koch/callsign/QSO practice generators — see [`Example/`](Example) for a runnable console demo
-of every feature, one file per demo under `Example/Demos/`, and [`AudioExample/`](AudioExample) for the same ideas
-behind a small WinForms UI.
+Custom alphabets, prosigns, decoding audio (buffered and streaming), the element stream, the iambic keyer, and the
+Koch/callsign/QSO practice generators aren't shown here. For those, see [`Example/`](Example): a runnable console
+demo with one file per feature under `Example/Demos/`. [`AudioExample/`](AudioExample) covers the same ground behind
+a small WinForms UI.
 
 ## Upgrading from 5.x
 
