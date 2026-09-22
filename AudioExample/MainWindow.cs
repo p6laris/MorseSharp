@@ -5,6 +5,9 @@ namespace AudioExample
 {
     public partial class MainWindow : Form
     {
+        // The frequency Convert() always renders at, so Decode can listen for the same tone.
+        private const double Frequency = 600;
+
         // The last rendered WAV file.
         private byte[] wav = [];
 
@@ -21,6 +24,7 @@ namespace AudioExample
         {
             InitializeComponent();
             PlayBtn.Enabled = false;
+            DecodeBtn.Enabled = false;
         }
 
         private void ToAudioBtn_Click(object sender, EventArgs e) => Convert(Language.English);
@@ -40,12 +44,13 @@ namespace AudioExample
 
                 morse = encoded.Encode();
                 wav = encoded.ToAudio()
-                    .SetAudioOptions(25, 25, 600)
+                    .SetAudioOptions(25, 25, Frequency)
                     .GetBytes();
 
                 language = selected;
                 MorseTxt.Text = morse;
                 PlayBtn.Enabled = true;
+                DecodeBtn.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -58,6 +63,47 @@ namespace AudioExample
             using MemoryStream stream = new(wav, writable: false);
             soundPlayer.Stream = stream;
             soundPlayer.PlaySync();
+        }
+
+        // Reads the last rendered WAV straight back into text, proving the round trip works without
+        // relying on the Morse string Convert() already has.
+        private void DecodeBtn_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                const int HeaderSize = 44;
+                short[] pcm = new short[(wav.Length - HeaderSize) / 2];
+                Buffer.BlockCopy(wav, HeaderSize, pcm, 0, pcm.Length * 2);
+
+                string decoded = Morse.GetConverter()
+                    .ForLanguage(language)
+                    .FromAudio(pcm, sampleRate: 11025, frequency: Frequency, wordsPerMinute: 25);
+
+                ResultsTxt.Text = $"Decoded from audio:\r\n{decoded}";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        // Fills the message box with a procedural signal and encodes it, to show that a prosign is
+        // keyed as one unbroken sequence rather than as separate letters.
+        private void ProsignDemoBtn_Click(object sender, EventArgs e)
+        {
+            MessageMorseTxt.Text = "CQ CQ DE W1AW <AR>";
+            Convert(Language.English);
+        }
+
+        private void KochBtn_Click(object sender, EventArgs e)
+        {
+            string lesson = Koch.Generate(level: 5, groups: 6);
+            ResultsTxt.Text = $"Koch lesson (level 5):\r\n{lesson}";
+        }
+
+        private void QsoBtn_Click(object sender, EventArgs e)
+        {
+            ResultsTxt.Text = $"Callsign: {Callsign.Next()}\r\n\r\n" + string.Join("\r\n", Qso.Generate());
         }
 
         private async void blinkBtn_Click(object sender, EventArgs e)
