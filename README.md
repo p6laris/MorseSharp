@@ -225,6 +225,45 @@ while mode B sends one more of the opposite kind. Operators build muscle memory 
 There is no clock inside the keyer. It says what to send and for how long; you decide when. That keeps it usable from
 a game loop, a GPIO interrupt or a test, and `Paddles` is safe to call from a different thread than `TryRead`.
 
+## Practice
+
+`Koch` generates lessons for the method of the same name: full target speed from the first lesson, starting with two
+characters and adding one each time you copy better than ninety per cent.
+
+```C#
+string lesson = Koch.Generate(level: 5, groups: 10);   // "KMRSU MKSRU RUKSM ..."
+
+byte[] wav = Morse.GetConverter().ForLanguage(Language.English)
+    .ToMorse(lesson).ToAudio().SetAudioOptions(20, 20).GetBytes();
+
+var score = Koch.Score(lesson, whatTheLearnerTyped);
+if (score.ClearsThreshold)
+    level++;
+```
+
+Scoring ignores spacing and case, and is positional, so a dropped character shifts what follows and counts against
+you. `Koch.Order` is the sequence characters are introduced in, and `Koch.MaxLevel` is how many there are.
+
+`Callsign` and `Qso` produce practice material shaped like real traffic rather than random letters.
+
+```C#
+string call = Callsign.Next();       // "DL4KRM"
+
+foreach (string transmission in Qso.Generate())
+    Console.WriteLine(transmission);
+
+// CQ CQ CQ DE YO3WF YO3WF YO3WF K
+// YO3WF DE 9A6TN 9A6TN K
+// 9A6TN DE YO3WF = GM = TNX FER CALL = UR RST 599 = NAME KOZHEN = QTH ERBIL = HW? = 9A6TN DE YO3WF K
+// ...
+// 9A6TN DE YO3WF = TNX FER QSO = 73 ES CUL = 9A6TN DE YO3WF <SK>
+```
+
+Every transmission is ready to pass to `ToMorse` as it stands, including `=` and the closing `<SK>`, both of which
+are keyed as single unbroken signals. Each generator takes an optional `Random`, so seeding one reproduces the same
+lesson, callsign or contact; `Koch.Generate` and `Callsign.Next` also have `Span<char>` overloads that allocate
+nothing.
+
 ## Adding a language
 
 The built-in alphabets live in `MorseSharp/Alphabet/Data/*.morse`, one file per language, as plain

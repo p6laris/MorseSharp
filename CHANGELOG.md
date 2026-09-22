@@ -72,6 +72,13 @@
   either type, so the keying rules are exercised without waiting for real time, and the caller drives a sidetone or a
   transmitter with whatever timer it already has. Paddles may be polled from a different thread than the one playing.
 
+- **Practice material.** `Koch` generates lessons for the Koch method: random groups drawn from the first N
+  characters of the order the method introduces them in, with `Koch.Score` comparing what was copied against what was
+  sent and saying whether it clears the ninety per cent needed to unlock the next character. `Callsign` and `Qso`
+  produce callsigns and whole contacts in the shape of real traffic, so practice covers the abbreviations, signal
+  reports and procedural signals that random groups never teach. All three take an optional `Random`, so a lesson or
+  a contact can be reproduced exactly, and `Koch` and `Callsign` have buffer overloads that allocate nothing.
+
 - All enums are byte-backed. `Language` members are renumbered sequentially from 1 to fit, having previously used
   bit-shifted values up to 1024; they were never combinable, so only code persisting the numeric values is affected.
 
