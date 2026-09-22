@@ -427,6 +427,13 @@ foreach (MorseCharacterEntry entry in english.Characters)
 decoding that pattern still yields the character that owns it. `Characters` also works on an alphabet from
 `MorseAlphabetBuilder`, built-in or custom.
 
+`Prosigns` lists them the same way, with the ones that own their pattern first:
+
+```C#
+foreach (MorseProsignEntry prosign in english.Prosigns)
+    Console.WriteLine($"<{prosign.Name}>: {prosign.Pattern}");
+```
+
 ## Example
 
 A quick look at the basics:

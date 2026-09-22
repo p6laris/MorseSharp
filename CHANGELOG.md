@@ -19,6 +19,10 @@
   same cached instance the fluent chain uses, with no rebuild. `Characters` also works on alphabets built with
   `MorseAlphabetBuilder`, built-in or custom.
 
+  `MorseAlphabet.Prosigns` lists an alphabet's prosigns the same way, as `MorseProsignEntry` values carrying the
+  name, the pattern and whether the pattern belongs to something else. The ones that own their pattern, and so
+  decode back into brackets, come first.
+
 ## 6.0.1
 
 - The logo in the README pointed at a GitHub blob URL, which NuGet's renderer doesn't follow, so it never displayed

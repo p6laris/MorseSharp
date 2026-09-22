@@ -17,7 +17,8 @@ namespace MorseSharp.Alphabet;
 /// keeps ownership of the pattern for decoding.
 /// </para>
 /// <para>
-/// Shared verbatim with the source generator, so it must stay netstandard2.0-compatible.
+/// Shared verbatim with the source generator, so it must stay netstandard2.0-compatible. Callers listing an
+/// alphabet's prosigns get <see cref="MorseProsignEntry"/> instead, which is not tied to the generator's shape.
 /// </para>
 /// </remarks>
 internal readonly struct MorseProsign

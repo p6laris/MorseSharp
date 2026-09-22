@@ -56,7 +56,7 @@ public sealed class MorseAlphabetBuilder
 
         MorseAlphabetBuilder builder = new(alphabet.Name);
         builder._entries.AddRange(alphabet.Entries);
-        builder._prosigns.AddRange(alphabet.Prosigns);
+        builder._prosigns.AddRange(alphabet.ProsignSet);
         return builder;
     }
 

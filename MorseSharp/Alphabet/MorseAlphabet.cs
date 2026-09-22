@@ -9,8 +9,8 @@ namespace MorseSharp;
 /// <para>
 /// Obtain one either from a built-in language, through <see cref="Morse.ForLanguage"/>, or by building your own
 /// with <see cref="MorseAlphabetBuilder"/> and passing it to <see cref="Morse.ForAlphabet"/>. Conversion itself
-/// never looks characters up through <see cref="Name"/> or <see cref="Characters"/>; those exist purely for callers
-/// who want to inspect or list an alphabet's mappings.
+/// never looks characters up through <see cref="Name"/>, <see cref="Characters"/> or <see cref="Prosigns"/>; those
+/// exist purely for callers who want to inspect or list an alphabet's mappings.
 /// </para>
 /// <para>
 /// A Morse pattern is stored as a <b>tree code</b>: start at 1 and, for every symbol, shift left and add 1 for a dash
@@ -51,12 +51,16 @@ public sealed class MorseAlphabet
     private readonly Func<MorseEntry[]>? _entriesFactory;
     private MorseEntry[]? _entries;
     private MorseCharacterEntry[]? _characters;
+    private MorseProsignEntry[]? _prosigns;
 
     /// <summary>The name of this alphabet, used in error messages.</summary>
     public string Name { get; }
 
     /// <summary>The characters this alphabet maps, and the pattern each is keyed as.</summary>
     public IReadOnlyList<MorseCharacterEntry> Characters => _characters ??= BuildCharacters();
+
+    /// <summary>The prosigns this alphabet defines, and the pattern each is keyed as. Empty when it defines none.</summary>
+    public IReadOnlyList<MorseProsignEntry> Prosigns => _prosigns ??= BuildProsigns();
 
     /// <summary>Returns the built-in alphabet for a language.</summary>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="language"/> is not a defined value.</exception>
@@ -85,6 +89,16 @@ public sealed class MorseAlphabet
             characters[i] = new MorseCharacterEntry(entries[i].Character, entries[i].Pattern, entries[i].IsAlias);
 
         return characters;
+    }
+
+    private MorseProsignEntry[] BuildProsigns()
+    {
+        MorseProsign[] prosigns = ProsignSet;
+        MorseProsignEntry[] entries = new MorseProsignEntry[prosigns.Length];
+        for (int i = 0; i < entries.Length; i++)
+            entries[i] = new MorseProsignEntry(prosigns[i].Name, prosigns[i].Pattern, prosigns[i].IsAlias);
+
+        return entries;
     }
 
     private MorseAlphabet(
@@ -140,7 +154,7 @@ public sealed class MorseAlphabet
     internal int ProsignCount => _prosignNames.Length;
 
     /// <summary>The prosigns this alphabet was built from, so it can be extended.</summary>
-    internal MorseProsign[] Prosigns
+    internal MorseProsign[] ProsignSet
     {
         get
         {
