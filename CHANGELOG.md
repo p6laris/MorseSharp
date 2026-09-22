@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.1.1 (2026-09-22)
+
+- Replaced the package icon and README logo with the dual-paddle mark. The old file left over inside
+  `MorseSharp/` (unreferenced by the package) is removed.
+
 ## 6.1.0 (2026-09-22)
 
 ### Added
