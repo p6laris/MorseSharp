@@ -192,6 +192,39 @@ foreach (var element in Morse.GetConverter()
 
 A sequence is a snapshot, so it outlives the chain that produced it and can be walked as often as you like.
 
+## Keying
+
+`IambicKeyer` goes the other way: paddle presses in, timed elements out.
+
+```C#
+var keyer = new IambicKeyer(wordsPerMinute: 25, KeyerMode.B);
+var decoder = new KeyerDecoder(Language.English, 25);
+
+// wherever the hardware is polled, on whatever thread
+keyer.Paddles(dot: dotContactClosed, dash: dashContactClosed);
+
+// wherever elements are played
+while (keyer.TryRead(out var element))
+{
+    sidetone.Set(element.KeyDown);
+    await Task.Delay(element.Duration);
+    decoder.Add(element);
+}
+
+decoder.Quiet(silenceSoFar);
+while (decoder.TryRead(out char character, out string? prosign))
+    Console.Write(prosign ?? character.ToString());
+```
+
+Holding one contact repeats that element; squeezing both alternates, which is what makes the keying iambic. A tap on
+the opposite contact during an element is remembered, so short taps are not swallowed.
+
+`KeyerMode` is the one setting worth knowing. Let go of a squeeze and mode A stops after the element in progress,
+while mode B sends one more of the opposite kind. Operators build muscle memory around one or the other.
+
+There is no clock inside the keyer. It says what to send and for how long; you decide when. That keeps it usable from
+a game loop, a GPIO interrupt or a test, and `Paddles` is safe to call from a different thread than `TryRead`.
+
 ## Adding a language
 
 The built-in alphabets live in `MorseSharp/Alphabet/Data/*.morse`, one file per language, as plain

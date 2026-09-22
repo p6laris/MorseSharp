@@ -65,6 +65,13 @@
   a fixed handful of allocations however long the message is, instead of a task and a timer per element. `DoBlinks` is
   unchanged, and is now a loop over `PlayAsync`.
 
+- **Keyer.** `IambicKeyer` turns paddle presses into correctly timed elements, and `KeyerDecoder` turns what was
+  keyed back into text. Holding one contact repeats that element, squeezing both alternates, and a tap on the
+  opposite contact during an element is remembered rather than lost. `KeyerMode` picks what a released squeeze does:
+  mode A stops after the element in progress, mode B adds one more of the opposite kind. There is no clock inside
+  either type, so the keying rules are exercised without waiting for real time, and the caller drives a sidetone or a
+  transmitter with whatever timer it already has. Paddles may be polled from a different thread than the one playing.
+
 - All enums are byte-backed. `Language` members are renumbered sequentially from 1 to fit, having previously used
   bit-shifted values up to 1024; they were never combinable, so only code persisting the numeric values is affected.
 

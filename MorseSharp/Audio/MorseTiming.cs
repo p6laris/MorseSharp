@@ -58,6 +58,14 @@ internal readonly struct MorseTiming
         _ => WordGap,
     };
 
+    /// <summary>Duration of one element of the given kind.</summary>
+    /// <remarks>
+    /// Built from ticks rather than <see cref="TimeSpan.FromSeconds(double)"/>, which rounds to the nearest
+    /// millisecond; at high speeds a dit is only a few milliseconds and that rounding would accumulate.
+    /// </remarks>
+    public TimeSpan DurationOf(MorseElementKind kind)
+        => TimeSpan.FromTicks((long)(For(kind) * TimeSpan.TicksPerSecond));
+
     /// <summary>Throws for non-positive speeds or a word speed above the character speed.</summary>
     public static void Validate(int charSpeed, int wordSpeed)
     {

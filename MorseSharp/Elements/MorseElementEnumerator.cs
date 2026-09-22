@@ -164,8 +164,7 @@ public struct MorseElementEnumerator
 
     private bool Emit(MorseElementKind kind)
     {
-        // Ticks rather than TimeSpan.FromSeconds, which rounds to the nearest millisecond and would drift at high speeds.
-        Current = new MorseElement(kind, TimeSpan.FromTicks((long)(_timing.For(kind) * TimeSpan.TicksPerSecond)));
+        Current = new MorseElement(kind, _timing.DurationOf(kind));
         return true;
     }
 }
