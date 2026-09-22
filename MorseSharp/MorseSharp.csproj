@@ -17,7 +17,7 @@
     <Title>MorseSharp</Title>
     <Version>6.0.0</Version>
     <Authors>p0laris</Authors>
-    <Description>A fast, allocation-free .NET library to encode/decode Morse code in 11 languages (including Kurdish) and to generate 16-bit PCM WAV audio or light-blink sequences for the dots and dashes.</Description>
+    <Description>A fast, allocation-free .NET library for Morse code in 11 languages (including Kurdish): encode/decode text, generate or decode WAV audio, drive or read a blinking light, key input from an iambic paddle, define custom alphabets, and generate Koch-method lessons and practice traffic.</Description>
     <PackageProjectUrl>https://github.com/p6laris/MorseSharp</PackageProjectUrl>
     <RepositoryUrl>https://github.com/p6laris/MorseSharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

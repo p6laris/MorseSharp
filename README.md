@@ -1,14 +1,39 @@
 # MorseSharp
+[![CI](https://github.com/p6laris/MorseSharp/actions/workflows/ci.yml/badge.svg)](https://github.com/p6laris/MorseSharp/actions/workflows/ci.yml)
 [![NuGet](https://img.shields.io/nuget/dt/MorseSharp?logo=nuget)](https://www.nuget.org/packages/MorseSharp)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/p6laris/MorseSharp)
 
-MorseSharp is a fast, allocation-free .NET library that encodes and decodes Morse code in **11 languages** including
-Kurdish, and turns the dots and dashes into WAV audio or light-blink sequences.
+MorseSharp is a fast, allocation-free .NET library for Morse code in **11 languages** including Kurdish. It encodes
+and decodes text, generates or decodes 16-bit PCM WAV audio, drives or reads a blinking light, keys input from an
+iambic paddle, lets you define your own alphabet, and generates Koch-method lessons and practice traffic.
 
 ![alt text](https://github.com/p6laris/MorseSharp/blob/master/MorseSharp.png?raw=true)
 
 Requires **.NET 10**. It has no NuGet dependencies and is trimming and native-AOT friendly.
 For .NET 8 and 9, use MorseSharp 5.x.
+
+## Contents
+
+- [Supported Languages](#supported-languages)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Text](#text)
+  - [Encoding](#encoding)
+  - [Decoding](#decoding)
+- [Audio](#audio)
+  - [Output format](#output-format)
+- [Light](#light)
+  - [Elements](#elements)
+- [Keying](#keying)
+- [Practice](#practice)
+- [Adding a language](#adding-a-language)
+- [Decoding received audio](#decoding-received-audio)
+  - [Live audio](#live-audio)
+- [Prosigns](#prosigns)
+- [Custom alphabets](#custom-alphabets)
+- [Example](#example)
+- [Upgrading from 5.x](#upgrading-from-5x)
+- [License](#license)
 
 ## Supported Languages
 
@@ -385,6 +410,8 @@ so hold one in a static field and reuse it.
 
 ## Example
 
+A quick look at the basics:
+
 ```C#
 using MorseSharp;
 
@@ -420,6 +447,11 @@ catch (Exception ex)
     Console.WriteLine(ex.Message);
 }
 ```
+
+For everything else — custom alphabets, prosigns, decoding audio (buffered and streaming), the element stream, the
+iambic keyer, and the Koch/callsign/QSO practice generators — see [`Example/`](Example) for a runnable console demo
+of every feature, one file per demo under `Example/Demos/`, and [`AudioExample/`](AudioExample) for the same ideas
+behind a small WinForms UI.
 
 ## Upgrading from 5.x
 
