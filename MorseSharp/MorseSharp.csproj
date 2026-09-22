@@ -15,7 +15,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MorseSharp</PackageId>
     <Title>MorseSharp</Title>
-    <Version>6.0.1</Version>
+    <Version>6.1.0</Version>
     <Authors>p0laris</Authors>
     <Description>A fast, allocation-free .NET library for Morse code in 11 languages (including Kurdish): encode/decode text, generate or decode WAV audio, drive or read a blinking light, key input from an iambic paddle, define custom alphabets, and generate Koch-method lessons and practice traffic.</Description>
     <PackageProjectUrl>https://github.com/p6laris/MorseSharp</PackageProjectUrl>
