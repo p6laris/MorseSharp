@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, net10-clean ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      # AudioExample targets net10.0-windows (WinForms) and cannot build on Linux, so the
+      # library, its source generator, and the tests are targeted directly rather than the
+      # whole solution.
+      - name: Restore
+        run: |
+          dotnet restore MorseSharp/MorseSharp.csproj
+          dotnet restore MorseTest/MorseTest.csproj
+
+      - name: Build
+        run: dotnet build MorseSharp/MorseSharp.csproj --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test MorseTest/MorseTest.csproj --configuration Release --logger "trx;LogFileName=test-results.trx"
+
+      - name: Pack
+        run: dotnet pack MorseSharp/MorseSharp.csproj --configuration Release --no-build --output artifacts
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: artifacts/*
+          if-no-files-found: error
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/test-results.trx'
+          if-no-files-found: ignore
