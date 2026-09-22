@@ -23,7 +23,11 @@ public static class Qso
     ];
 
     private static readonly string[] Places =
-        ["LONDON", "BOSTON", "MUNICH", "TOKYO", "MADRID", "OSLO", "CAIRO", "LIMA", "ERBIL", "PRAGUE", "PERTH", "DELHI"];
+    [
+        "LONDON", "BOSTON", "MUNICH", "TOKYO", "MADRID", "OSLO", "CAIRO", "LIMA", "PRAGUE", "PERTH", "DELHI",
+        "HAWLER", "SLEMANI", "DUHOK", "KERKUK", "ZAKHO", "HALABJA", "AMED", "MAHABAD", "QAMISHLO", "KOBANE",
+        "SORAN", "RANYA",
+    ];
 
     private static readonly string[] Reports =
         ["599", "579", "569", "559", "479", "339"];
