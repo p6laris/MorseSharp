@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.0.1
+
+- The logo in the README pointed at a GitHub blob URL, which NuGet's renderer doesn't follow, so it never displayed
+  on the package page. It now points at the raw content URL directly.
+
 ## 6.0.0
 
 ### Added
